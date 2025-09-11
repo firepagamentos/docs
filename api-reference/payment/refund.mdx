@@ -1,0 +1,71 @@
+---
+title: 'Estornar Pagamento'
+openapi: 'POST /payment/{paymentId}/refund'
+---
+
+Emitir um estorno completo para um pagamento concluído. Isso retornará o valor total do pagamento para o método de pagamento original do cliente.
+
+## Parâmetros de Caminho
+
+<ParamField path="paymentId" type="string" required>
+  O identificador único do pagamento a ser estornado
+</ParamField>
+
+## Requisitos
+
+- Pagamento deve estar com status `completed`
+- Pagamento deve ter sido capturado
+- Estorno deve ser solicitado dentro do prazo permitido (normalmente 120 dias)
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X POST "https://api.firebanking.com/v1/payment/payment-123/refund" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "id": "payment-123",
+  "status": "refunded",
+  "amount": 10000,
+  "installments": 1,
+  "externalId": "ext-payment-12345",
+  "refunded": true,
+  "refundedAt": "2024-01-16T14:30:00Z",
+  "refundAmount": 10000,
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+## Tempos de Processamento do Estorno
+
+<CardGroup cols={2}>
+  <Card title="Cartões de Crédito" icon="credit-card">
+    2-10 dias úteis dependendo da bandeira do cartão
+  </Card>
+  <Card title="Cartões de Débito" icon="credit-card">
+    1-5 dias úteis dependendo do banco
+  </Card>
+</CardGroup>
+
+<Warning>
+  Estornos são irreversíveis. Certifique-se de verificar a solicitação de estorno antes de processar.
+</Warning>
+
+<Info>
+  O cliente verá o estorno em seu extrato com o mesmo nome do comerciante da cobrança original.
+</Info>
+
+## Estornos Parciais
+
+Atualmente, apenas estornos completos são suportados. Se você precisar estornar um valor parcial, entre em contato com nossa equipe de suporte.
+
+## Cenários de Erro
+
+- **Pagamento não encontrado**: O ID do pagamento não existe
+- **Pagamento não elegível**: Pagamento não está em estado que permite estorno
+- **Já estornado**: Pagamento já foi estornado
+- **Janela de estorno expirada**: Pagamento é muito antigo para ser estornado

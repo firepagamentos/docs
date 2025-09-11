@@ -1,0 +1,303 @@
+---
+title: 'Webhook de Provedor Genérico'
+openapi: 'POST /webhooks/BARTE'
+---
+
+Receber notificações de webhook de vários provedores de pagamento através de uma interface padronizada. Este endpoint fornece uma maneira unificada de lidar com eventos de pagamento de diferentes processadores.
+
+## Autenticação
+
+<Warning>
+  Este endpoint requer **Autenticação Básica** usando suas credenciais de webhook.
+</Warning>
+
+```bash Cabeçalho de Autenticação
+Authorization: Basic SUAS_CREDENCIAIS_CODIFICADAS_BASE64
+```
+
+## Provedores Suportados
+
+Provedores de pagamento atualmente suportados:
+- **BARTE** - Processador de pagamentos primário
+- **CIELO** - Integração de processador adicional
+- **REDE** - Processador de pagamentos alternativo
+- **STONE** - Integração de gateway de pagamento
+
+## Tipos de Evento
+
+### Tipos de Evento Padrão
+
+<CardGroup cols={2}>
+  <Card title="PAYMENT_UPDATED" icon="arrow-rotate-right">
+    Status do pagamento foi atualizado
+  </Card>
+  <Card title="PAYMENT_COMPLETED" icon="circle-check">
+    Processamento de pagamento completado com sucesso
+  </Card>
+  <Card title="PAYMENT_FAILED" icon="circle-xmark">
+    Processamento de pagamento falhou
+  </Card>
+  <Card title="PAYMENT_CANCELLED" icon="circle-minus">
+    Pagamento foi cancelado
+  </Card>
+</CardGroup>
+
+### Eventos Específicos do Provedor
+
+Cada provedor pode enviar tipos de evento adicionais específicos para sua plataforma. O payload do webhook inclui o identificador do provedor para ajudar a rotear eventos adequadamente.
+
+## Exemplo de Requisição de Webhook
+
+```json Webhook Padrão
+{
+  "eventType": "PAYMENT_UPDATED",
+  "timestamp": "2024-01-15T16:30:00Z",
+  "provider": "BARTE",
+  "paymentId": "payment-uuid-12345",
+  "externalId": "ext-payment-12345",
+  "status": "COMPLETED",
+  "previousStatus": "PROCESSING",
+  "amount": 10000,
+  "currency": "BRL",
+  "metadata": {
+    "processorTransactionId": "txn_abc123",
+    "processingTime": 1500,
+    "approvalCode": "123456"
+  }
+}
+```
+
+## Payloads Específicos do Provedor
+
+### Provedor BARTE
+```json Webhook Barte
+{
+  "eventType": "PAYMENT_COMPLETED",
+  "provider": "BARTE",
+  "paymentId": "payment-uuid-12345",
+  "status": "COMPLETED",
+  "barteData": {
+    "transactionId": "barte_txn_123",
+    "settlementDate": "2024-01-16",
+    "processingFee": 300,
+    "netAmount": 9700
+  }
+}
+```
+
+### Provedor Genérico
+```json Webhook Genérico
+{
+  "eventType": "PAYMENT_FAILED",
+  "provider": "GENERIC",
+  "paymentId": "payment-uuid-67890",
+  "status": "FAILED",
+  "errorDetails": {
+    "code": "card_declined",
+    "message": "Cartão foi recusado pelo emissor",
+    "category": "card_error"
+  }
+}
+```
+
+## Tratamento de Webhook
+
+### Lógica de Processamento
+
+```javascript Handler de Webhook
+app.post('/webhooks/provider', authenticateWebhook, (req, res) => {
+  const { eventType, provider, paymentId, status } = req.body;
+  
+  try {
+    // Rotear para handler específico do provedor
+    switch (provider) {
+      case 'BARTE':
+        handleBarteEvent(req.body);
+        break;
+      case 'CIELO':
+        handleCieloEvent(req.body);
+        break;
+      default:
+        handleGenericEvent(req.body);
+    }
+    
+    // Atualizar status do pagamento em seu sistema
+    updatePaymentStatus(paymentId, status, req.body);
+    
+    res.status(200).json({ 
+      received: true, 
+      paymentId,
+      processedAt: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Erro de webhook:', error);
+    res.status(500).json({ 
+      error: 'Processamento falhou',
+      paymentId
+    });
+  }
+});
+```
+
+### Middleware de Autenticação
+
+```javascript Auth Básica
+function authenticateWebhook(req, res, next) {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    return res.status(401).json({ error: 'Autenticação ausente' });
+  }
+  
+  const credentials = Buffer.from(authHeader.slice(6), 'base64').toString();
+  const [username, password] = credentials.split(':');
+  
+  // Validar credenciais contra suas configurações de webhook
+  if (!isValidWebhookCredentials(username, password)) {
+    return res.status(401).json({ error: 'Credenciais inválidas' });
+  }
+  
+  next();
+}
+```
+
+## Tratamento de Resposta
+
+### Resposta de Sucesso
+```json Sucesso
+{
+  "received": true,
+  "paymentId": "payment-uuid-12345",
+  "processedAt": "2024-01-15T16:31:00Z"
+}
+```
+
+### Resposta de Erro
+```json Erro
+{
+  "error": "Processamento falhou",
+  "paymentId": "payment-uuid-12345",
+  "errorCode": "INVALID_PAYLOAD"
+}
+```
+
+## Mapeamento de Status
+
+Diferentes provedores podem usar valores de status diferentes. Mapeie-os para seu sistema de status interno:
+
+```javascript Mapeamento de Status
+const statusMap = {
+  BARTE: {
+    'PAID': 'COMPLETED',
+    'FAILED': 'FAILED',
+    'CANCELLED': 'CANCELLED',
+    'PENDING': 'PROCESSING'
+  },
+  CIELO: {
+    'CAPTURED': 'COMPLETED',
+    'DENIED': 'FAILED',
+    'CANCELLED': 'CANCELLED',
+    'AUTHORIZED': 'PROCESSING'
+  }
+};
+
+function mapStatus(provider, externalStatus) {
+  return statusMap[provider]?.[externalStatus] || externalStatus;
+}
+```
+
+## Melhores Práticas de Segurança
+
+<CardGroup cols={2}>
+  <Card title="Rotação de Credenciais" icon="key">
+    Rotacione credenciais de webhook regularmente
+  </Card>
+  <Card title="Filtragem de IP" icon="shield">
+    Restrinja acesso a IPs conhecidos do provedor
+  </Card>
+  <Card title="Validação de Payload" icon="check-double">
+    Valide que todos os campos obrigatórios estão presentes
+  </Card>
+  <Card title="Limitação de Taxa" icon="gauge">
+    Implemente limitação de taxa para endpoints de webhook
+  </Card>
+</CardGroup>
+
+## Mecanismo de Retry
+
+Provedores implementam diferentes estratégias de retry:
+
+1. **Retry imediato** (1 segundo)
+2. **Retry de delay curto** (30 segundos)
+3. **Retry de delay médio** (5 minutos)
+4. **Retry de delay longo** (30 minutos)
+5. **Retry final** (2 horas)
+
+## Monitoramento de Webhooks
+
+### Métricas Chave para Monitorar
+
+- **Tempo de processamento de eventos** - Quanto tempo os webhooks levam para processar
+- **Taxas de erro** - Porcentagem de processamento de webhook falhado
+- **Volumes de evento** - Número de eventos por provedor por hora
+- **Distribuição de status** - Proporção de eventos sucesso/falha
+
+### Alertas
+
+Configure alertas para:
+- **Altas taxas de erro** (>5% de falhas)
+- **Atrasos de processamento** (tempos de resposta >5 segundos)
+- **Eventos ausentes** (eventos esperados não recebidos)
+- **Falhas de autenticação** (credenciais inválidas)
+
+## Testes
+
+### Payloads de Teste de Webhook
+
+```bash Testar com curl
+curl -X POST http://localhost:3000/webhooks/BARTE \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic $(echo -n 'username:password' | base64)" \
+  -d '{
+    "eventType": "PAYMENT_UPDATED",
+    "provider": "BARTE", 
+    "paymentId": "test-payment-123",
+    "status": "COMPLETED"
+  }'
+```
+
+### Ambiente de Teste de Webhook
+
+Use credenciais de sandbox e IDs de pagamento de teste para verificar processamento de webhook sem afetar dados de produção.
+
+<Info>
+  Sempre teste endpoints de webhook em seu ambiente de staging antes de implementar em produção.
+</Info>
+
+## Solução de Problemas
+
+### Problemas Comuns
+
+1. **Falhas de autenticação** - Verifique credenciais de Auth Básica
+2. **Erros de validação de payload** - Verifique campos obrigatórios
+3. **Problemas de timeout** - Otimize lógica de processamento
+4. **Eventos duplicados** - Implemente chaves de idempotência
+5. **Erros de mapeamento de status** - Trate valores de status desconhecidos graciosamente
+
+### Modo Debug
+
+Habilite logging de debug para capturar detalhes do webhook:
+
+```javascript Logging de Debug
+app.use('/webhooks', (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Webhook recebido:', {
+      headers: req.headers,
+      body: req.body,
+      timestamp: new Date().toISOString()
+    });
+  }
+  next();
+});
+```

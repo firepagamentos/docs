@@ -1,0 +1,125 @@
+---
+title: 'Obter Tokens de Cartão por Comprador'
+openapi: 'GET /payment/token/{buyerUuid}'
+---
+
+Recuperar todos os tokens de cartão salvos para um comprador específico. Isso é útil para exibir métodos de pagamento salvos aos clientes durante o checkout.
+
+## Parâmetros de Caminho
+
+<ParamField path="buyerUuid" type="string" required>
+  O UUID do comprador cujos tokens de cartão você deseja recuperar
+</ParamField>
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X GET "https://api.firebanking.com/v1/payment/token/buyer-uuid-12345" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+[
+  {
+    "cardToken": "550e8400-e29b-41d4-a716-446655440000",
+    "maskedCardNumber": "****-****-****-4444",
+    "expirationDate": "06/26",
+    "cardBrand": "mastercard",
+    "cardType": "credit",
+    "isExpired": false,
+    "createdAt": "2024-01-15T14:30:00Z",
+    "lastUsedAt": "2024-01-20T10:15:00Z"
+  },
+  {
+    "cardToken": "660f9500-f39c-52e5-b827-557766551111",
+    "maskedCardNumber": "****-****-****-1111",
+    "expirationDate": "12/25",
+    "cardBrand": "visa",
+    "cardType": "credit",
+    "isExpired": false,
+    "createdAt": "2024-01-10T09:20:00Z",
+    "lastUsedAt": "2024-01-18T16:45:00Z"
+  }
+]
+```
+
+## Campos da Resposta
+
+<ResponseField name="cardToken" type="string">
+  Identificador único do token para o cartão salvo
+</ResponseField>
+
+<ResponseField name="maskedCardNumber" type="string">
+  Número do cartão mascarado para fins de exibição
+</ResponseField>
+
+<ResponseField name="expirationDate" type="string">
+  Data de expiração do cartão no formato MM/AA
+</ResponseField>
+
+<ResponseField name="cardBrand" type="string">
+  Bandeira do cartão (visa, mastercard, american_express, etc.)
+</ResponseField>
+
+<ResponseField name="cardType" type="string">
+  Tipo de cartão (credit, debit, prepaid)
+</ResponseField>
+
+<ResponseField name="isExpired" type="boolean">
+  Se o cartão expirou
+</ResponseField>
+
+<ResponseField name="lastUsedAt" type="string">
+  Timestamp de quando o token foi usado pela última vez para um pagamento
+</ResponseField>
+
+## Lidando com Cartões Expirados
+
+Tokens expirados ainda são retornados na resposta mas marcados com `isExpired: true`. Você deve:
+
+1. **Ocultar da UI** - Não mostrar cartões expirados na seleção de pagamento
+2. **Solicitar atualização** - Pedir aos clientes para atualizar cartões expirados
+3. **Limpeza** - Considerar remover tokens expirados muito antigos
+
+## Resposta Vazia
+
+Se um comprador não tem cartões salvos, o endpoint retorna um array vazio:
+
+```json Resposta Vazia
+[]
+```
+
+## Casos de Uso
+
+<CardGroup cols={2}>
+  <Card title="Exibição no Checkout" icon="credit-card">
+    Mostrar métodos de pagamento salvos durante o checkout
+  </Card>
+  <Card title="Gerenciamento de Conta" icon="user">
+    Permitir que clientes gerenciem seus cartões salvos
+  </Card>
+  <Card title="Configuração de Assinatura" icon="repeat">
+    Exibir cartões para pagamentos de assinatura
+  </Card>
+  <Card title="Recompra Rápida" icon="shopping-cart">
+    Habilitar compra com um clique
+  </Card>
+</CardGroup>
+
+<Info>
+  Ordene tokens por `lastUsedAt` para mostrar os cartões usados mais recentemente primeiro em sua UI.
+</Info>
+
+## Cenários de Erro
+
+- **Comprador não encontrado**: O UUID do comprador não existe
+- **Sem tokens**: Comprador não tem tokens de cartão salvos (retorna array vazio)
+- **UUID inválido**: O formato do UUID do comprador é inválido
+
+## Considerações de Segurança
+
+- Nunca armazene o número completo do cartão desta resposta
+- Sempre exija CVV ao usar tokens para pagamentos
+- Implemente controles de acesso adequados para garantir que usuários vejam apenas seus próprios tokens

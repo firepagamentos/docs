@@ -1,0 +1,181 @@
+---
+title: 'Listar Compradores'
+openapi: 'GET /buyer'
+---
+
+Recuperar uma lista de compradores com capacidades de filtragem opcionais. Este endpoint suporta paginação e vários filtros de busca para ajudar você a encontrar compradores específicos.
+
+## Parâmetros de Consulta
+
+<ParamField query="document" type="string">
+  Filtrar compradores por número de documento (CPF ou CNPJ)
+</ParamField>
+
+<ParamField query="name" type="string">
+  Filtrar compradores por nome (correspondência parcial suportada)
+</ParamField>
+
+<ParamField query="email" type="string">
+  Filtrar compradores por endereço de email
+</ParamField>
+
+<ParamField query="page" type="integer" default="0">
+  Número da página para paginação (baseado em 0)
+</ParamField>
+
+<ParamField query="size" type="integer" default="10">
+  Número de itens por página (1-100)
+</ParamField>
+
+## Exemplos de Requisições
+
+### Listar Todos os Compradores (Sem Filtros)
+```bash cURL
+curl -X GET "https://api.firebanking.com/v1/buyer" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+### Filtrar por Documento
+```bash cURL
+curl -X GET "https://api.firebanking.com/v1/buyer?document=12345678901&page=0&size=10" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+### Filtrar por Nome e Email
+```bash cURL
+curl -X GET "https://api.firebanking.com/v1/buyer?name=João&email=joao@example.com&page=0&size=20" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "buyers": [
+    {
+      "uuid": "buyer-uuid-12345",
+      "document": {
+        "documentNumber": "36880261019",
+        "documentType": "cpf",
+        "documentNation": "BR"
+      },
+      "name": "João Silva",
+      "email": "joao.silva@email.com",
+      "phone": "11999999999",
+      "countryCode": "+55",
+      "createdAt": "2024-01-15T14:30:00Z",
+      "lastTransactionAt": "2024-01-20T10:15:00Z",
+      "totalTransactions": 5,
+      "totalAmount": 150000
+    },
+    {
+      "uuid": "buyer-uuid-67890",
+      "document": {
+        "documentNumber": "98765432100",
+        "documentType": "cpf",
+        "documentNation": "BR"
+      },
+      "name": "Maria Santos",
+      "email": "maria@email.com",
+      "phone": "11888888888",
+      "countryCode": "+55",
+      "createdAt": "2024-01-10T09:20:00Z",
+      "lastTransactionAt": "2024-01-18T16:45:00Z",
+      "totalTransactions": 3,
+      "totalAmount": 75000
+    }
+  ],
+  "pagination": {
+    "currentPage": 0,
+    "totalPages": 1,
+    "totalElements": 2,
+    "pageSize": 10,
+    "hasNext": false,
+    "hasPrevious": false
+  }
+}
+```
+
+## Campos da Resposta
+
+<ResponseField name="buyers" type="array">
+  Array de objetos de comprador que correspondem aos critérios de filtro
+</ResponseField>
+
+<ResponseField name="pagination" type="object">
+  Informações de paginação para o conjunto de resultados
+</ResponseField>
+
+<ResponseField name="totalTransactions" type="integer">
+  Número total de transações bem-sucedidas para este comprador
+</ResponseField>
+
+<ResponseField name="totalAmount" type="integer">
+  Valor total (em centavos) de todas as transações bem-sucedidas
+</ResponseField>
+
+<ResponseField name="lastTransactionAt" type="string">
+  Timestamp da transação mais recente do comprador
+</ResponseField>
+
+## Capacidades de Busca
+
+### Busca por Nome
+- **Correspondência parcial**: Busca dentro do campo nome
+- **Insensível a maiúsculas**: "joão" corresponde a "João Silva"
+- **Múltiplas palavras**: "Silva João" corresponde a "João Silva"
+
+### Busca por Documento
+- **Correspondência exata**: Deve corresponder ao número completo do documento
+- **Formato flexível**: Aceita com ou sem formatação
+
+### Busca por Email
+- **Correspondência exata**: Deve corresponder ao endereço de email completo
+- **Insensível a maiúsculas**: "JOAO@EXAMPLE.COM" corresponde a "joao@example.com"
+
+## Paginação
+
+<CardGroup cols={2}>
+  <Card title="Baseada em Página" icon="list">
+    Usa números de página começando de 0
+  </Card>
+  <Card title="Controle de Tamanho" icon="resize">
+    Configure itens por página (máx 100)
+  </Card>
+</CardGroup>
+
+## Casos de Uso
+
+<CardGroup cols={2}>
+  <Card title="Busca de Cliente" icon="search">
+    Encontrar clientes durante chamadas de suporte
+  </Card>
+  <Card title="Gerenciamento de Conta" icon="users">
+    Navegar e gerenciar contas de clientes
+  </Card>
+  <Card title="Análises" icon="chart-bar">
+    Exportar dados de clientes para análise
+  </Card>
+  <Card title="Reconciliação" icon="balance-scale">
+    Corresponder compradores com sistemas externos
+  </Card>
+</CardGroup>
+
+<Info>
+  Use filtros específicos para reduzir o tamanho da resposta e melhorar o desempenho. Evite buscar todos os compradores sem filtros em produção.
+</Info>
+
+## Dicas de Performance
+
+1. **Use filtros** - Sempre aplique filtros relevantes para reduzir transferência de dados
+2. **Limite tamanho da página** - Use tamanhos de página apropriados (10-50 itens)
+3. **Cache resultados** - Faça cache de dados de comprador acessados frequentemente
+4. **Buscas indexadas** - Buscas por documento e email são otimizadas
+5. **Evite exportações grandes** - Para operações em lote, use nossas APIs de exportação
+
+## Cenários de Erro
+
+- **Tamanho de página inválido**: Tamanho da página excede o máximo (100)
+- **Número de página inválido**: Números de página negativos
+- **Formato de documento inválido**: Documento não corresponde ao formato CPF/CNPJ
+- **Sem resultados**: Retorna array vazio quando nenhum comprador corresponde aos critérios

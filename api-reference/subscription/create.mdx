@@ -1,0 +1,215 @@
+---
+title: 'Criar Assinatura'
+openapi: 'POST /subscription'
+---
+
+Criar uma nova assinatura recorrente para um cliente. Assinaturas suportam múltiplas frequências de cobrança e podem incluir taxas adicionais como encargos de configuração.
+
+## Frequências de Cobrança
+
+<CardGroup cols={3}>
+  <Card title="Mensal" icon="calendar">
+    Cobrar todo mês na mesma data
+  </Card>
+  <Card title="Trimestral" icon="calendar">
+    Cobrar a cada 3 meses na mesma data
+  </Card>
+  <Card title="Anual" icon="calendar">
+    Cobrar uma vez por ano na mesma data
+  </Card>
+</CardGroup>
+
+## Métodos de Pagamento
+
+Você pode criar assinaturas usando:
+- **Dados do cartão** - Para novos clientes
+- **Token de cartão** - Para clientes existentes com cartões salvos
+- **Comprador existente** - Referenciar comprador por UUID
+
+## Exemplo de Requisição (Novo Cliente com Cartão)
+
+```json Exemplo de Requisição
+{
+  "uuidPlan": "plan-uuid-12345",
+  "basicValue": {
+    "type": "MONTHLY",
+    "valuePerMonth": 2999
+  },
+  "additionalValue": {
+    "type": "MONTHLY",
+    "value": 500,
+    "description": "Taxa adicional de setup"
+  },
+  "payment": {
+    "method": "CREDIT_CARD",
+    "card": {
+      "name": "Ana Costa",
+      "number": "4111111111111111",
+      "expiration": "08/27",
+      "securityCode": "456"
+    }
+  },
+  "buyer": {
+    "name": "Ana Costa",
+    "document": "12345678901",
+    "email": "ana@example.com",
+    "phone": "11999998888",
+    "countryCode": "+55",
+    "address": {
+      "country": "BR",
+      "state": "SP",
+      "city": "São Paulo",
+      "district": "Vila Madalena",
+      "street": "Rua Harmonia",
+      "zipCode": "05435000",
+      "number": "789",
+      "complement": "Casa 2"
+    }
+  },
+  "startDate": "2024-02-01",
+  "externalId": "subscription-ext-456",
+  "description": "Assinatura mensal premium",
+  "metadata": {
+    "customerIp": "192.168.1.200",
+    "source": "website",
+    "campaign": "premium-2024"
+  },
+  "callbackUrl": "https://example.com/webhook/subscription"
+}
+```
+
+## Exemplo de Requisição (Cliente Existente com Token)
+
+```json Requisição com Token
+{
+  "uuidPlan": "plan-uuid-67890",
+  "basicValue": {
+    "type": "QUARTERLY",
+    "valuePerMonth": 4999
+  },
+  "payment": {
+    "method": "CREDIT_CARD",
+    "cardToken": {
+      "cardToken": "card-token-uuid-789",
+      "cvv": "789"
+    }
+  },
+  "buyerUuid": "buyer-uuid-existing-123",
+  "startDate": "2024-03-01",
+  "externalId": "subscription-token-789",
+  "description": "Assinatura trimestral empresarial"
+}
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "uuid": "subscription-uuid-12345",
+  "status": "active",
+  "planUuid": "plan-uuid-12345",
+  "basicValue": {
+    "type": "MONTHLY",
+    "valuePerMonth": 2999
+  },
+  "additionalValue": {
+    "type": "MONTHLY",
+    "value": 500,
+    "description": "Taxa adicional de setup"
+  },
+  "buyerUuid": "buyer-uuid-67890",
+  "startDate": "2024-02-01",
+  "nextBillingDate": "2024-02-01",
+  "totalMonthlyValue": 3499,
+  "externalId": "subscription-ext-456",
+  "description": "Assinatura mensal premium",
+  "createdAt": "2024-01-15T14:30:00Z"
+}
+```
+
+## Valores da Assinatura
+
+### Valor Básico
+O valor central da assinatura cobrado na frequência especificada.
+
+<ParamField body="basicValue.type" type="string" required>
+  Frequência de cobrança: `MONTHLY`, `QUARTERLY`, ou `ANNUALLY`
+</ParamField>
+
+<ParamField body="basicValue.valuePerMonth" type="integer" required>
+  Valor mensal em centavos (sempre especificar mensal mesmo para trimestral/anual)
+</ParamField>
+
+### Valor Adicional (Opcional)
+Cobranças adicionais únicas ou recorrentes como taxas de configuração.
+
+<ParamField body="additionalValue.type" type="string">
+  Frequência: `MONTHLY`, `QUARTERLY`, ou `ANNUALLY`
+</ParamField>
+
+<ParamField body="additionalValue.value" type="integer">
+  Valor adicional em centavos
+</ParamField>
+
+## Lógica de Cobrança
+
+### Assinaturas Mensais
+- **Básico**: R$ 29,99/mês = `valuePerMonth: 2999`
+- **Adicional**: R$ 5,00/mês configuração = `value: 500`
+- **Total**: R$ 34,99/mês
+
+### Assinaturas Trimestrais
+- **Básico**: R$ 149,99 a cada 3 meses = `valuePerMonth: 4999` (cobrado como R$ 149,97)
+- **Cobrança**: Cobrado a cada 3 meses na data de início
+
+### Assinaturas Anuais
+- **Básico**: R$ 999,99 por ano = `valuePerMonth: 8333` (cobrado como R$ 999,96)
+- **Cobrança**: Cobrado uma vez por ano na data de início
+
+<Warning>
+  Para assinaturas trimestrais e anuais, o valor cobrado real é calculado como `valuePerMonth * meses_do_período_de_cobrança`.
+</Warning>
+
+## Data de Início
+
+<ParamField body="startDate" type="string">
+  Data quando a assinatura se torna ativa (formato YYYY-MM-DD)
+</ParamField>
+
+- **Data futura**: Assinatura inicia na data especificada
+- **Hoje ou passado**: Assinatura inicia imediatamente
+- **Padrão**: Se não fornecido, inicia imediatamente
+
+## Ciclo de Vida da Assinatura
+
+1. **Criada** - Assinatura é criada mas ainda não está ativa
+2. **Ativa** - Assinatura está rodando e cobrando normalmente
+3. **Em Atraso** - Pagamento falhou, tentando novamente conforme política de retry
+4. **Cancelada** - Assinatura foi cancelada pelo comerciante ou cliente
+5. **Expirada** - Assinatura atingiu sua data final ou máximo de tentativas de retry
+
+<Info>
+  A primeira tentativa de cobrança ocorre na `startDate`. Certifique-se de que o método de pagamento do cliente é válido e tem fundos suficientes.
+</Info>
+
+## Integração de Webhook
+
+<ParamField body="callbackUrl" type="string">
+  URL para receber notificações de eventos da assinatura
+</ParamField>
+
+Eventos de webhook incluem:
+- `subscription.created`
+- `subscription.activated`
+- `subscription.payment.succeeded`
+- `subscription.payment.failed`
+- `subscription.cancelled`
+
+## Melhores Práticas
+
+1. **Validar planos** - Certificar que o `uuidPlan` existe e está ativo
+2. **Testar cartões primeiro** - Use tokenização de cartão para validar métodos de pagamento
+3. **Preços claros** - Seja transparente sobre todas as cobranças aos clientes
+4. **Lidar com falhas** - Implemente lógica de retry para pagamentos falhados
+5. **Monitorar webhooks** - Rastrear eventos de assinatura para inteligência de negócio
+6. **Atualizar cobrança** - Manter métodos de pagamento dos clientes atuais

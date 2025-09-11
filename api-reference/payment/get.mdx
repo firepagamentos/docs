@@ -1,0 +1,56 @@
+---
+title: 'Obter Pagamento por ID'
+openapi: 'GET /payment/{paymentId}'
+---
+
+Recuperar informações detalhadas sobre um pagamento específico usando seu identificador único.
+
+## Parâmetros de Caminho
+
+<ParamField path="paymentId" type="string" required>
+  O identificador único do pagamento a ser recuperado
+</ParamField>
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X GET "https://api.firebanking.com/v1/payment/payment-123" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "id": "payment-123",
+  "status": "completed",
+  "amount": 10000,
+  "installments": 1,
+  "externalId": "ext-payment-12345",
+  "purchaseTitle": "Compra de Produto",
+  "description": "Descrição da compra",
+  "chargeType": "CREDITO_A_VISTA",
+  "captured": true,
+  "buyer": {
+    "uuid": "buyer-uuid-12345",
+    "name": "João da Silva",
+    "email": "joao@example.com",
+    "document": "12345678901"
+  },
+  "maskedCardNumber": "****-****-****-1111",
+  "createdAt": "2024-01-15T10:30:00Z",
+  "updatedAt": "2024-01-15T10:31:00Z"
+}
+```
+
+## Valores de Status de Pagamento
+
+- **pending**: Pagamento está sendo processado
+- **completed**: Pagamento foi bem-sucedido
+- **failed**: Pagamento falhou
+- **cancelled**: Pagamento foi cancelado
+- **refunded**: Pagamento foi estornado
+
+<Tip>
+  Use este endpoint para verificar o status atual de um pagamento e recuperar detalhes completos do pagamento.
+</Tip>

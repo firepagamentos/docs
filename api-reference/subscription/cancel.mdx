@@ -1,0 +1,178 @@
+---
+title: 'Cancelar Assinatura'
+openapi: 'DELETE /subscription/{subscriptionId}'
+---
+
+Cancelar uma assinatura ativa. Isso interrompe todas as cobranças futuras da assinatura mas não emite reembolsos para o período de cobrança atual.
+
+## Parâmetros de Caminho
+
+<ParamField path="subscriptionId" type="string" required>
+  O UUID da assinatura a ser cancelada
+</ParamField>
+
+## Comportamento do Cancelamento
+
+### Efeitos Imediatos
+- **Mudança de status**: Status da assinatura se torna `cancelled`
+- **Cobrança para**: Nenhuma cobrança futura será processada
+- **Acesso mantido**: Cliente mantém acesso até o período atual terminar
+
+### O Que Acontece com o Acesso
+- **Período atual**: Cliente mantém acesso até o período expirar
+- **Sem reembolsos**: Período de cobrança atual não é automaticamente reembolsado
+- **Período de carência**: Serviço continua até a próxima data de cobrança
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X DELETE "https://api.firebanking.com/v1/subscription/subscription-uuid-12345" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "uuid": "subscription-uuid-12345",
+  "status": "cancelled",
+  "planUuid": "plan-uuid-12345",
+  "basicValue": {
+    "type": "MONTHLY",
+    "valuePerMonth": 2999
+  },
+  "buyerUuid": "buyer-uuid-67890",
+  "startDate": "2024-02-01",
+  "cancelledAt": "2024-02-15T14:30:00Z",
+  "accessExpiresAt": "2024-03-01T00:00:00Z",
+  "cancellationReason": "customer_request",
+  "remainingValue": 1499
+}
+```
+
+## Campos da Resposta
+
+<ResponseField name="cancelledAt" type="string">
+  Timestamp quando a assinatura foi cancelada
+</ResponseField>
+
+<ResponseField name="accessExpiresAt" type="string">
+  Quando o acesso do cliente expirará
+</ResponseField>
+
+<ResponseField name="cancellationReason" type="string">
+  Motivo do cancelamento (customer_request, payment_failed, etc.)
+</ResponseField>
+
+<ResponseField name="remainingValue" type="integer">
+  Valor não utilizado em centavos para o período de cobrança atual
+</ResponseField>
+
+## Tipos de Cancelamento
+
+### Iniciado pelo Cliente
+- Cliente solicita cancelamento
+- Normalmente efetivo no fim do período atual
+- Pode qualificar para reembolsos rateados
+
+### Administrativo
+- Comerciante cancela assinatura
+- Pode ser devido a violações de política
+- Término imediato de acesso possível
+
+### Iniciado pelo Sistema
+- Falhas de pagamento excedem limites de retry
+- Fechamento ou suspensão de conta
+- Gerenciamento automatizado de risco
+
+## Tratamento de Reembolso
+
+<Warning>
+  Cancelamento não emite automaticamente reembolsos. Trate reembolsos separadamente usando os endpoints de estorno de pagamento.
+</Warning>
+
+### Reembolsos Rateados
+Se você quiser emitir reembolsos rateados:
+
+1. **Calcular dias não utilizados** no período de cobrança atual
+2. **Determinar valor do reembolso** baseado no uso diário
+3. **Emitir reembolso** usando a API de estorno de pagamento
+4. **Atualizar cliente** sobre o processamento do reembolso
+
+### Política de Não Reembolso
+Muitos negócios operam com:
+- **Acesso até fim do período**
+- **Sem reembolsos para períodos parciais**
+- **Termos claros comunicados antecipadamente**
+
+## Pós-Cancelamento
+
+### Comunicação com Cliente
+- **Email de confirmação** sobre cancelamento
+- **Data de expiração de acesso** claramente comunicada
+- **Opções de reativação** se aplicável
+
+### Tratamento de Dados
+- **Dados da assinatura** permanecem no sistema para relatórios
+- **Métodos de pagamento** podem ser mantidos ou removidos
+- **Histórico do cliente** preservado para suporte
+
+## Reativação
+
+Assinaturas canceladas não podem ser reativadas diretamente. Para restaurar serviço:
+
+1. **Criar nova assinatura** com os mesmos ou diferentes termos
+2. **Usar comprador existente** e métodos de pagamento se disponíveis
+3. **Aplicar descontos aplicáveis** para clientes que retornam
+
+## Múltiplas Assinaturas
+
+Se cancelando assinaturas específicas para clientes com múltiplos planos:
+
+```bash Cancelar Plano Específico
+curl -X DELETE "https://api.firebanking.com/v1/subscription/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+<Info>
+  Cada assinatura tem seu próprio UUID. Certifique-se de que está cancelando a assinatura correta para clientes com múltiplos planos.
+</Info>
+
+## Notificações de Webhook
+
+Cancelamento dispara eventos de webhook:
+- `subscription.cancelled`
+- `subscription.access_expired` (quando acesso expira)
+
+## Melhores Práticas
+
+1. **Confirmar intenção** - Verificar duas vezes requisições de cancelamento
+2. **Oferecer alternativas** - Apresentar opções de downgrade antes de cancelar
+3. **Salvar feedback** - Coletar motivos de cancelamento para melhoria
+4. **Comunicação clara** - Explicar o que acontece após cancelamento
+5. **Reativação fácil** - Tornar simples para clientes retornarem
+6. **Monitorar métricas** - Rastrear taxas e motivos de cancelamento
+
+## Cenários de Erro
+
+- **Assinatura não encontrada**: UUID de assinatura inválido
+- **Já cancelada**: Assinatura já está com status cancelado
+- **Permissão negada**: Chave de API não tem acesso à assinatura
+- **Status inválido**: Alguns status podem prevenir cancelamento
+
+## Casos de Uso
+
+<CardGroup cols={2}>
+  <Card title="Solicitação do Cliente" icon="user">
+    Cliente quer cancelar serviço
+  </Card>
+  <Card title="Problemas de Pagamento" icon="credit-card-slash">
+    Múltiplas tentativas de pagamento falhadas
+  </Card>
+  <Card title="Violação de Política" icon="ban">
+    Violações dos termos de serviço
+  </Card>
+  <Card title="Fechamento de Conta" icon="door-open">
+    Cliente fechando conta inteira
+  </Card>
+</CardGroup>

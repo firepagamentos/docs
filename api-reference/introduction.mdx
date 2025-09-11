@@ -1,33 +1,230 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'Visão Geral da API'
+description: 'Guia completo para a API de Processamento de Cartão de Crédito FireBanking'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Bem-vindo à API FireBanking
 
-## Welcome
+A FireBanking fornece uma API abrangente de processamento de cartão de crédito que permite às empresas aceitar pagamentos, gerenciar assinaturas, tratar dados de clientes e processar transações de forma segura e em escala.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+<CardGroup cols={2}>
+  <Card title="Pagamentos" icon="credit-card" href="/api-reference/payment/create">
+    Processe pagamentos com cartão usando dados ou tokens
+  </Card>
+  <Card title="Assinaturas" icon="repeat" href="/api-reference/subscription/create">
+    Crie e gerencie assinaturas de cobrança recorrente
+  </Card>
+  <Card title="Compradores" icon="users" href="/api-reference/buyer/create">
+    Gerencie informações e perfis de clientes
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api-reference/webhooks/barte">
+    Receba notificações de pagamento em tempo real
+  </Card>
+</CardGroup>
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## Início Rápido
 
-## Authentication
+### 1. Obtenha suas Chaves de API
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+Obtenha suas credenciais de API no painel FireBanking:
+- **Token de Negócio**: Para operações padrão de pagamento
+- **Credenciais de Webhook**: Para receber notificações de pagamento
+- **Token Interno**: Para integrações sistema-a-sistema (se aplicável)
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+### 2. Faça seu Primeiro Pagamento
+
+```bash Primeira Requisição de Pagamento
+curl -X POST "https://api.firebanking.com/v1/payment" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "purchaseValue": 10000,
+    "installments": 1,
+    "externalId": "pedido-12345",
+    "purchaseTitle": "Compra de Produto",
+    "payment": {
+      "chargeType": "CREDITO_A_VISTA",
+      "capture": true,
+      "card": {
+        "name": "João da Silva",
+        "number": "4111111111111111",
+        "expiration": "12/25",
+        "securityCode": "123"
+      }
+    },
+    "buyer": {
+      "name": "João da Silva",
+      "document": "12345678901",
+      "email": "joao@example.com",
+      "phone": "11999999999",
+      "countryCode": "+55",
+      "address": {
+        "country": "BR",
+        "state": "SP",
+        "city": "São Paulo",
+        "district": "Centro", 
+        "street": "Rua das Flores",
+        "zipCode": "01000000",
+        "number": "123"
+      }
+    }
+  }'
 ```
+
+## Métodos de Autenticação
+
+<CardGroup cols={3}>
+  <Card title="Token Bearer" icon="key">
+    **Token de API de Negócio**  
+    Autenticação padrão para operações de pagamento
+  </Card>
+  <Card title="Auth Básica" icon="shield">
+    **Credenciais de Webhook**  
+    Para endpoints de webhook e operações internas
+  </Card>
+  <Card title="Token Interno" icon="gear">
+    **Integração de Sistema**  
+    Para comunicação autorizada sistema-a-sistema
+  </Card>
+</CardGroup>
+
+### Autenticação Bearer
+A maioria dos endpoints usa autenticação com token Bearer:
+
+```bash
+Authorization: Bearer SEU_TOKEN_DE_NEGOCIO
+```
+
+### Autenticação Básica
+Endpoints de webhook e internos usam autenticação básica:
+
+```bash
+Authorization: Basic CREDENCIAIS_CODIFICADAS_BASE64
+```
+
+### Token Interno
+Endpoints de integração de sistema usam cabeçalhos personalizados:
+
+```bash
+x-internal-token: SUA_CHAVE_DE_API_INTERNA
+```
+
+## Conceitos Fundamentais
+
+### Valores Monetários
+Todos os valores monetários são especificados em **centavos**:
+- R$ 100,00 = `10000` centavos
+- R$ 25,50 = `2550` centavos
+
+### Tipos de Cobrança
+- **CREDITO_A_VISTA**: Pagamento com cartão de crédito em parcela única
+- **CREDITO_PARCELADO_LOJA**: Pagamento parcelado (crediário da loja)
+
+### Fluxo de Pagamento
+1. **Criar Pagamento** com dados do cartão ou token
+2. **Capturar** (se pré-autorizado) ou processar imediatamente  
+3. **Monitorar** via webhooks para atualizações de status
+4. **Estornar** ou gerenciar conforme necessário
+
+## Recursos da API
+
+### Processamento de Pagamentos
+- **Pagamentos com cartão de crédito** com captura imediata ou atrasada
+- **Tokenização de cartão** para pagamentos recorrentes seguros
+- **Pagamentos parcelados** com termos flexíveis
+- **Fluxos de pré-autorização** e captura
+
+### Gestão de Assinaturas
+- **Cobrança recorrente** com múltiplas frequências
+- **Gestão de planos** e atualizações de cobrança
+- **Gerenciamento do ciclo de vida** da assinatura
+- **Retry automático** para pagamentos falhados
+
+### Segurança e Conformidade
+- **Conformidade PCI DSS** com tokenização de cartão
+- **Transmissão e armazenamento** de dados criptografados
+- **Prevenção à fraude** com pontuação de risco
+- **Conformidade com regulamentações** brasileiras (LGPD)
+
+### Ferramentas de Integração
+- **Webhooks abrangentes** para notificações em tempo real
+- **API RESTful** com requisições/respostas JSON
+- **Especificação OpenAPI** para integração fácil
+- **SDKs e bibliotecas** (em breve)
+
+## Limites de Taxa
+
+<Info>
+  Os limites de taxa variam por tipo de endpoint e são projetados para garantir estabilidade do sistema permitindo padrões de uso razoáveis.
+</Info>
+
+- **Endpoints de pagamento**: 60 requisições/minuto
+- **Saldo da conta**: 60 requisições/minuto  
+- **Endpoints de webhook**: 120 requisições/minuto
+- **APIs internas**: Limites customizados por integração
+
+## Tratamento de Erros
+
+Todos os erros da API seguem um formato consistente:
+
+```json Resposta de Erro
+{
+  "error": 400,
+  "message": "Parâmetros de requisição inválidos",
+  "details": {
+    "field": "purchaseValue",
+    "code": "INVALID_AMOUNT"
+  }
+}
+```
+
+Códigos de status HTTP comuns:
+- **200**: Sucesso
+- **400**: Requisição Inválida (parâmetros inválidos)
+- **401**: Não Autorizado (credenciais inválidas)
+- **403**: Proibido (permissões insuficientes)
+- **404**: Não Encontrado (recurso não existe)
+- **500**: Erro Interno do Servidor
+
+## Ambientes
+
+<CardGroup cols={2}>
+  <Card title="Sandbox" icon="flask">
+    **URL Base**: `https://sandbox.firebanking.com/v1`  
+    Ambiente de teste com números de cartão fictícios
+  </Card>
+  <Card title="Produção" icon="globe">
+    **URL Base**: `https://api.firebanking.com/v1`  
+    Ambiente ao vivo para transações reais
+  </Card>
+</CardGroup>
+
+## Números de Cartão para Teste
+
+Use estes números de cartão de teste no ambiente sandbox:
+
+| Bandeira | Número | Descrição |
+|----------|--------|-----------|
+| Visa | `4111111111111111` | Sempre aprovado |
+| Visa | `4000000000000002` | Sempre negado |
+| Mastercard | `5555555555554444` | Sempre aprovado |
+| Mastercard | `5200000000000007` | Sempre negado |
+
+<Warning>
+  Nunca use números de cartão reais no ambiente sandbox ou números de cartão de teste em produção.
+</Warning>
+
+## Obtendo Ajuda
+
+<CardGroup cols={2}>
+  <Card title="Suporte da API" icon="envelope">
+    **Email**: api-support@firebanking.com  
+    Perguntas técnicas e ajuda na integração
+  </Card>
+  <Card title="Documentação" icon="book">
+    **Este site**: Referência completa da API  
+    Exemplos de código e melhores práticas
+  </Card>
+</CardGroup>
+
+Pronto para começar a integrar? Confira nosso [guia de autenticação](/authentication) ou vá direto para [criar seu primeiro pagamento](/api-reference/payment/create).

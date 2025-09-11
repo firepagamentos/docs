@@ -1,0 +1,247 @@
+---
+title: 'Obter Saldo Barte'
+openapi: 'GET /internal/manager/barte/{sellerId}/balance'
+---
+
+Recuperar informações de saldo para uma conta específica de vendedor Barte. Este endpoint é para uso interno por parceiros autorizados e requer autenticação especial.
+
+<Warning>
+  Este é um endpoint de API interna apenas para parceiros autorizados. Entre em contato com o suporte para solicitar acesso.
+</Warning>
+
+## Autenticação
+
+Este endpoint requer **Autenticação Básica** com credenciais específicas do Barte:
+
+```bash Autenticação
+Authorization: Basic SUAS_CREDENCIAIS_BARTE_BASE64
+```
+
+## Parâmetros de Caminho
+
+<ParamField path="sellerId" type="string" required>
+  O identificador único da conta de vendedor Barte
+</ParamField>
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X GET "https://api.firebanking.com/v1/internal/manager/barte/seller-id-123/balance" \
+  -H "Authorization: Basic SUAS_CREDENCIAIS_BARTE_BASE64"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "sellerId": "seller-id-123",
+  "availableBalance": 250000,
+  "pendingBalance": 50000,
+  "reserveBalance": 75000,
+  "totalBalance": 375000,
+  "currency": "BRL",
+  "lastUpdated": "2024-01-15T16:30:00Z",
+  "settlementSchedule": "daily",
+  "nextSettlementDate": "2024-01-16T10:00:00Z",
+  "accountStatus": "active"
+}
+```
+
+## Campos da Resposta
+
+<ResponseField name="sellerId" type="string">
+  O identificador da conta de vendedor Barte
+</ResponseField>
+
+<ResponseField name="availableBalance" type="integer">
+  Saldo disponível para saque em centavos
+</ResponseField>
+
+<ResponseField name="pendingBalance" type="integer">
+  Fundos pendentes de liquidação em centavos
+</ResponseField>
+
+<ResponseField name="reserveBalance" type="integer">
+  Fundos mantidos em reserva para gerenciamento de risco
+</ResponseField>
+
+<ResponseField name="totalBalance" type="integer">
+  Saldo total em todas as categorias
+</ResponseField>
+
+<ResponseField name="settlementSchedule" type="string">
+  Com que frequência as liquidações são processadas (diário, semanal, etc.)
+</ResponseField>
+
+<ResponseField name="nextSettlementDate" type="string">
+  Quando a próxima liquidação será processada
+</ResponseField>
+
+<ResponseField name="accountStatus" type="string">
+  Status atual da conta do vendedor
+</ResponseField>
+
+## Valores de Status da Conta
+
+- **active**: Conta está totalmente operacional
+- **pending**: Configuração da conta está pendente de conclusão
+- **suspended**: Conta está temporariamente suspensa
+- **restricted**: Conta tem funcionalidade limitada
+- **closed**: Conta foi fechada
+
+## Categorias de Saldo
+
+### Saldo Disponível
+Fundos que podem ser imediatamente sacados ou transferidos:
+- Valores de transação liquidados
+- Menos taxas de processamento
+- Menos requisitos de reserva
+
+### Saldo Pendente
+Fundos aguardando liquidação:
+- Transações recentes aguardando liquidação
+- Pagamentos capturados em processamento
+- Estornos em andamento
+
+### Saldo de Reserva
+Fundos mantidos para gerenciamento de risco:
+- Proteção contra chargeback
+- Reservas de prevenção à fraude
+- Valores de retenção contratuais
+
+## Informações de Liquidação
+
+<CardGroup cols={2}>
+  <Card title="Liquidação Diária" icon="calendar-day">
+    A maioria dos vendedores recebe liquidações diárias
+  </Card>
+  <Card title="Liquidação Semanal" icon="calendar-week">
+    Algumas contas podem ter cronogramas semanais
+  </Card>
+</CardGroup>
+
+## Casos de Uso
+
+<CardGroup cols={2}>
+  <Card title="Dashboards de Parceiros" icon="chart-line">
+    Exibir informações de saldo em portais de parceiros
+  </Card>
+  <Card title="Conciliação" icon="balance-scale">
+    Corresponder registros internos com saldos Barte
+  </Card>
+  <Card title="Planejamento de Liquidação" icon="calendar-check">
+    Planejar fluxo de caixa baseado em cronogramas de liquidação
+  </Card>
+  <Card title="Gerenciamento de Risco" icon="shield">
+    Monitorar saldos de reserva e status da conta
+  </Card>
+</CardGroup>
+
+## Limitação de Taxa
+
+Este endpoint tem limites de taxa rigorosos:
+- **10 requisições por minuto** por ID de vendedor
+- **100 requisições por hora** por chave de API
+
+<Info>
+  Cache dados de saldo quando possível para evitar atingir limites de taxa. Informações de saldo tipicamente se atualizam a cada poucos minutos.
+</Info>
+
+## Cenários de Erro
+
+### Erros de Autenticação
+```json 401 Unauthorized
+{
+  "error": "Credenciais inválidas",
+  "message": "Autenticação Barte falhou"
+}
+```
+
+### Acesso Negado
+```json 403 Forbidden
+{
+  "error": "Acesso negado", 
+  "message": "Chave de API não autorizada para este vendedor"
+}
+```
+
+### Vendedor Não Encontrado
+```json 404 Not Found
+{
+  "error": "Vendedor não encontrado",
+  "sellerId": "invalid-seller-123"
+}
+```
+
+### Serviço Indisponível
+```json 503 Service Unavailable
+{
+  "error": "Serviço Barte indisponível",
+  "message": "Não foi possível recuperar saldo neste momento"
+}
+```
+
+## Melhores Práticas
+
+1. **Cache respostas** - Evite chamadas de API excessivas
+2. **Trate erros graciosamente** - Considere indisponibilidade do serviço
+3. **Monitore limites de taxa** - Rastreie uso da API para ficar dentro dos limites
+4. **Valide IDs de vendedor** - Certifique-se de que IDs de vendedor são válidos antes de chamar
+5. **Registre acesso** - Mantenha logs de auditoria para consultas de saldo
+
+## Considerações de Segurança
+
+<CardGroup cols={2}>
+  <Card title="Segurança de Credenciais" icon="key">
+    Proteja credenciais Barte com criptografia
+  </Card>
+  <Card title="Controle de Acesso" icon="lock">
+    Restrinja acesso do endpoint a sistemas autorizados
+  </Card>
+  <Card title="Log de Auditoria" icon="file-text">
+    Registre todas as consultas de saldo para conformidade
+  </Card>
+  <Card title="Segurança de Rede" icon="shield">
+    Use conexões seguras e controles de rede
+  </Card>
+</CardGroup>
+
+## Exemplo de Integração
+
+```python Integração Python
+import requests
+import base64
+from datetime import datetime
+
+class BarteBalanceClient:
+    def __init__(self, username, password, base_url):
+        self.base_url = base_url
+        self.auth_header = self._create_auth_header(username, password)
+    
+    def _create_auth_header(self, username, password):
+        credentials = f"{username}:{password}"
+        encoded = base64.b64encode(credentials.encode()).decode()
+        return f"Basic {encoded}"
+    
+    def get_balance(self, seller_id):
+        url = f"{self.base_url}/internal/manager/barte/{seller_id}/balance"
+        headers = {"Authorization": self.auth_header}
+        
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Erro ao buscar saldo para {seller_id}: {e}")
+            return None
+
+# Uso
+client = BarteBalanceClient("username", "password", "https://api.firebanking.com/v1")
+balance = client.get_balance("seller-123")
+if balance:
+    print(f"Disponível: R$ {balance['availableBalance'] / 100:.2f}")
+```
+
+<Tip>
+  Entre em contato com nossa equipe de suporte para obter as credenciais Barte adequadas e IDs de vendedor para sua integração.
+</Tip>

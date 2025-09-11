@@ -1,0 +1,146 @@
+---
+title: 'Criar Comprador'
+openapi: 'POST /buyer'
+---
+
+Criar um novo registro de comprador no sistema. Compradores são essenciais para processamento de pagamentos e podem ser reutilizados em múltiplas transações e assinaturas.
+
+## Dados Obrigatórios vs Opcionais
+
+<CardGroup cols={2}>
+  <Card title="Campos Obrigatórios" icon="asterisk">
+    Documento, nome, email, telefone - mínimo para criação do comprador
+  </Card>
+  <Card title="Campos Opcionais" icon="plus">
+    Endereço, email alternativo - aprimoram perfis de comprador
+  </Card>
+</CardGroup>
+
+## Tipos de Documento
+
+<ParamField body="document.documentType" type="string" required>
+  Tipo de documento: `cpf` para pessoas físicas, `cnpj` para pessoas jurídicas
+</ParamField>
+
+- **CPF**: Para clientes pessoa física (11 dígitos)
+- **CNPJ**: Para clientes pessoa jurídica (14 dígitos)
+
+## Exemplo de Requisição (Completa)
+
+```json Exemplo de Requisição
+{
+  "document": {
+    "documentNumber": "36880261019",
+    "documentType": "cpf",
+    "documentNation": "BR"
+  },
+  "name": "João Silva",
+  "email": "joao.silva@email.com",
+  "countryCode": "+55",
+  "phone": "11999999999",
+  "alternativeEmail": "joao.alternativo@email.com",
+  "address": {
+    "street": "Rua das Flores",
+    "number": "123",
+    "complement": "Apto 45",
+    "district": "Centro",
+    "city": "São Paulo",
+    "state": "SP",
+    "country": "BR",
+    "zipCode": "01000000"
+  }
+}
+```
+
+## Exemplo de Requisição (Mínima)
+
+```json Requisição Mínima
+{
+  "document": {
+    "documentNumber": "98765432100",
+    "documentType": "cpf",
+    "documentNation": "BR"
+  },
+  "name": "Maria Santos",
+  "email": "maria@email.com",
+  "phone": "11888888888"
+}
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "uuid": "buyer-uuid-12345",
+  "document": {
+    "documentNumber": "36880261019",
+    "documentType": "cpf",
+    "documentNation": "BR"
+  },
+  "name": "João Silva",
+  "email": "joao.silva@email.com",
+  "phone": "11999999999",
+  "countryCode": "+55",
+  "alternativeEmail": "joao.alternativo@email.com",
+  "address": {
+    "street": "Rua das Flores",
+    "number": "123",
+    "complement": "Apto 45",
+    "district": "Centro",
+    "city": "São Paulo",
+    "state": "SP",
+    "country": "BR",
+    "zipCode": "01000000"
+  },
+  "createdAt": "2024-01-15T14:30:00Z",
+  "updatedAt": "2024-01-15T14:30:00Z"
+}
+```
+
+## Validações de Campo
+
+<Warning>
+  **Validação de Documento**: Números de CPF e CNPJ são validados para formato correto e dígitos verificadores.
+</Warning>
+
+### Formato do Número de Telefone
+- Inclua código de área (DDD) para números brasileiros
+- Exemplo: `11999999999` (11 é o código de área de São Paulo)
+
+### Formato do CEP
+- CEP brasileiro: 8 dígitos sem hífen
+- Exemplo: `01000000` para Centro, São Paulo
+
+## Reutilização do Comprador
+
+Uma vez criados, compradores podem ser usados para:
+- **Múltiplos pagamentos** usando `buyerUuid`
+- **Tokenização de cartão** para armazenamento seguro
+- **Gerenciamento de assinatura** para cobrança recorrente
+- **Histórico de pedidos** rastreamento através de transações
+
+<Info>
+  Armazene o `uuid` retornado - você precisará dele para pagamentos futuros e operações com este comprador.
+</Info>
+
+## Detecção de Duplicatas
+
+O sistema previne compradores duplicados baseado em:
+1. **Número de documento** - Mesmo CPF/CNPJ não pode ser registrado duas vezes
+2. **Endereço de email** - Mesmo email não pode ser usado para documentos diferentes
+
+## Melhores Práticas
+
+1. **Validar entrada** - Verificar formato de CPF/CNPJ antes de enviar
+2. **Armazenar UUID** - Salvar o UUID do comprador para transações futuras
+3. **Atualizar perfis** - Manter informações do comprador atuais
+4. **Lidar com duplicatas** - Lidar graciosamente com erros de detecção de duplicatas
+5. **Privacidade de dados** - Seguir requisitos da LGPD/GDPR para manuseio de dados
+
+## Cenários de Erro
+
+- **Documento inválido**: Formato de CPF/CNPJ ou validação de dígito verificador falha
+- **Documento duplicado**: Número de documento já existe
+- **Email duplicado**: Email já associado com outro comprador
+- **Telefone inválido**: Formato do número de telefone está incorreto
+- **Campos obrigatórios ausentes**: Campos obrigatórios não foram fornecidos

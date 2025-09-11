@@ -1,0 +1,97 @@
+---
+title: 'Criar Pagamento'
+openapi: 'POST /payment'
+---
+
+Criar um novo pagamento utilizando dados do cartão ou um token de cartão salvo. Este endpoint suporta tanto captura imediata quanto fluxos de pré-autorização.
+
+## Métodos de Pagamento
+
+Você pode criar pagamentos usando dois métodos:
+
+<CardGroup cols={2}>
+  <Card title="Pagamento Direto com Cartão" icon="credit-card">
+    Use os dados do cartão diretamente para pagamentos únicos
+  </Card>
+  <Card title="Pagamento com Token" icon="shield">
+    Use um token de cartão salvo para pagamentos recorrentes ou seguros
+  </Card>
+</CardGroup>
+
+## Tipos de Cobrança
+
+- **CREDITO_A_VISTA**: Pagamento com cartão de crédito à vista (parcela única)
+- **CREDITO_PARCELADO_LOJA**: Pagamento parcelado (múltiplas parcelas)
+
+## Observações Importantes
+
+<Warning>
+  Nunca envie `card` e `cardToken` na mesma requisição. Use um ou outro.
+</Warning>
+
+<Info>
+  Todos os valores monetários são especificados em **centavos**. Por exemplo, R$ 100,00 = 10000 centavos.
+</Info>
+
+## Exemplo: Pagamento com Cartão
+
+```json Exemplo de Requisição
+{
+  "purchaseValue": 10000,
+  "installments": 1,
+  "externalId": "ext-payment-12345",
+  "purchaseTitle": "Compra de Produto",
+  "description": "Descrição da compra",
+  "payment": {
+    "chargeType": "CREDITO_A_VISTA",
+    "capture": true,
+    "card": {
+      "name": "João da Silva",
+      "number": "4111111111111111",
+      "expiration": "12/25",
+      "securityCode": "123"
+    }
+  },
+  "buyer": {
+    "name": "João da Silva",
+    "document": "12345678901",
+    "email": "joao@example.com",
+    "phone": "11999999999",
+    "countryCode": "+55",
+    "address": {
+      "country": "BR",
+      "state": "SP",
+      "city": "São Paulo",
+      "district": "Centro",
+      "street": "Rua das Flores",
+      "zipCode": "01000000",
+      "number": "123",
+      "complement": "Apto 45"
+    }
+  },
+  "additionalInfo": {
+    "customerIp": "192.168.1.100"
+  },
+  "callbackUrl": "https://example.com/webhook/callback"
+}
+```
+
+## Exemplo: Pagamento com Token
+
+```json Exemplo de Requisição
+{
+  "purchaseValue": 5000,
+  "installments": 3,
+  "externalId": "ext-payment-token-67890",
+  "purchaseTitle": "Pagamento com Token",
+  "payment": {
+    "chargeType": "CREDITO_PARCELADO_LOJA",
+    "capture": true,
+    "cardToken": {
+      "cardToken": "550e8400-e29b-41d4-a716-446655440000",
+      "cvv": "123"
+    }
+  },
+  "buyerUuid": "buyer-uuid-12345"
+}
+```

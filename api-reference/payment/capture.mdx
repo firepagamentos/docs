@@ -1,0 +1,54 @@
+---
+title: 'Capturar Pagamento'
+openapi: 'POST /payment/{paymentId}/capture'
+---
+
+Capturar um pagamento previamente pré-autorizado. Este endpoint é usado quando você inicialmente cria um pagamento com `capture: false` e deseja completar a transação posteriormente.
+
+## Parâmetros de Caminho
+
+<ParamField path="paymentId" type="string" required>
+  O identificador único do pagamento a ser capturado
+</ParamField>
+
+## Fluxo de Pré-Autorização
+
+1. **Criar Pagamento** com `capture: false`
+2. **Verificar** os detalhes do pagamento e informações do cliente
+3. **Capturar Pagamento** usando este endpoint para completar a transação
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X POST "https://api.firebanking.com/v1/payment/payment-123/capture" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "id": "payment-123",
+  "status": "completed",
+  "amount": 10000,
+  "installments": 1,
+  "externalId": "ext-payment-12345",
+  "captured": true,
+  "capturedAt": "2024-01-15T10:31:00Z",
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+<Warning>
+  Você só pode capturar pagamentos que estão com status `authorized`. Pagamentos já capturados ou que falharam não podem ser capturados novamente.
+</Warning>
+
+<Info>
+  A pré-autorização é útil para cenários como reservas de hotel, onde você deseja verificar a validade do cartão antes de completar a cobrança.
+</Info>
+
+## Casos de Uso Comuns
+
+- **Reservas de Hotel**: Pré-autorizar na reserva, capturar no check-in
+- **Verificação de Pedido**: Pré-autorizar durante o pedido, capturar na entrega
+- **Configuração de Assinatura**: Verificar validade do cartão antes de iniciar assinatura

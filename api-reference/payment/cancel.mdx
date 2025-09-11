@@ -1,0 +1,77 @@
+---
+title: 'Cancelar Pré-Autorização'
+openapi: 'POST /payment/{paymentId}/cancel-capture'
+---
+
+Cancelar um pagamento pré-autorizado que ainda não foi capturado. Isso libera a reserva no cartão do cliente sem cobrá-lo.
+
+## Parâmetros de Caminho
+
+<ParamField path="paymentId" type="string" required>
+  O identificador único do pagamento pré-autorizado a ser cancelado
+</ParamField>
+
+## Requisitos
+
+- Pagamento deve estar com status `authorized`
+- Pagamento ainda não deve ter sido capturado
+- Pré-autorização deve ainda estar ativa (não expirada)
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X POST "https://api.firebanking.com/v1/payment/payment-123/cancel-capture" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "id": "payment-123",
+  "status": "cancelled",
+  "amount": 10000,
+  "installments": 1,
+  "externalId": "ext-payment-12345",
+  "captured": false,
+  "cancelled": true,
+  "cancelledAt": "2024-01-15T15:30:00Z",
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+## Quando Usar
+
+<CardGroup cols={2}>
+  <Card title="Cancelamento de Pedido" icon="xmark">
+    Cliente cancela seu pedido antes da entrega
+  </Card>
+  <Card title="Problemas de Estoque" icon="box">
+    Produto está fora de estoque ou indisponível
+  </Card>
+  <Card title="Verificação Falhada" icon="shield-exclamation">
+    Cliente falha na verificação de identidade ou fraude
+  </Card>
+  <Card title="Regras de Negócio" icon="rules">
+    Pedido não atende aos requisitos de negócio
+  </Card>
+</CardGroup>
+
+<Info>
+  Cancelar uma pré-autorização libera imediatamente a reserva no cartão do cliente. Os fundos ficam disponíveis novamente para eles dentro de 1-2 dias úteis.
+</Info>
+
+<Warning>
+  Uma vez que uma pré-autorização é cancelada, ela não pode ser capturada. Você precisaria criar um novo pagamento se quiser cobrar o cliente.
+</Warning>
+
+## Cancelamento Automático
+
+Pré-autorizações expiram automaticamente após um determinado período (normalmente 7 dias para cartões de crédito, 3 dias para cartões de débito). No entanto, é uma boa prática cancelá-las explicitamente quando você souber que não serão capturadas.
+
+## Cenários de Erro
+
+- **Pagamento não encontrado**: O ID do pagamento não existe
+- **Já capturado**: Não é possível cancelar um pagamento que já foi capturado
+- **Já cancelado**: Pagamento já foi cancelado
+- **Autorização expirada**: Pré-autorização já expirou

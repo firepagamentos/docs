@@ -1,54 +1,76 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "API de Cartão de Crédito FireBanking",
+    "description": "API abrangente para processamento de pagamentos com cartão de crédito, incluindo pagamentos, assinaturas, gestão de compradores e muito mais.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Suporte da API FireBanking",
+      "url": "https://firebanking.com/support",
+      "email": "api-support@firebanking.com"
+    }
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "http://localhost:3000/v1",
+      "description": "Servidor de desenvolvimento"
+    },
+    {
+      "url": "https://api.firebanking.com/v1",
+      "description": "Servidor de produção"
     }
   ],
   "security": [
     {
       "bearerAuth": []
+    },
+    {
+      "basicAuth": []
+    },
+    {
+      "internalToken": []
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+    "/payment": {
+      "post": {
+        "tags": ["Pagamento"],
+        "summary": "Criar Pagamento",
+        "description": "Criar um novo pagamento com dados do cartão ou token do cartão",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Pagamento criado com sucesso",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                  "$ref": "#/components/schemas/PaymentResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
+            "description": "Requisição inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
             "content": {
               "application/json": {
                 "schema": {
@@ -59,32 +81,86 @@
           }
         }
       },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
+      "get": {
+        "tags": ["Pagamento"],
+        "summary": "Listar Pagamentos",
+        "description": "Obter uma lista de pagamentos com paginação",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Número de itens a pular",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
             }
           },
-          "required": true
-        },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Número máximo de itens a retornar",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "description": "Incluir contagem total na resposta",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Pagamentos recuperados com sucesso",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/PaymentListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment/token": {
+      "post": {
+        "tags": ["Pagamento"],
+        "summary": "Criar Token de Cartão",
+        "description": "Criar um token reutilizável e seguro para um cartão de crédito",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token de cartão criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Requisição inválida",
             "content": {
               "application/json": {
                 "schema": {
@@ -96,57 +172,589 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/payment/token/{buyerUuid}": {
+      "get": {
+        "tags": ["Pagamento"],
+        "summary": "Obter Tokens de Cartão por Comprador",
+        "description": "Recuperar todos os tokens de cartão para um comprador específico",
+        "security": [{"bearerAuth": []}],
         "parameters": [
           {
-            "name": "id",
+            "name": "buyerUuid",
             "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
+            "description": "UUID do comprador",
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Tokens de cartão recuperados com sucesso",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TokenResponse"
+                  }
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    },
+    "/payment/{paymentId}": {
+      "get": {
+        "tags": ["Pagamento"],
+        "summary": "Obter Pagamento por ID",
+        "description": "Recuperar um pagamento específico pelo seu ID",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "description": "ID do pagamento",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pagamento recuperado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment/{paymentId}/capture": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "tags": ["Pagamento"],
+        "summary": "Capturar Pagamento",
+        "description": "Capturar um pagamento pré-autorizado",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "description": "ID do pagamento a capturar",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pagamento capturado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment/{paymentId}/refund": {
+      "post": {
+        "tags": ["Pagamento"],
+        "summary": "Estornar Pagamento",
+        "description": "Estornar um pagamento completado",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "description": "ID do pagamento a estornar",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pagamento estornado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment/{paymentId}/cancel-capture": {
+      "post": {
+        "tags": ["Pagamento"],
+        "summary": "Cancelar Pré-Autorização",
+        "description": "Cancelar um pagamento pré-autorizado",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "description": "ID do pagamento a cancelar",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pré-autorização cancelada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment/{paymentId}/sync": {
+      "get": {
+        "tags": ["Pagamento"],
+        "summary": "Sincronizar Pagamento",
+        "description": "Sincronizar status do pagamento com o processador de pagamento",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "description": "ID do pagamento a sincronizar",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pagamento sincronizado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buyer": {
+      "post": {
+        "tags": ["Comprador"],
+        "summary": "Criar Comprador",
+        "description": "Criar um novo registro de comprador",
+        "security": [{"bearerAuth": []}],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/CreateBuyerRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Comprador criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuyerResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Comprador"],
+        "summary": "Listar Compradores",
+        "description": "Obter uma lista de compradores com filtros opcionais",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "document",
+            "in": "query",
+            "description": "Filtrar por número de documento",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filtrar por nome do comprador",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Filtrar por endereço de email",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Número da página para paginação",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Número de itens por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Compradores recuperados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BuyerResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscription": {
+      "post": {
+        "tags": ["Assinatura"],
+        "summary": "Criar Assinatura",
+        "description": "Criar uma nova assinatura",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assinatura criada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscription/{subscriptionId}": {
+      "delete": {
+        "tags": ["Assinatura"],
+        "summary": "Cancelar Assinatura",
+        "description": "Cancelar uma assinatura ativa",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "path",
+            "required": true,
+            "description": "ID da assinatura a cancelar",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assinatura cancelada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Assinatura"],
+        "summary": "Atualizar Assinatura",
+        "description": "Atualizar frequência de cobrança ou valor da assinatura",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "path",
+            "required": true,
+            "description": "ID da assinatura a atualizar",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubscriptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assinatura atualizada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/balance": {
+      "get": {
+        "tags": ["Conta"],
+        "summary": "Obter Saldo da Conta",
+        "description": "Recuperar saldo atual da conta",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Saldo da conta recuperado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Sistema"],
+        "summary": "Verificação de Saúde",
+        "description": "Verificar status de saúde da API",
+        "responses": {
+          "200": {
+            "description": "API está saudável",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/barte-a9b484fc-90a6-4255-9394-e3c1ca0633b9-webhook": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Webhook Específico do Barte",
+        "description": "Endpoint de webhook para eventos específicos do Barte",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BarteWebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processado com sucesso"
+          }
+        }
+      }
+    },
+    "/webhooks/BARTE": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Webhook Genérico de Provedor",
+        "description": "Endpoint de webhook genérico para eventos de provedor",
+        "security": [{"basicAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenericWebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processado com sucesso"
+          }
+        }
+      }
+    },
+    "/internal/manager/barte/{sellerId}/balance": {
+      "get": {
+        "tags": ["Interno"],
+        "summary": "Obter Saldo do Barte",
+        "description": "Obter saldo para um vendedor Barte (uso interno)",
+        "security": [{"basicAuth": []}],
+        "parameters": [
+          {
+            "name": "sellerId",
+            "in": "path",
+            "required": true,
+            "description": "ID do vendedor",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saldo recuperado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/manager/barte/{sellerId}/redeems": {
+      "post": {
+        "tags": ["Interno"],
+        "summary": "Solicitar Resgate do Barte",
+        "description": "Solicitar um resgate para um vendedor Barte (uso interno)",
+        "security": [{"basicAuth": []}],
+        "parameters": [
+          {
+            "name": "sellerId",
+            "in": "path",
+            "required": true,
+            "description": "ID do vendedor",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resgate solicitado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedeemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/payment/{businessId}": {
+      "post": {
+        "tags": ["Interno"],
+        "summary": "Criar Pagamento Interno",
+        "description": "Criar pagamento usando chave de API interna",
+        "security": [{"internalToken": []}],
+        "parameters": [
+          {
+            "name": "businessId",
+            "in": "path",
+            "required": true,
+            "description": "ID do negócio",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pagamento criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -154,55 +762,674 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "CreatePaymentRequest": {
         "type": "object",
+        "required": ["purchaseValue", "installments", "payment"],
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "purchaseValue": {
+            "type": "integer",
+            "description": "Valor da compra em centavos",
+            "example": 10000
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "installments": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Número de parcelas",
+            "example": 1
+          },
+          "externalId": {
+            "type": "string",
+            "description": "ID de referência externa",
+            "example": "ext-payment-12345"
+          },
+          "purchaseTitle": {
+            "type": "string",
+            "description": "Título da compra",
+            "example": "Compra de Produto"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do pagamento",
+            "example": "Descrição da compra"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/Buyer"
+          },
+          "buyerUuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID de comprador existente (alternativa ao objeto buyer)"
+          },
+          "additionalInfo": {
+            "$ref": "#/components/schemas/AdditionalInfo"
+          },
+          "callbackUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL de callback do webhook"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+      "PaymentMethod": {
+        "type": "object",
+        "required": ["chargeType"],
+        "properties": {
+          "chargeType": {
+            "type": "string",
+            "enum": ["CREDITO_A_VISTA", "CREDITO_PARCELADO_LOJA"],
+            "description": "Tipo de cobrança"
           },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
+          "capture": {
+            "type": "boolean",
+            "description": "Se deve capturar o pagamento imediatamente",
+            "default": true
+          },
+          "card": {
+            "$ref": "#/components/schemas/Card"
+          },
+          "cardToken": {
+            "$ref": "#/components/schemas/CardToken"
           }
-        ]
+        }
+      },
+      "Card": {
+        "type": "object",
+        "required": ["name", "number", "expiration", "securityCode"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome do portador do cartão",
+            "example": "João da Silva"
+          },
+          "number": {
+            "type": "string",
+            "description": "Número do cartão",
+            "example": "4111111111111111"
+          },
+          "expiration": {
+            "type": "string",
+            "pattern": "^(0[1-9]|1[0-2])\\/([0-9]{2})$",
+            "description": "Data de expiração do cartão (MM/AA)",
+            "example": "12/25"
+          },
+          "securityCode": {
+            "type": "string",
+            "description": "Código de segurança do cartão (CVV)",
+            "example": "123"
+          }
+        }
+      },
+      "CardToken": {
+        "type": "object",
+        "required": ["cardToken"],
+        "properties": {
+          "cardToken": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Token do cartão salvo",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "cvv": {
+            "type": "string",
+            "description": "Código de segurança do cartão para pagamento com token",
+            "example": "123"
+          }
+        }
+      },
+      "Buyer": {
+        "type": "object",
+        "required": ["name", "document", "email", "phone", "countryCode", "address"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome completo do comprador",
+            "example": "João da Silva"
+          },
+          "document": {
+            "type": "string",
+            "description": "Número do documento (CPF/CNPJ)",
+            "example": "12345678901"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Endereço de email",
+            "example": "joao@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Número de telefone",
+            "example": "11999999999"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Código do país com prefixo +",
+            "example": "+55"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "CreateBuyerRequest": {
+        "type": "object",
+        "required": ["document", "name", "email", "phone"],
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome completo do comprador",
+            "example": "João Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Endereço de email principal",
+            "example": "joao.silva@email.com"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Código do país com prefixo +",
+            "example": "+55"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Número de telefone",
+            "example": "11999999999"
+          },
+          "alternativeEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Endereço de email alternativo",
+            "example": "joao.alternativo@email.com"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "Document": {
+        "type": "object",
+        "required": ["documentNumber", "documentType", "documentNation"],
+        "properties": {
+          "documentNumber": {
+            "type": "string",
+            "description": "Número do documento",
+            "example": "36880261019"
+          },
+          "documentType": {
+            "type": "string",
+            "enum": ["cpf", "cnpj"],
+            "description": "Tipo de documento",
+            "example": "cpf"
+          },
+          "documentNation": {
+            "type": "string",
+            "description": "Código do país do documento",
+            "example": "BR"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "required": ["country", "state", "city", "district", "street", "zipCode", "number"],
+        "properties": {
+          "country": {
+            "type": "string",
+            "description": "Código do país",
+            "example": "BR"
+          },
+          "state": {
+            "type": "string",
+            "description": "Código do estado",
+            "example": "SP"
+          },
+          "city": {
+            "type": "string",
+            "description": "Nome da cidade",
+            "example": "São Paulo"
+          },
+          "district": {
+            "type": "string",
+            "description": "Bairro/distrito",
+            "example": "Centro"
+          },
+          "street": {
+            "type": "string",
+            "description": "Nome da rua",
+            "example": "Rua das Flores"
+          },
+          "zipCode": {
+            "type": "string",
+            "description": "CEP/código postal",
+            "example": "01000000"
+          },
+          "number": {
+            "type": "string",
+            "description": "Número da residência",
+            "example": "123"
+          },
+          "complement": {
+            "type": "string",
+            "description": "Complemento do endereço",
+            "example": "Apto 45"
+          }
+        }
+      },
+      "AdditionalInfo": {
+        "type": "object",
+        "properties": {
+          "customerIp": {
+            "type": "string",
+            "format": "ipv4",
+            "description": "Endereço IP do cliente",
+            "example": "192.168.1.100"
+          }
+        }
+      },
+      "CreateTokenRequest": {
+        "type": "object",
+        "required": ["card", "buyer"],
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/Card"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/Buyer"
+          },
+          "checkZeroDollar": {
+            "type": "boolean",
+            "description": "Se deve realizar verificação de dólar zero",
+            "default": false
+          }
+        }
+      },
+      "CreateSubscriptionRequest": {
+        "type": "object",
+        "required": ["uuidPlan", "basicValue", "payment"],
+        "properties": {
+          "uuidPlan": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID do plano da assinatura",
+            "example": "plan-uuid-12345"
+          },
+          "basicValue": {
+            "$ref": "#/components/schemas/SubscriptionValue"
+          },
+          "additionalValue": {
+            "$ref": "#/components/schemas/AdditionalValue"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/SubscriptionPayment"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/Buyer"
+          },
+          "buyerUuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID de comprador existente"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de início da assinatura",
+            "example": "2024-02-01"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "ID de referência externa",
+            "example": "subscription-ext-456"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da assinatura",
+            "example": "Assinatura mensal premium"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Metadados adicionais"
+          },
+          "callbackUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL de callback do webhook"
+          }
+        }
+      },
+      "SubscriptionValue": {
+        "type": "object",
+        "required": ["type", "valuePerMonth"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["MONTHLY", "QUARTERLY", "ANNUALLY"],
+            "description": "Frequência de cobrança"
+          },
+          "valuePerMonth": {
+            "type": "integer",
+            "description": "Valor mensal em centavos",
+            "example": 2999
+          }
+        }
+      },
+      "AdditionalValue": {
+        "type": "object",
+        "required": ["type", "value"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["MONTHLY", "QUARTERLY", "ANNUALLY"],
+            "description": "Frequência de cobrança adicional"
+          },
+          "value": {
+            "type": "integer",
+            "description": "Valor adicional em centavos",
+            "example": 500
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do valor adicional",
+            "example": "Taxa de configuração"
+          }
+        }
+      },
+      "SubscriptionPayment": {
+        "type": "object",
+        "required": ["method"],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["CREDIT_CARD"],
+            "description": "Método de pagamento"
+          },
+          "card": {
+            "$ref": "#/components/schemas/Card"
+          },
+          "cardToken": {
+            "$ref": "#/components/schemas/CardToken"
+          }
+        }
+      },
+      "UpdateSubscriptionRequest": {
+        "type": "object",
+        "properties": {
+          "basicValue": {
+            "$ref": "#/components/schemas/SubscriptionValue"
+          }
+        }
+      },
+      "RedeemRequest": {
+        "type": "object",
+        "required": ["value"],
+        "properties": {
+          "value": {
+            "type": "integer",
+            "description": "Valor do resgate em centavos",
+            "example": 50000
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do resgate",
+            "example": "Solicitação de resgate"
+          }
+        }
+      },
+      "BarteWebhookRequest": {
+        "type": "object",
+        "required": ["eventType", "data"],
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "description": "Tipo de evento",
+            "example": "CHARGE_PAID"
+          },
+          "data": {
+            "type": "object",
+            "description": "Dados do evento"
+          }
+        }
+      },
+      "GenericWebhookRequest": {
+        "type": "object",
+        "required": ["eventType"],
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "description": "Tipo de evento",
+            "example": "PAYMENT_UPDATED"
+          },
+          "paymentId": {
+            "type": "string",
+            "description": "ID do pagamento"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do pagamento"
+          }
+        }
+      },
+      "PaymentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do pagamento"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do pagamento"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Valor do pagamento em centavos"
+          },
+          "installments": {
+            "type": "integer",
+            "description": "Número de parcelas"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "ID de referência externa"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp de criação"
+          }
+        }
+      },
+      "PaymentListResponse": {
+        "type": "object",
+        "properties": {
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentResponse"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "Contagem total (se solicitada)"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Offset atual"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Limite atual"
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "cardToken": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Token do cartão gerado"
+          },
+          "maskedCardNumber": {
+            "type": "string",
+            "description": "Número do cartão mascarado",
+            "example": "****-****-****-1111"
+          },
+          "expirationDate": {
+            "type": "string",
+            "description": "Data de expiração do cartão",
+            "example": "12/25"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp de criação do token"
+          }
+        }
+      },
+      "BuyerResponse": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID do comprador"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do comprador"
+          },
+          "email": {
+            "type": "string",
+            "description": "Endereço de email"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Número de telefone"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp de criação"
+          }
+        }
+      },
+      "SubscriptionResponse": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID da assinatura"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da assinatura"
+          },
+          "planUuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID do plano"
+          },
+          "basicValue": {
+            "$ref": "#/components/schemas/SubscriptionValue"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de início"
+          },
+          "nextBillingDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Próxima data de cobrança"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp de criação"
+          }
+        }
+      },
+      "BalanceResponse": {
+        "type": "object",
+        "properties": {
+          "availableBalance": {
+            "type": "integer",
+            "description": "Saldo disponível em centavos"
+          },
+          "pendingBalance": {
+            "type": "integer",
+            "description": "Saldo pendente em centavos"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Código da moeda",
+            "example": "BRL"
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status de saúde",
+            "example": "healthy"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp da verificação de saúde"
+          }
+        }
+      },
+      "RedeemResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID da solicitação de resgate"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do resgate"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Valor do resgate em centavos"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp de criação"
+          }
+        }
       },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
         "type": "object",
+        "required": ["error", "message"],
         "properties": {
           "error": {
             "type": "integer",
-            "format": "int32"
+            "description": "Código do erro"
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "description": "Mensagem do erro"
+          },
+          "details": {
+            "type": "object",
+            "description": "Detalhes adicionais do erro"
           }
         }
       }
@@ -210,7 +1437,20 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token de API de negócio para autenticação"
+      },
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "Autenticação básica para webhooks e endpoints internos"
+      },
+      "internalToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-internal-token",
+        "description": "Chave de API interna para comunicação sistema-a-sistema"
       }
     }
   }

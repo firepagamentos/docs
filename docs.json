@@ -1,55 +1,93 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Documentação da API FireBanking",
+  "locale": "pt-BR",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#FF6B35",
+    "light": "#FF8C5A",
+    "dark": "#E55A2B"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentação",
         "groups": [
           {
-            "group": "Get Started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
+            "group": "Primeiros Passos",
+            "pages": ["index", "quickstart", "authentication", "testing"]
           },
           {
-            "group": "Essentials",
+            "group": "Conceitos Principais",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "concepts/payments",
+              "concepts/subscriptions",
+              "concepts/webhooks",
+              "concepts/error-handling"
             ]
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "API - Cartão de Crédito",
         "groups": [
           {
-            "group": "API Documentation",
+            "group": "Visão Geral",
+            "pages": ["api-reference/introduction"]
+          },
+          {
+            "group": "Pagamentos",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/payment/create",
+              "api-reference/payment/list",
+              "api-reference/payment/get",
+              "api-reference/payment/capture",
+              "api-reference/payment/refund",
+              "api-reference/payment/cancel",
+              "api-reference/payment/sync"
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Tokens de Cartão",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/payment/create-token",
+              "api-reference/payment/get-tokens"
+            ]
+          },
+          {
+            "group": "Gestão de Compradores",
+            "pages": ["api-reference/buyer/create", "api-reference/buyer/list"]
+          },
+          {
+            "group": "Assinaturas",
+            "pages": [
+              "api-reference/subscription/create",
+              "api-reference/subscription/update",
+              "api-reference/subscription/cancel"
+            ]
+          },
+          {
+            "group": "Conta",
+            "pages": ["api-reference/account/balance"]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/webhooks/barte",
+              "api-reference/webhooks/provider"
+            ]
+          },
+          {
+            "group": "Sistema",
+            "pages": ["api-reference/health/check"]
+          },
+          {
+            "group": "APIs Internas",
+            "pages": [
+              "api-reference/internal/balance",
+              "api-reference/internal/redeem",
+              "api-reference/internal/payment"
             ]
           }
         ]
@@ -58,45 +96,52 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Suporte",
+          "href": "mailto:api-support@firebanking.com",
+          "icon": "envelope"
         },
         {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
+          "anchor": "Dashboard",
+          "href": "https://dashboard.firebanking.com",
+          "icon": "chart-line"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Status",
+          "href": "https://status.firebanking.com",
+          "icon": "signal"
+        }
+      ],
+      "languages": [
+        {
+          "language": "pt-BR",
+          "href": "https://docs.firebanking.com",
+          "default": true
         }
       ]
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "https://link-pagamento.firebanking.dev/logo-fire/logo-white.svg",
+    "dark": "https://link-pagamento.firebanking.dev/logo-fire/logo-white.svg"
   },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Suporte",
+        "href": "mailto:api-support@firebanking.com"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://dashboard.firebanking.com"
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "website": "https://firebanking.com",
+      "github": "https://github.com/firebanking",
+      "linkedin": "https://linkedin.com/company/firebanking"
     }
   }
 }

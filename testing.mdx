@@ -1,0 +1,498 @@
+---
+title: 'Testing Guide'
+description: 'Learn how to test your FireBanking API integration'
+---
+
+## Testing Environments
+
+FireBanking provides separate environments for testing and production to ensure safe development and integration.
+
+<CardGroup cols={2}>
+  <Card title="Sandbox Environment" icon="flask">
+    **Base URL**: `https://sandbox.firebanking.com/v1`  
+    Safe testing with fake data and card numbers
+  </Card>
+  <Card title="Production Environment" icon="globe">
+    **Base URL**: `https://api.firebanking.com/v1`  
+    Live environment for real transactions
+  </Card>
+</CardGroup>
+
+## Test Credentials
+
+### Sandbox API Tokens
+
+Sandbox tokens are prefixed with `fbk_test_` and work only in the sandbox environment:
+
+```bash
+Authorization: Bearer fbk_test_1234567890abcdef...
+```
+
+### Sandbox Webhook Credentials
+
+Use separate webhook credentials for testing:
+- **Username**: `test_webhook_user`
+- **Password**: `test_webhook_password_123`
+
+<Warning>
+  Never use production credentials in sandbox or sandbox credentials in production.
+</Warning>
+
+## Test Card Numbers
+
+Use these specific card numbers in the sandbox environment to simulate different scenarios:
+
+### Always Approved Cards
+
+| Card Brand | Number | CVV | Expiration |
+|------------|---------|-----|-----------|
+| Visa | `4111111111111111` | Any 3 digits | Any future date |
+| Visa | `4000000000000077` | Any 3 digits | Any future date |
+| Mastercard | `5555555555554444` | Any 3 digits | Any future date |
+| Mastercard | `5105105105105100` | Any 3 digits | Any future date |
+
+### Always Declined Cards
+
+| Card Brand | Number | CVV | Expiration | Decline Reason |
+|------------|---------|-----|-----------|----------------|
+| Visa | `4000000000000002` | Any 3 digits | Any future date | Generic decline |
+| Visa | `4000000000000069` | Any 3 digits | Any future date | Expired card |
+| Mastercard | `5200000000000007` | Any 3 digits | Any future date | Generic decline |
+| Mastercard | `5105105105105108` | Any 3 digits | Any future date | Insufficient funds |
+
+### Cenários de Teste Especiais
+
+| Número do Cartão | Cenário | Comportamento Esperado |
+|------------------|---------|------------------------|
+| `4000000000000259` | Atraso no processamento | Pagamento bem-sucedido após 30 segundos |
+| `4000000000000127` | Saldo insuficiente | Negado com código de erro específico |
+| `4000000000000044` | Fraudulento | Negado por detecção de fraude |
+| `4000000000000341` | Cartão perdido | Negado como cartão perdido/roubado |
+
+## Dados de Comprador de Teste
+
+Use dados de comprador realistas mas falsos para testes:
+
+### Números de CPF Válidos para Teste
+
+```json Comprador Teste
+{
+  "name": "João da Silva Teste",
+  "document": "11144477735", // CPF válido para testes
+  "email": "joao.teste@example.com",
+  "phone": "11999999999",
+  "countryCode": "+55",
+  "address": {
+    "country": "BR",
+    "state": "SP", 
+    "city": "São Paulo",
+    "district": "Centro",
+    "street": "Rua das Flores",
+    "zipCode": "01000000",
+    "number": "123"
+  }
+}
+```
+
+### Números de CNPJ Válidos para Teste
+
+```json Comprador Empresa Teste
+{
+  "name": "Empresa Teste LTDA",
+  "document": "11222333000181", // CNPJ válido para testes
+  "email": "contato@empresateste.com",
+  "phone": "1133334444",
+  "countryCode": "+55"
+}
+```
+
+## Cenários de Teste
+
+### Fluxo Básico de Pagamento
+
+```bash Pagamento Teste
+curl -X POST "https://sandbox.firebanking.com/v1/payment" \
+  -H "Authorization: Bearer fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "purchaseValue": 10000,
+    "installments": 1,
+    "externalId": "test-payment-001",
+    "purchaseTitle": "Compra Teste",
+    "payment": {
+      "chargeType": "CREDITO_A_VISTA",
+      "capture": true,
+      "card": {
+        "name": "João da Silva Teste",
+        "number": "4111111111111111",
+        "expiration": "12/25",
+        "securityCode": "123"
+      }
+    },
+    "buyer": {
+      "name": "João da Silva Teste",
+      "document": "11144477735",
+      "email": "joao.teste@example.com",
+      "phone": "11999999999",
+      "countryCode": "+55",
+      "address": {
+        "country": "BR",
+        "state": "SP",
+        "city": "São Paulo",
+        "district": "Centro",
+        "street": "Rua das Flores",
+        "zipCode": "01000000",
+        "number": "123"
+      }
+    }
+  }'
+```
+
+### Testando Tokenização de Cartão
+
+```bash Criação de Token Teste
+curl -X POST "https://sandbox.firebanking.com/v1/payment/token" \
+  -H "Authorization: Bearer fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "card": {
+      "name": "João da Silva Teste",
+      "number": "4111111111111111",
+      "expiration": "12/25",
+      "securityCode": "123"
+    },
+    "buyer": {
+      "name": "João da Silva Teste",
+      "document": "11144477735",
+      "email": "joao.teste@example.com",
+      "phone": "11999999999",
+      "countryCode": "+55",
+      "address": {
+        "country": "BR",
+        "state": "SP",
+        "city": "São Paulo",
+        "district": "Centro",
+        "street": "Rua das Flores",
+        "zipCode": "01000000",
+        "number": "123"
+      }
+    },
+    "checkZeroDollar": true
+  }'
+```
+
+### Testando Criação de Assinatura
+
+```bash Assinatura Teste
+curl -X POST "https://sandbox.firebanking.com/v1/subscription" \
+  -H "Authorization: Bearer fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "uuidPlan": "test-plan-monthly-2999",
+    "basicValue": {
+      "type": "MONTHLY",
+      "valuePerMonth": 2999
+    },
+    "payment": {
+      "method": "CREDIT_CARD",
+      "card": {
+        "name": "João da Silva Teste",
+        "number": "4111111111111111",
+        "expiration": "12/25",
+        "securityCode": "123"
+      }
+    },
+    "buyer": {
+      "name": "João da Silva Teste",
+      "document": "11144477735",
+      "email": "joao.teste@example.com",
+      "phone": "11999999999",
+      "countryCode": "+55"
+    },
+    "startDate": "2024-02-01",
+    "description": "Assinatura Mensal Teste"
+  }'
+```
+
+## Error Testing
+
+### Test Invalid Requests
+
+```bash Invalid Amount
+curl -X POST "https://sandbox.firebanking.com/v1/payment" \
+  -H "Authorization: Bearer fbk_test_your_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "purchaseValue": -100,
+    "installments": 0
+  }'
+```
+
+### Test Authentication Errors
+
+```bash Invalid Token
+curl -X POST "https://sandbox.firebanking.com/v1/payment" \
+  -H "Authorization: Bearer invalid_token" \
+  -H "Content-Type: application/json" \
+  -d '{...}'
+```
+
+## Webhook Testing
+
+### Setting Up Test Webhooks
+
+Use tools like ngrok for local webhook testing:
+
+```bash Ngrok Setup
+# Install ngrok
+npm install -g ngrok
+
+# Expose local port
+ngrok http 3000
+
+# Use the HTTPS URL in your webhook configuration
+# https://abc123.ngrok.io/webhooks/firebanking
+```
+
+### Test Webhook Handler
+
+```javascript Express.js Webhook Handler
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/webhooks/firebanking', (req, res) => {
+  console.log('Webhook received:', req.body);
+  
+  const { eventType, data } = req.body;
+  
+  // Handle different event types
+  switch (eventType) {
+    case 'PAYMENT_COMPLETED':
+      console.log('Payment completed:', data.paymentId);
+      break;
+    case 'PAYMENT_FAILED':
+      console.log('Payment failed:', data.paymentId);
+      break;
+    default:
+      console.log('Unknown event type:', eventType);
+  }
+  
+  // Always return 200 to acknowledge receipt
+  res.status(200).json({ received: true });
+});
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});
+```
+
+### Testing Webhook Delivery
+
+You can manually trigger test webhooks using online tools:
+
+<CardGroup cols={2}>
+  <Card title="Webhook.site" icon="globe">
+    **URL**: webhook.site  
+    Capture and inspect webhook payloads
+  </Card>
+  <Card title="RequestBin" icon="inbox">
+    **URL**: requestbin.com  
+    Temporary webhook endpoint creation
+  </Card>
+</CardGroup>
+
+## Testing Checklist
+
+### Pre-Integration Testing
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key">
+    - [ ] Test token validation  
+    - [ ] Test error responses  
+    - [ ] Verify environment separation
+  </Card>
+  <Card title="Basic Operations" icon="check">
+    - [ ] Health check endpoint  
+    - [ ] Account balance retrieval  
+    - [ ] Error handling
+  </Card>
+</CardGroup>
+
+### Payment Testing
+
+- [ ] **Successful payment** with approved test card
+- [ ] **Failed payment** with declined test card  
+- [ ] **Invalid card number** handling
+- [ ] **Expired card** error handling
+- [ ] **Invalid amount** validation
+- [ ] **Missing required fields** validation
+- [ ] **Pre-authorization** and capture flow
+- [ ] **Refund** processing
+- [ ] **Multiple installments** testing
+
+### Card Token Testing
+
+- [ ] **Token creation** with valid card
+- [ ] **Token creation** with invalid card
+- [ ] **Token retrieval** by buyer UUID
+- [ ] **Payment with token** (valid CVV)
+- [ ] **Payment with token** (invalid CVV)
+- [ ] **Zero dollar verification** testing
+
+### Subscription Testing
+
+- [ ] **Monthly subscription** creation
+- [ ] **Quarterly subscription** creation  
+- [ ] **Annual subscription** creation
+- [ ] **Subscription update** (amount and frequency)
+- [ ] **Subscription cancellation**
+- [ ] **Failed payment** handling
+- [ ] **Webhook notifications** for subscription events
+
+### Error Handling Testing
+
+- [ ] **Network timeouts** handling
+- [ ] **Rate limit** responses
+- [ ] **Server errors** (500) handling
+- [ ] **Invalid JSON** responses
+- [ ] **Authentication failures**
+- [ ] **Malformed requests**
+
+### Webhook Testing
+
+- [ ] **Webhook endpoint** setup and accessibility
+- [ ] **Authentication** (if required)
+- [ ] **Event processing** for all event types
+- [ ] **Idempotency** (duplicate event handling)
+- [ ] **Retry mechanism** testing
+- [ ] **Error response** handling
+
+## Testing Tools
+
+### API Testing Tools
+
+<CardGroup cols={2}>
+  <Card title="Postman" icon="globe">
+    **Use**: Interactive API testing and collection management
+  </Card>
+  <Card title="Insomnia" icon="moon">
+    **Use**: REST client with environment management
+  </Card>
+  <Card title="curl" icon="terminal">
+    **Use**: Command-line testing and automation
+  </Card>
+  <Card title="HTTPie" icon="terminal">
+    **Use**: User-friendly command-line HTTP client
+  </Card>
+</CardGroup>
+
+### Automated Testing
+
+```javascript Jest Test Example
+const request = require('supertest');
+
+describe('FireBanking API', () => {
+  const apiToken = process.env.FIREBANKING_TEST_TOKEN;
+  const baseURL = 'https://sandbox.firebanking.com/v1';
+
+  test('should create payment successfully', async () => {
+    const paymentData = {
+      purchaseValue: 10000,
+      installments: 1,
+      externalId: `test-${Date.now()}`,
+      payment: {
+        chargeType: 'CREDITO_A_VISTA',
+        capture: true,
+        card: {
+          name: 'João da Silva Teste',
+          number: '4111111111111111',
+          expiration: '12/25',
+          securityCode: '123'
+        }
+      },
+      buyer: {
+        name: 'João da Silva Teste',
+        document: '11144477735',
+        email: 'joao.teste@example.com',
+        phone: '11999999999',
+        countryCode: '+55',
+        address: {
+          country: 'BR',
+          state: 'SP',
+          city: 'São Paulo',
+          district: 'Centro',
+          street: 'Rua das Flores',
+          zipCode: '01000000',
+          number: '123'
+        }
+      }
+    };
+
+    const response = await request(baseURL)
+      .post('/payment')
+      .set('Authorization', `Bearer ${apiToken}`)
+      .send(paymentData)
+      .expect(200);
+
+    expect(response.body).toHaveProperty('id');
+    expect(response.body.status).toMatch(/processing|completed/);
+    expect(response.body.amount).toBe(10000);
+  });
+
+  test('should handle declined card', async () => {
+    const paymentData = {
+      purchaseValue: 10000,
+      installments: 1,
+      payment: {
+        chargeType: 'CREDITO_A_VISTA',
+        card: {
+          name: 'João da Silva Teste',
+          number: '4000000000000002', // Always declined
+          expiration: '12/25',
+          securityCode: '123'
+        }
+      }
+      // ... rest of payment data
+    };
+
+    const response = await request(baseURL)
+      .post('/payment')
+      .set('Authorization', `Bearer ${apiToken}`)
+      .send(paymentData)
+      .expect(400);
+
+    expect(response.body.error).toBeDefined();
+  });
+});
+```
+
+## Going Live
+
+### Pre-Production Checklist
+
+Before switching to production:
+
+- [ ] **Comprehensive testing** completed in sandbox
+- [ ] **Error handling** implemented and tested
+- [ ] **Webhook endpoints** secured and tested
+- [ ] **Production credentials** obtained and secured
+- [ ] **Rate limiting** handling implemented
+- [ ] **Monitoring** and logging set up
+- [ ] **Security review** completed
+
+### Production Migration
+
+1. **Update base URL** to `https://api.firebanking.com/v1`
+2. **Replace test credentials** with production credentials
+3. **Update webhook URLs** to production endpoints
+4. **Verify real card processing** with small amounts
+5. **Monitor transactions** closely initially
+6. **Set up alerting** for errors and failures
+
+<Info>
+  Start with small transaction amounts in production to verify everything works correctly before processing larger payments.
+</Info>
+
+Ready to start testing? Begin with [authentication setup](/authentication) and then try [creating your first test payment](/api-reference/payment/create).

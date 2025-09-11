@@ -1,0 +1,63 @@
+---
+title: 'Listar Pagamentos'
+openapi: 'GET /payment'
+---
+
+Recuperar uma lista paginada de pagamentos da sua conta. Este endpoint suporta vários parâmetros de consulta para filtragem e paginação.
+
+## Parâmetros de Consulta
+
+<ParamField query="offset" type="integer" default="0">
+  Número de itens a pular para paginação
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Número máximo de itens a retornar (1-100)
+</ParamField>
+
+<ParamField query="count" type="boolean" default="false">
+  Incluir contagem total na resposta para paginação
+</ParamField>
+
+## Estrutura da Resposta
+
+A resposta inclui um array de objetos de pagamento com metadados de paginação quando `count=true`.
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X GET "https://api.firebanking.com/v1/payment?offset=0&limit=10&count=true" \
+  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+```
+
+## Exemplo de Resposta
+
+```json Resposta
+{
+  "payments": [
+    {
+      "id": "payment-123",
+      "status": "completed",
+      "amount": 10000,
+      "installments": 1,
+      "externalId": "ext-payment-12345",
+      "createdAt": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "payment-124",
+      "status": "processing",
+      "amount": 5000,
+      "installments": 3,
+      "externalId": "ext-payment-67890",
+      "createdAt": "2024-01-15T11:15:00Z"
+    }
+  ],
+  "total": 25,
+  "offset": 0,
+  "limit": 10
+}
+```
+
+<Info>
+  Use os parâmetros `offset` e `limit` para implementar paginação em sua aplicação.
+</Info>
