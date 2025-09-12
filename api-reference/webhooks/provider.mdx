@@ -256,7 +256,7 @@ Configure alertas para:
 ### Payloads de Teste de Webhook
 
 ```bash Testar com curl
-curl -X POST http://localhost:3000/webhooks/BARTE \
+curl -X POST http://localhost:8082/webhooks/BARTE \
   -H "Content-Type: application/json" \
   -H "Authorization: Basic $(echo -n 'username:password' | base64)" \
   -d '{
