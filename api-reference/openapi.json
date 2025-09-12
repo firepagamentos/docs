@@ -22,13 +22,7 @@
   ],
   "security": [
     {
-      "bearerAuth": []
-    },
-    {
-      "basicAuth": []
-    },
-    {
-      "internalToken": []
+      "apiKeyAuth": []
     }
   ],
   "paths": {
@@ -37,7 +31,7 @@
         "tags": ["Pagamento"],
         "summary": "Criar Pagamento",
         "description": "Criar um novo pagamento com dados do cartão ou token do cartão",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "requestBody": {
           "required": true,
           "content": {
@@ -85,7 +79,7 @@
         "tags": ["Pagamento"],
         "summary": "Listar Pagamentos",
         "description": "Obter uma lista de pagamentos com paginação",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "offset",
@@ -137,7 +131,7 @@
         "tags": ["Pagamento"],
         "summary": "Criar Token de Cartão",
         "description": "Criar um token reutilizável e seguro para um cartão de crédito",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "requestBody": {
           "required": true,
           "content": {
@@ -177,7 +171,7 @@
         "tags": ["Pagamento"],
         "summary": "Obter Tokens de Cartão por Comprador",
         "description": "Recuperar todos os tokens de cartão para um comprador específico",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "buyerUuid",
@@ -212,7 +206,7 @@
         "tags": ["Pagamento"],
         "summary": "Obter Pagamento por ID",
         "description": "Recuperar um pagamento específico pelo seu ID",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "paymentId",
@@ -243,7 +237,7 @@
         "tags": ["Pagamento"],
         "summary": "Capturar Pagamento",
         "description": "Capturar um pagamento pré-autorizado",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "paymentId",
@@ -274,7 +268,7 @@
         "tags": ["Pagamento"],
         "summary": "Estornar Pagamento",
         "description": "Estornar um pagamento completado",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "paymentId",
@@ -305,7 +299,7 @@
         "tags": ["Pagamento"],
         "summary": "Cancelar Pré-Autorização",
         "description": "Cancelar um pagamento pré-autorizado",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "paymentId",
@@ -336,7 +330,7 @@
         "tags": ["Pagamento"],
         "summary": "Sincronizar Pagamento",
         "description": "Sincronizar status do pagamento com o processador de pagamento",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "paymentId",
@@ -367,7 +361,7 @@
         "tags": ["Comprador"],
         "summary": "Criar Comprador",
         "description": "Criar um novo registro de comprador",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "requestBody": {
           "required": true,
           "content": {
@@ -395,7 +389,7 @@
         "tags": ["Comprador"],
         "summary": "Listar Compradores",
         "description": "Obter uma lista de compradores com filtros opcionais",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "document",
@@ -465,7 +459,7 @@
         "tags": ["Assinatura"],
         "summary": "Criar Assinatura",
         "description": "Criar uma nova assinatura",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "requestBody": {
           "required": true,
           "content": {
@@ -495,7 +489,7 @@
         "tags": ["Assinatura"],
         "summary": "Cancelar Assinatura",
         "description": "Cancelar uma assinatura ativa",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "subscriptionId",
@@ -525,7 +519,7 @@
         "tags": ["Assinatura"],
         "summary": "Atualizar Assinatura",
         "description": "Atualizar frequência de cobrança ou valor da assinatura",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "parameters": [
           {
             "name": "subscriptionId",
@@ -567,7 +561,7 @@
         "tags": ["Conta"],
         "summary": "Obter Saldo da Conta",
         "description": "Recuperar saldo atual da conta",
-        "security": [{"bearerAuth": []}],
+        "security": [{"apiKeyAuth": []}],
         "responses": {
           "200": {
             "description": "Saldo da conta recuperado com sucesso",
@@ -1435,11 +1429,11 @@
       }
     },
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Token de API de negócio para autenticação"
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Chave de API para autenticação"
       }
     }
   }
