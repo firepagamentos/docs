@@ -95,7 +95,7 @@ Crie um boleto bancário registrado para recebimento de pagamentos. O boleto ser
 <CodeGroup>
 ```bash cURL
 curl -X POST "https://api.firebanking.com/v1/payment" \
-  -H "Authorization: Bearer fbk_live_sua_chave_aqui" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 25000,
@@ -174,7 +174,7 @@ const boletoData = {
 const response = await fetch('https://api.firebanking.com/v1/payment', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer fbk_live_sua_chave_aqui',
+    'x-api-key': 'fbk_live_sua_chave_aqui',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify(boletoData)
@@ -231,7 +231,7 @@ response = requests.post(
     'https://api.firebanking.com/v1/payment',
     json=boleto_data,
     headers={
-        'Authorization': 'Bearer fbk_live_sua_chave_aqui',
+        'x-api-key': 'fbk_live_sua_chave_aqui',
         'Content-Type': 'application/json'
     }
 )
@@ -288,7 +288,7 @@ curl_setopt_array($curl, [
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => json_encode($boletoData),
     CURLOPT_HTTPHEADER => [
-        'Authorization: Bearer fbk_live_sua_chave_aqui',
+        'x-api-key: fbk_live_sua_chave_aqui',
         'Content-Type: application/json'
     ]
 ]);
@@ -558,7 +558,7 @@ async function checkBoletoStatus(boletoId) {
   try {
     const response = await fetch(`https://api.firebanking.com/v1/payment/${boletoId}`, {
       headers: {
-        'Authorization': 'Bearer fbk_live_sua_chave_aqui'
+        'x-api-key': 'fbk_live_sua_chave_aqui'
       }
     });
     

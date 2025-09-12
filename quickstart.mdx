@@ -46,7 +46,7 @@ Primeiro, verifique se sua autenticação está funcionando:
 <CodeGroup>
 ```bash cURL
 curl -X GET "https://sandbox.firebanking.com/v1/account/balance" \
-  -H "Authorization: Bearer fbk_test_SUA_CHAVE_AQUI" \
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \
   -H "Content-Type: application/json"
 ```
 
@@ -54,7 +54,7 @@ curl -X GET "https://sandbox.firebanking.com/v1/account/balance" \
 const response = await fetch('https://sandbox.firebanking.com/v1/account/balance', {
   method: 'GET',
   headers: {
-    'Authorization': 'Bearer fbk_test_SUA_CHAVE_AQUI',
+    'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
     'Content-Type': 'application/json'
   }
 });
@@ -67,7 +67,7 @@ console.log('Saldo:', balance);
 import requests
 
 headers = {
-    'Authorization': 'Bearer fbk_test_SUA_CHAVE_AQUI',
+    'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
     'Content-Type': 'application/json'
 }
 
@@ -88,7 +88,7 @@ curl_setopt_array($curl, [
     CURLOPT_URL => 'https://sandbox.firebanking.com/v1/account/balance',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => [
-        'Authorization: Bearer fbk_test_SUA_CHAVE_AQUI',
+        'x-api-key: fbk_test_SUA_CHAVE_AQUI',
         'Content-Type: application/json'
     ]
 ]);
@@ -116,7 +116,7 @@ Agora vamos criar uma transação de **R$ 100,00 à vista** usando um cartão de
 <CodeGroup>
 ```bash cURL
 curl -X POST "https://sandbox.firebanking.com/v1/payment" \
-  -H "Authorization: Bearer fbk_test_SUA_CHAVE_AQUI" \
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \
   -H "Content-Type: application/json" \
   -d '{
     "purchaseValue": 10000,
@@ -189,7 +189,7 @@ const paymentData = {
 const response = await fetch('https://sandbox.firebanking.com/v1/payment', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer fbk_test_SUA_CHAVE_AQUI',
+    'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify(paymentData)
@@ -239,7 +239,7 @@ response = requests.post(
     'https://sandbox.firebanking.com/v1/payment',
     json=payment_data,
     headers={
-        'Authorization': 'Bearer fbk_test_SUA_CHAVE_AQUI',
+        'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
         'Content-Type': 'application/json'
     }
 )
@@ -290,7 +290,7 @@ curl_setopt_array($curl, [
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => json_encode($paymentData),
     CURLOPT_HTTPHEADER => [
-        'Authorization: Bearer fbk_test_SUA_CHAVE_AQUI',
+        'x-api-key: fbk_test_SUA_CHAVE_AQUI',
         'Content-Type: application/json'
     ]
 ]);
@@ -365,13 +365,13 @@ Para verificar o status atual de um pagamento:
 <CodeGroup>
 ```bash cURL
 curl -X GET "https://sandbox.firebanking.com/v1/payment/fb_trans_1234567890" \
-  -H "Authorization: Bearer fbk_test_SUA_CHAVE_AQUI"
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
 ```
 
 ```javascript JavaScript
 const response = await fetch('https://sandbox.firebanking.com/v1/payment/fb_trans_1234567890', {
   headers: {
-    'Authorization': 'Bearer fbk_test_SUA_CHAVE_AQUI'
+    'x-api-key': ' fbk_test_SUA_CHAVE_AQUI'
   }
 });
 
@@ -382,7 +382,7 @@ console.log('Status do pagamento:', payment.status);
 ```python Python
 response = requests.get(
     'https://sandbox.firebanking.com/v1/payment/fb_trans_1234567890',
-    headers={'Authorization': 'Bearer fbk_test_SUA_CHAVE_AQUI'}
+    headers={'x-api-key': ' fbk_test_SUA_CHAVE_AQUI'}
 )
 
 payment = response.json()

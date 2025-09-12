@@ -27,7 +27,7 @@ Cancelar uma assinatura ativa. Isso interrompe todas as cobranças futuras da as
 
 ```bash cURL
 curl -X DELETE "https://api.firebanking.com/v1/subscription/subscription-uuid-12345" \
-  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 ## Exemplo de Resposta
@@ -131,7 +131,7 @@ Se cancelando assinaturas específicas para clientes com múltiplos planos:
 
 ```bash Cancelar Plano Específico
 curl -X DELETE "https://api.firebanking.com/v1/subscription/550e8400-e29b-41d4-a716-446655440000" \
-  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 <Info>

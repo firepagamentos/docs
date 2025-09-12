@@ -25,7 +25,7 @@ O FireBanking oferece ambientes separados para teste e produção, garantindo de
 Tokens de sandbox são prefixados com `fbk_test_` e funcionam apenas no ambiente de teste:
 
 ```bash
-Authorization: Bearer fbk_test_1234567890abcdef...
+x-api-key: fbk_test_1234567890abcdef...
 ```
 
 ### Credenciais de Webhook Sandbox
@@ -112,7 +112,7 @@ Use dados de comprador realistas mas fictícios para testes:
 
 ```bash Pagamento Teste
 curl -X POST "https://sandbox.firebanking.com/v1/payment" \
-  -H "Authorization: Bearer fbk_test_seu_token" \
+  -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
     "purchaseValue": 10000,
@@ -152,7 +152,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment" \
 
 ```bash Criação de Token Teste
 curl -X POST "https://sandbox.firebanking.com/v1/payment/token" \
-  -H "Authorization: Bearer fbk_test_seu_token" \
+  -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
     "card": {
@@ -185,7 +185,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment/token" \
 
 ```bash Assinatura Teste
 curl -X POST "https://sandbox.firebanking.com/v1/subscription" \
-  -H "Authorization: Bearer fbk_test_seu_token" \
+  -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
     "uuidPlan": "test-plan-monthly-2999",
@@ -220,7 +220,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/subscription" \
 
 ```bash Valor Inválido
 curl -X POST "https://sandbox.firebanking.com/v1/payment" \
-  -H "Authorization: Bearer fbk_test_seu_token" \
+  -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
     "purchaseValue": -100,
@@ -232,7 +232,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment" \
 
 ```bash Token Inválido
 curl -X POST "https://sandbox.firebanking.com/v1/payment" \
-  -H "Authorization: Bearer token_invalido" \
+  -H "x-api-key: token_invalido" \
   -H "Content-Type: application/json" \
   -d '{...}'
 ```
@@ -432,7 +432,7 @@ describe('API FireBanking', () => {
 
     const response = await request(baseURL)
       .post('/payment')
-      .set('Authorization', `Bearer ${apiToken}`)
+      .set('x-api-key', ` ${apiToken}`)
       .send(paymentData)
       .expect(200);
 
@@ -459,7 +459,7 @@ describe('API FireBanking', () => {
 
     const response = await request(baseURL)
       .post('/payment')
-      .set('Authorization', `Bearer ${apiToken}`)
+      .set('x-api-key', ` ${apiToken}`)
       .send(paymentData)
       .expect(400);
 

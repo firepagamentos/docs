@@ -65,7 +65,7 @@ Crie um PIX com QR Code dinâmico para receber pagamentos. O QR Code gerado é �
 <CodeGroup>
 ```bash cURL
 curl -X POST "https://api.firebanking.com/v2/payment" \
-  -H "Authorization: Bearer fbk_live_sua_chave_aqui" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 15000,
@@ -91,7 +91,7 @@ curl -X POST "https://api.firebanking.com/v2/payment" \
 const pixPayment = await fetch('https://api.firebanking.com/v2/payment', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer fbk_live_sua_chave_aqui',
+    'x-api-key': 'fbk_live_sua_chave_aqui',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
@@ -142,7 +142,7 @@ response = requests.post(
     'https://api.firebanking.com/v2/payment',
     json=pix_data,
     headers={
-        'Authorization': 'Bearer fbk_live_sua_chave_aqui',
+        'x-api-key': 'fbk_live_sua_chave_aqui',
         'Content-Type': 'application/json'
     }
 )
@@ -178,7 +178,7 @@ curl_setopt_array($curl, [
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => json_encode($pixData),
     CURLOPT_HTTPHEADER => [
-        'Authorization: Bearer fbk_live_sua_chave_aqui',
+        'x-api-key: fbk_live_sua_chave_aqui',
         'Content-Type: application/json'
     ]
 ]);
@@ -339,7 +339,7 @@ async function checkPaymentStatus(pixId) {
   try {
     const response = await fetch(`https://api.firebanking.com/v2/payment/${pixId}`, {
       headers: {
-        'Authorization': 'Bearer fbk_live_sua_chave_aqui'
+        'x-api-key': 'fbk_live_sua_chave_aqui'
       }
     });
     

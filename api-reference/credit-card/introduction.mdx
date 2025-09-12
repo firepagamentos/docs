@@ -27,7 +27,7 @@ A FireBanking fornece uma API abrangente de processamento de cartão de crédito
 ### 1. Obtenha suas Chaves de API
 
 Obtenha suas credenciais de API no painel FireBanking:
-- **Token de Negócio**: Para operações padrão de pagamento
+- **Chave de API**: Para operações padrão de pagamento
 - **Credenciais de Webhook**: Para receber notificações de pagamento
 - **Token Interno**: Para integrações sistema-a-sistema (se aplicável)
 
@@ -35,7 +35,7 @@ Obtenha suas credenciais de API no painel FireBanking:
 
 ```bash Primeira Requisição de Pagamento
 curl -X POST "https://api.firebanking.com/v1/payment" \
-  -H "Authorization: Bearer SEU_TOKEN_DE_NEGOCIO" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "purchaseValue": 10000,
@@ -75,7 +75,7 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
 
 <CardGroup cols={3}>
   <Card title="Token Bearer" icon="key">
-    **Token de API de Negócio**  
+    **Chave de API**  
     Autenticação padrão para operações de pagamento
   </Card>
   <Card title="Auth Básica" icon="shield">
@@ -88,26 +88,13 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
   </Card>
 </CardGroup>
 
-### Autenticação Bearer
-A maioria dos endpoints usa autenticação com token Bearer:
+### Autenticação via Chave de API
+A maioria dos endpoints usa autenticação com chave de API:
 
 ```bash
-Authorization: Bearer SEU_TOKEN_DE_NEGOCIO
+x-api-key: SUA_CHAVE_DE_API
 ```
 
-### Autenticação Básica
-Endpoints de webhook e internos usam autenticação básica:
-
-```bash
-Authorization: Basic CREDENCIAIS_CODIFICADAS_BASE64
-```
-
-### Token Interno
-Endpoints de integração de sistema usam cabeçalhos personalizados:
-
-```bash
-x-internal-token: SUA_CHAVE_DE_API_INTERNA
-```
 
 ## Conceitos Fundamentais
 

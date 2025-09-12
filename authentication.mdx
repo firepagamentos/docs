@@ -5,142 +5,73 @@ description: 'Aprenda como se autenticar com a API FireBanking'
 
 ## Visão Geral
 
-A API FireBanking usa múltiplos métodos de autenticação dependendo do tipo de operação que você está executando. Cada método de autenticação é projetado para casos de uso específicos e requisitos de segurança.
+A API FireBanking usa um método de autenticação simples e consistente para todas as operações. Todos os endpoints da API requerem autenticação através do cabeçalho `x-api-key`.
 
-<CardGroup cols={3}>
-  <Card title="Bearer Token" icon="key">
-    **Operações de Negócio**  
-    Processamento padrão de pagamentos e gerenciamento de conta
-  </Card>
-  <Card title="Autenticação Básica" icon="shield">
-    **Webhooks & Interno**  
-    Endpoints de webhook e operações internas do sistema
-  </Card>
-  <Card title="Token Interno" icon="gear">
-    **Integração de Sistema**  
-    Comunicação autorizada sistema-a-sistema
+<CardGroup cols={1}>
+  <Card title="x-api-key" icon="key">
+    **Método Único de Autenticação**  
+    Usado em todos os endpoints: Cartão de Crédito, PIX, Boleto e APIs gerais
   </Card>
 </CardGroup>
 
-## Autenticação Bearer Token
+## Autenticação x-api-key
 
-A maioria dos endpoints da API usa autenticação Bearer token com seu **Token de API de Negócio**.
+Todos os endpoints da API usam autenticação através do cabeçalho `x-api-key` com sua **Chave de API**.
 
 ### Uso
 
-Inclua seu token de negócio no cabeçalho `Authorization`:
+Inclua sua chave de API no cabeçalho `x-api-key`:
 
 ```bash
-Authorization: Bearer SEU_TOKEN_DE_NEGOCIO
+x-api-key: SUA_CHAVE_DE_API
 ```
 
 ### Exemplo de Requisição
 
 ```bash Exemplo cURL
 curl -X GET "https://api.firebanking.com/v1/account/balance" \
-  -H "Authorization: Bearer fbk_live_1234567890abcdef..." \
+  -H "x-api-key: fbk_live_1234567890abcdef..." \
   -H "Content-Type: application/json"
 ```
 
 ### Endpoints Aplicáveis
 
-A autenticação Bearer é usada para:
+A autenticação x-api-key é usada para:
 - **Operações de pagamento** (criar, listar, obter, capturar, estornar)
+- **Pagamentos PIX** (criar, listar, consultar)
+- **Boletos** (criar, consultar, listar)
 - **Tokenização de cartão** (criar tokens, recuperar tokens)
 - **Gerenciamento de comprador** (criar, listar compradores)
 - **Gerenciamento de assinatura** (criar, atualizar, cancelar)
 - **Operações de conta** (saldo, configurações)
 
-## Autenticação Básica
+## Webhooks
 
-Endpoints de webhook e algumas operações internas usam autenticação HTTP Básica.
+Endpoints de webhook não requerem autenticação via cabeçalho. A segurança é fornecida através de URLs únicas específicas para cada conta.
 
-### Uso
+### Segurança de Webhook
 
-Codifique seu nome de usuário e senha em Base64 e inclua no cabeçalho:
+- **URL única**: Cada conta possui uma URL específica de webhook
+- **Sem cabeçalhos de auth**: Webhooks não requerem x-api-key
+- **Validação via payload**: Verifique a estrutura e origem dos dados
 
-```bash
-Authorization: Basic CREDENCIAIS_CODIFICADAS_BASE64
-```
+## Obtendo sua Chave de API
 
-### Criando Cabeçalho de Autenticação Básica
-
-```javascript Exemplo JavaScript
-const username = 'seu_usuario_webhook';
-const password = 'sua_senha_webhook';
-const credentials = btoa(`${username}:${password}`);
-const authHeader = `Basic ${credentials}`;
-```
-
-```python Exemplo Python
-import base64
-
-username = 'seu_usuario_webhook'
-password = 'sua_senha_webhook'
-credentials = base64.b64encode(f'{username}:{password}'.encode()).decode()
-auth_header = f'Basic {credentials}'
-```
-
-### Endpoints Aplicáveis
-
-A autenticação básica é usada para:
-- **Endpoints de webhook** (`/webhooks/*`)
-- **Operações internas do Barte** (`/internal/manager/barte/*`)
-
-## Autenticação Token Interno
-
-Integrações sistema-a-sistema usam chaves de API internas em cabeçalhos customizados.
-
-### Uso
-
-Inclua seu token interno no cabeçalho `x-internal-token`:
-
-```bash
-x-internal-token: SUA_CHAVE_API_INTERNA
-```
-
-### Exemplo de Requisição
-
-```bash Exemplo cURL
-curl -X POST "https://api.firebanking.com/v1/internal/payment/business-123" \
-  -H "x-internal-token: int_1234567890abcdef..." \
-  -H "Content-Type: application/json" \
-  -d '{ "purchaseValue": 10000, ... }'
-```
-
-### Endpoints Aplicáveis
-
-A autenticação por token interno é usada para:
-- **Criação de pagamento interno** (`/internal/payment/{businessId}`)
-
-<Warning>
-  Tokens internos são emitidos apenas para parceiros autorizados e têm privilégios elevados. Entre em contato com o suporte para solicitar acesso.
-</Warning>
-
-## Obtendo suas Credenciais de API
-
-### Token de API de Negócio
+### Chave de API FireBanking
 
 1. **Faça login** no seu painel FireBanking
 2. **Navegue para** Configurações de API ou seção de Desenvolvedor
-3. **Gere** ou copie seu Token de API de Negócio
+3. **Gere** ou copie sua Chave de API
 4. **Armazene com segurança** - trate como uma senha
 
-### Credenciais de Webhook
-
-1. **Acesse** as configurações de webhook no seu painel
-2. **Crie** nome de usuário e senha de webhook
-3. **Configure** endpoints com essas credenciais
-4. **Teste** a autenticação do webhook
-
-### Formatos de Token
+### Formatos de Chave
 
 <CardGroup cols={2}>
-  <Card title="Tokens de Sandbox" icon="flask">
+  <Card title="Chaves de Sandbox" icon="flask">
     **Formato**: `fbk_test_...`  
     Para testes e desenvolvimento
   </Card>
-  <Card title="Tokens de Produção" icon="globe">
+  <Card title="Chaves de Produção" icon="globe">
     **Formato**: `fbk_live_...`  
     Apenas para transações ao vivo
   </Card>
@@ -148,35 +79,35 @@ A autenticação por token interno é usada para:
 
 ## Melhores Práticas de Segurança
 
-### Segurança de Token
+### Segurança da Chave
 
 <CardGroup cols={2}>
   <Card title="Variáveis de Ambiente" icon="server">
-    Armazene tokens em variáveis de ambiente, não no código fonte
+    Armazene chaves em variáveis de ambiente, não no código fonte
   </Card>
   <Card title="Apenas HTTPS" icon="lock">
     Sempre use HTTPS para requisições de API
   </Card>
-  <Card title="Rotação de Token" icon="rotate">
-    Rotacione tokens periodicamente por segurança
+  <Card title="Rotação de Chave" icon="rotate">
+    Rotacione chaves periodicamente por segurança
   </Card>
   <Card title="Controle de Acesso" icon="shield">
-    Limite acesso do token a pessoal autorizado
+    Limite acesso da chave a pessoal autorizado
   </Card>
 </CardGroup>
 
 ### Segurança de Implementação
 
-```javascript Uso Seguro de Token
+```javascript Uso Seguro de Chave
 // ✅ Bom - Variável de ambiente
-const token = process.env.FIREBANKING_API_TOKEN;
+const apiKey = process.env.FIREBANKING_API_KEY;
 
 // ❌ Ruim - Codificado no fonte
-const token = 'fbk_live_1234567890abcdef';
+const apiKey = 'fbk_live_1234567890abcdef';
 
 // ✅ Bom - Cabeçalhos seguros
 const headers = {
-  'Authorization': `Bearer ${token}`,
+  'x-api-key': apiKey,
   'Content-Type': 'application/json',
   'User-Agent': 'SeuApp/1.0'
 };
@@ -191,19 +122,19 @@ try {
   const response = await fetch('https://api.firebanking.com/v1/payment', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`,
+      'x-api-key': apiKey,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(paymentData)
   });
 
   if (response.status === 401) {
-    // Tratar não autorizado - token pode ser inválido
-    throw new Error('Token de API inválido');
+    // Tratar não autorizado - chave pode ser inválida
+    throw new Error('Chave de API inválida');
   }
   
   if (response.status === 403) {
-    // Tratar proibido - token não tem permissões
+    // Tratar proibido - chave não tem permissões
     throw new Error('Permissões insuficientes');
   }
 
@@ -220,12 +151,12 @@ try {
 
 ### Respostas de Erro Comuns
 
-#### Token Inválido
+#### Chave Inválida
 ```json
 {
   "error": 401,
-  "message": "Token de API inválido ou expirado",
-  "code": "INVALID_TOKEN"
+  "message": "Chave de API inválida ou expirada",
+  "code": "INVALID_API_KEY"
 }
 ```
 
@@ -233,7 +164,7 @@ try {
 ```json
 {
   "error": 403,
-  "message": "Token não tem as permissões necessárias",
+  "message": "Chave não tem as permissões necessárias",
   "code": "INSUFFICIENT_PERMISSIONS"
 }
 ```
@@ -242,40 +173,39 @@ try {
 ```json
 {
   "error": 401,
-  "message": "Autenticação necessária",
-  "code": "MISSING_AUTHENTICATION"
+  "message": "Chave de API necessária",
+  "code": "MISSING_API_KEY"
 }
 ```
 
 ### Solução de Problemas
 
 <CardGroup cols={2}>
-  <Card title="Verificar Formato do Token" icon="check">
-    Certifique-se de que o token comece com `fbk_test_` ou `fbk_live_`
+  <Card title="Verificar Formato da Chave" icon="check">
+    Certifique-se de que a chave comece com `fbk_test_` ou `fbk_live_`
   </Card>
   <Card title="Verificar Ambiente" icon="server">
-    Use tokens de teste com sandbox, tokens live com produção
+    Use chaves de teste com sandbox, chaves live com produção
   </Card>
   <Card title="Testar Permissões" icon="key">
     Tente um endpoint simples como `/health` primeiro
   </Card>
   <Card title="Verificar Expiração" icon="clock">
-    Alguns tokens podem ter datas de expiração
+    Algumas chaves podem ter datas de expiração
   </Card>
 </CardGroup>
 
-## Limitação de Taxa por Autenticação
+## Limitação de Taxa
 
-Diferentes métodos de autenticação têm diferentes limites de taxa:
+Todas as chaves têm os mesmos limites de taxa:
 
-| Tipo de Autenticação | Limite de Taxa | Caso de Uso |
-|-------------------|------------|----------|
-| Bearer Token | 60 req/min | Operações padrão |
-| Autenticação Básica (Webhooks) | 120 req/min | Entrega de webhook |
-| Token Interno | Limites customizados | Integração de sistema |
+| Tipo de Operação | Limite de Taxa | Uso |
+|------------------|-------------|-----|
+| Operações de API | 60 req/min | Pagamentos, consultas, etc. |
+| Webhooks | Sem limite | Recebimento de notificações |
 
 <Info>
-  Limites de taxa são aplicados por credencial de autenticação, não por endereço IP.
+  Limites de taxa são aplicados por chave de API, não por endereço IP.
 </Info>
 
 ## Testando Autenticação
@@ -286,20 +216,11 @@ Diferentes métodos de autenticação têm diferentes limites de taxa:
 curl -X GET "https://api.firebanking.com/v1/health"
 ```
 
-### Teste de Bearer Token
+### Teste de Chave de API
 
 ```bash
 curl -X GET "https://api.firebanking.com/v1/account/balance" \
-  -H "Authorization: Bearer SEU_TOKEN"
+  -H "x-api-key: SUA_CHAVE"
 ```
 
-### Teste de Autenticação Básica
-
-```bash
-curl -X POST "https://api.firebanking.com/v1/webhooks/BARTE" \
-  -H "Authorization: Basic $(echo -n 'usuario:senha' | base64)" \
-  -H "Content-Type: application/json" \
-  -d '{"eventType": "test"}'
-```
-
-Pronto para fazer requisições autenticadas? Comece [criando seu primeiro pagamento](/api-reference/payment/create) ou explore a [referência da API](/api-reference/introduction).
+Pronto para fazer requisições autenticadas? Comece [criando seu primeiro pagamento](/api-reference/credit-card/payment/create) ou explore a [referência da API](/api-reference/credit-card/introduction).

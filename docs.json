@@ -181,14 +181,6 @@
               "api-reference/health/check",
               "api-reference/health/status"
             ]
-          },
-          {
-            "group": "APIs Internas",
-            "pages": [
-              "api-reference/internal/balance",
-              "api-reference/internal/redeem",
-              "api-reference/internal/payment"
-            ]
           }
         ]
       }

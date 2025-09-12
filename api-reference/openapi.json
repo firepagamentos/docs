@@ -1440,17 +1440,6 @@
         "scheme": "bearer",
         "bearerFormat": "JWT",
         "description": "Token de API de negócio para autenticação"
-      },
-      "basicAuth": {
-        "type": "http",
-        "scheme": "basic",
-        "description": "Autenticação básica para webhooks e endpoints internos"
-      },
-      "internalToken": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-internal-token",
-        "description": "Chave de API interna para comunicação sistema-a-sistema"
       }
     }
   }
