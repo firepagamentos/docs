@@ -38,36 +38,34 @@ Use credenciais específicas de webhook para testes:
   Nunca use credenciais de produção no sandbox ou credenciais de sandbox em produção.
 </Warning>
 
-## Números de Cartão de Teste
+## Cartões para Testes
 
-Use estes números de cartão específicos no ambiente sandbox para simular diferentes cenários:
+Como testar cobranças de cartão em sandbox
 
-### Cartões Sempre Aprovados
+Os cartões a serem utilizados no teste, devem ter números válidos e podem ser gerados a partir de qualquer site gerador de cartões, devendo o comportamento seguir as seguintes regra para diferentes validação de diferentes cenários:
 
-| Bandeira | Número | CVV | Validade |
-|----------|---------|-----|-----------|
-| Visa | `4111111111111111` | Qualquer 3 dígitos | Qualquer data futura |
-| Visa | `4000000000000077` | Qualquer 3 dígitos | Qualquer data futura |
-| Mastercard | `5555555555554444` | Qualquer 3 dígitos | Qualquer data futura |
-| Mastercard | `5105105105105100` | Qualquer 3 dígitos | Qualquer data futura |
+| Cartão | Autorizado? | Status | Exemplo |
+|--------|-------------|--------|---------|
+| Final 0, 1 ou 4 | SIM | Aprovado | 5186 8825 4989 5601 |
+| Final 2 | NÃO | Não autorizado | 5465 4157 3697 6082 |
+| Final 3 | NÃO | Cartão expirado | 5112 9708 0010 5403 |
+| Final 5 | NÃO | Cartão bloqueado | 5528 4303 3551 3025 |
+| Final 6 | NÃO | Timeout | 5186 8825 4989 5601 |
+| Final 7 | NÃO | Cartão cancelado | 5325 8272 3667 3227 |
+| Final 8 | Aleatório SIM/NÃO | Aprovado / Timeout | 5397 5499 7073 5078 |
 
-### Cartões Sempre Recusados
+Em sandbox, para testar os cenários acima, o CVV sempre deve ser um número de 3 dígitos terminado em zero (Ex: 220). Um número de CVV diferente de zero, irá resultar em falha na geração da transação.
 
-| Bandeira | Número | CVV | Validade | Motivo da Recusa |
-|----------|---------|-----|-----------|------------------|
-| Visa | `4000000000000002` | Qualquer 3 dígitos | Qualquer data futura | Recusa genérica |
-| Visa | `4000000000000069` | Qualquer 3 dígitos | Qualquer data futura | Cartão vencido |
-| Mastercard | `5200000000000007` | Qualquer 3 dígitos | Qualquer data futura | Recusa genérica |
-| Mastercard | `5105105105105108` | Qualquer 3 dígitos | Qualquer data futura | Saldo insuficiente |
+### Exemplo de Cartão Completo para Teste
 
-### Cenários de Teste Especiais
-
-| Número do Cartão | Cenário | Comportamento Esperado |
-|------------------|---------|------------------------|
-| `4000000000000259` | Atraso no processamento | Pagamento bem-sucedido após 30 segundos |
-| `4000000000000127` | Saldo insuficiente | Negado com código de erro específico |
-| `4000000000000044` | Fraudulento | Negado por detecção de fraude |
-| `4000000000000341` | Cartão perdido | Negado como cartão perdido/roubado |
+```json Cartão de Teste
+{
+  "holderName": "JOSE DAS NEVES TEST",
+  "number": "5383638854408981",
+  "cvv": 220,
+  "expiration": "12/2024"
+}
+```
 
 ## Dados de Comprador de Teste
 

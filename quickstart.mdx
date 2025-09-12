@@ -127,10 +127,10 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment" \
       "chargeType": "NO_FEE_TO_CUSTOMER",
       "capture": true,
       "card": {
-        "name": "João da Silva Teste",
-        "number": "4111111111111111",
-        "expiration": "12/26",
-        "securityCode": "123"
+        "name": "JOSE DAS NEVES TEST",
+        "number": "5383638854408981",
+        "expiration": "12/2024",
+        "securityCode": "220"
       }
     },
     "buyer": {
@@ -162,10 +162,10 @@ const paymentData = {
     chargeType: "NO_FEE_TO_CUSTOMER",
     capture: true, // Captura imediata
     card: {
-      name: "João da Silva Teste",
-      number: "4111111111111111", // Cartão de teste - sempre aprovado
-      expiration: "12/26",
-      securityCode: "123"
+      name: "JOSE DAS NEVES TEST",
+      number: "5383638854408981", // Cartão de teste - sempre aprovado
+      expiration: "12/2024",
+      securityCode: "220"
     }
   },
   buyer: {
@@ -211,10 +211,10 @@ payment_data = {
         "chargeType": "NO_FEE_TO_CUSTOMER",
         "capture": True,  # Captura imediata
         "card": {
-            "name": "João da Silva Teste",
-            "number": "4111111111111111",  # Cartão de teste
-            "expiration": "12/26",
-            "securityCode": "123"
+            "name": "JOSE DAS NEVES TEST",
+            "number": "5383638854408981",  # Cartão de teste
+            "expiration": "12/2024",
+            "securityCode": "220"
         }
     },
     "buyer": {
@@ -259,10 +259,10 @@ $paymentData = [
         'chargeType' => 'NO_FEE_TO_CUSTOMER',
         'capture' => true, // Captura imediata
         'card' => [
-            'name' => 'João da Silva Teste',
-            'number' => '4111111111111111', // Cartão de teste
-            'expiration' => '12/26',
-            'securityCode' => '123'
+            'name' => 'JOSE DAS NEVES TEST',
+            'number' => '5383638854408981', // Cartão de teste
+            'expiration' => '12/2024',
+            'securityCode' => '220'
         ]
     ],
     'buyer' => [
@@ -314,7 +314,7 @@ echo 'Pagamento criado: ' . print_r($payment, true);
   
   <Accordion title="Cartões de Teste">
     Use sempre cartões específicos para teste:
-    - `4111111111111111` - Visa (sempre aprovado)
+    - `5383638854408981` - Mastercard (sempre aprovado)
     - `5555555555554444` - Mastercard (sempre aprovado)
     - `4000000000000002` - Visa (sempre negado)
   </Accordion>

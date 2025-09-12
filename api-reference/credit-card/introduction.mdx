@@ -185,16 +185,34 @@ Códigos de status HTTP comuns:
   </Card>
 </CardGroup>
 
-## Números de Cartão para Teste
+## Cartões para Testes
 
-Use estes números de cartão de teste no ambiente sandbox:
+Como testar cobranças de cartão em sandbox
 
-| Bandeira | Número | Descrição |
-|----------|--------|-----------|
-| Visa | `4111111111111111` | Sempre aprovado |
-| Visa | `4000000000000002` | Sempre negado |
-| Mastercard | `5555555555554444` | Sempre aprovado |
-| Mastercard | `5200000000000007` | Sempre negado |
+Os cartões a serem utilizados no teste, devem ter números válidos e podem ser gerados a partir de qualquer site gerador de cartões, devendo o comportamento seguir as seguintes regra para diferentes validação de diferentes cenários:
+
+| Cartão | Autorizado? | Status | Exemplo |
+|--------|-------------|--------|---------|
+| Final 0, 1 ou 4 | SIM | Aprovado | 5186 8825 4989 5601 |
+| Final 2 | NÃO | Não autorizado | 5465 4157 3697 6082 |
+| Final 3 | NÃO | Cartão expirado | 5112 9708 0010 5403 |
+| Final 5 | NÃO | Cartão bloqueado | 5528 4303 3551 3025 |
+| Final 6 | NÃO | Timeout | 5186 8825 4989 5601 |
+| Final 7 | NÃO | Cartão cancelado | 5325 8272 3667 3227 |
+| Final 8 | Aleatório SIM/NÃO | Aprovado / Timeout | 5397 5499 7073 5078 |
+
+Em sandbox, para testar os cenários acima, o CVV sempre deve ser um número de 3 dígitos terminado em zero (Ex: 220). Um número de CVV diferente de zero, irá resultar em falha na geração da transação.
+
+Abaixo está um exemplo do cartão completo válido, para testar a aprovação de uma cobrança:
+
+```json Exemplo de Cartão de Teste
+{
+  "holderName": "JOSE DAS NEVES TEST",
+  "number": "5383638854408981",
+  "cvv": 220,
+  "expiration": "12/2024"
+}
+```
 
 <Warning>
   Nunca use números de cartão reais no ambiente sandbox ou números de cartão de teste em produção.
