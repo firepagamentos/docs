@@ -1,64 +1,64 @@
 ---
-title: 'Testing Guide'
-description: 'Learn how to test your FireBanking API integration'
+title: 'Guia de Testes'
+description: 'Aprenda como testar sua integração com a API FireBanking'
 ---
 
-## Testing Environments
+## Ambientes de Teste
 
-FireBanking provides separate environments for testing and production to ensure safe development and integration.
+O FireBanking oferece ambientes separados para teste e produção, garantindo desenvolvimento e integração seguros.
 
 <CardGroup cols={2}>
-  <Card title="Sandbox Environment" icon="flask">
+  <Card title="Ambiente Sandbox" icon="flask">
     **Base URL**: `https://sandbox.firebanking.com/v1`  
-    Safe testing with fake data and card numbers
+    Testes seguros com dados e números de cartão fictícios
   </Card>
-  <Card title="Production Environment" icon="globe">
+  <Card title="Ambiente de Produção" icon="globe">
     **Base URL**: `https://api.firebanking.com/v1`  
-    Live environment for real transactions
+    Ambiente real para transações efetivas
   </Card>
 </CardGroup>
 
-## Test Credentials
+## Credenciais de Teste
 
-### Sandbox API Tokens
+### Tokens da API Sandbox
 
-Sandbox tokens are prefixed with `fbk_test_` and work only in the sandbox environment:
+Tokens de sandbox são prefixados com `fbk_test_` e funcionam apenas no ambiente de teste:
 
 ```bash
 Authorization: Bearer fbk_test_1234567890abcdef...
 ```
 
-### Sandbox Webhook Credentials
+### Credenciais de Webhook Sandbox
 
-Use separate webhook credentials for testing:
-- **Username**: `test_webhook_user`
-- **Password**: `test_webhook_password_123`
+Use credenciais específicas de webhook para testes:
+- **Usuário**: `test_webhook_user`
+- **Senha**: `test_webhook_password_123`
 
 <Warning>
-  Never use production credentials in sandbox or sandbox credentials in production.
+  Nunca use credenciais de produção no sandbox ou credenciais de sandbox em produção.
 </Warning>
 
-## Test Card Numbers
+## Números de Cartão de Teste
 
-Use these specific card numbers in the sandbox environment to simulate different scenarios:
+Use estes números de cartão específicos no ambiente sandbox para simular diferentes cenários:
 
-### Always Approved Cards
+### Cartões Sempre Aprovados
 
-| Card Brand | Number | CVV | Expiration |
-|------------|---------|-----|-----------|
-| Visa | `4111111111111111` | Any 3 digits | Any future date |
-| Visa | `4000000000000077` | Any 3 digits | Any future date |
-| Mastercard | `5555555555554444` | Any 3 digits | Any future date |
-| Mastercard | `5105105105105100` | Any 3 digits | Any future date |
+| Bandeira | Número | CVV | Validade |
+|----------|---------|-----|-----------|
+| Visa | `4111111111111111` | Qualquer 3 dígitos | Qualquer data futura |
+| Visa | `4000000000000077` | Qualquer 3 dígitos | Qualquer data futura |
+| Mastercard | `5555555555554444` | Qualquer 3 dígitos | Qualquer data futura |
+| Mastercard | `5105105105105100` | Qualquer 3 dígitos | Qualquer data futura |
 
-### Always Declined Cards
+### Cartões Sempre Recusados
 
-| Card Brand | Number | CVV | Expiration | Decline Reason |
-|------------|---------|-----|-----------|----------------|
-| Visa | `4000000000000002` | Any 3 digits | Any future date | Generic decline |
-| Visa | `4000000000000069` | Any 3 digits | Any future date | Expired card |
-| Mastercard | `5200000000000007` | Any 3 digits | Any future date | Generic decline |
-| Mastercard | `5105105105105108` | Any 3 digits | Any future date | Insufficient funds |
+| Bandeira | Número | CVV | Validade | Motivo da Recusa |
+|----------|---------|-----|-----------|------------------|
+| Visa | `4000000000000002` | Qualquer 3 dígitos | Qualquer data futura | Recusa genérica |
+| Visa | `4000000000000069` | Qualquer 3 dígitos | Qualquer data futura | Cartão vencido |
+| Mastercard | `5200000000000007` | Qualquer 3 dígitos | Qualquer data futura | Recusa genérica |
+| Mastercard | `5105105105105108` | Qualquer 3 dígitos | Qualquer data futura | Saldo insuficiente |
 
 ### Cenários de Teste Especiais
 
@@ -71,7 +71,7 @@ Use these specific card numbers in the sandbox environment to simulate different
 
 ## Dados de Comprador de Teste
 
-Use dados de comprador realistas mas falsos para testes:
+Use dados de comprador realistas mas fictícios para testes:
 
 ### Números de CPF Válidos para Teste
 
@@ -214,13 +214,13 @@ curl -X POST "https://sandbox.firebanking.com/v1/subscription" \
   }'
 ```
 
-## Error Testing
+## Teste de Erros
 
-### Test Invalid Requests
+### Testar Requisições Inválidas
 
-```bash Invalid Amount
+```bash Valor Inválido
 curl -X POST "https://sandbox.firebanking.com/v1/payment" \
-  -H "Authorization: Bearer fbk_test_your_token" \
+  -H "Authorization: Bearer fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
     "purchaseValue": -100,
@@ -228,176 +228,176 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment" \
   }'
 ```
 
-### Test Authentication Errors
+### Testar Erros de Autenticação
 
-```bash Invalid Token
+```bash Token Inválido
 curl -X POST "https://sandbox.firebanking.com/v1/payment" \
-  -H "Authorization: Bearer invalid_token" \
+  -H "Authorization: Bearer token_invalido" \
   -H "Content-Type: application/json" \
   -d '{...}'
 ```
 
-## Webhook Testing
+## Teste de Webhooks
 
-### Setting Up Test Webhooks
+### Configurando Webhooks de Teste
 
-Use tools like ngrok for local webhook testing:
+Use ferramentas como ngrok para testar webhooks localmente:
 
-```bash Ngrok Setup
-# Install ngrok
+```bash Configuração do Ngrok
+# Instalar ngrok
 npm install -g ngrok
 
-# Expose local port
+# Expor porta local
 ngrok http 3000
 
-# Use the HTTPS URL in your webhook configuration
+# Use a URL HTTPS na configuração do webhook
 # https://abc123.ngrok.io/webhooks/firebanking
 ```
 
-### Test Webhook Handler
+### Manipulador de Webhook de Teste
 
-```javascript Express.js Webhook Handler
+```javascript Manipulador Webhook Express.js
 const express = require('express');
 const app = express();
 
 app.use(express.json());
 
 app.post('/webhooks/firebanking', (req, res) => {
-  console.log('Webhook received:', req.body);
+  console.log('Webhook recebido:', req.body);
   
   const { eventType, data } = req.body;
   
-  // Handle different event types
+  // Manipula diferentes tipos de evento
   switch (eventType) {
     case 'PAYMENT_COMPLETED':
-      console.log('Payment completed:', data.paymentId);
+      console.log('Pagamento concluído:', data.paymentId);
       break;
     case 'PAYMENT_FAILED':
-      console.log('Payment failed:', data.paymentId);
+      console.log('Pagamento falhou:', data.paymentId);
       break;
     default:
-      console.log('Unknown event type:', eventType);
+      console.log('Tipo de evento desconhecido:', eventType);
   }
   
-  // Always return 200 to acknowledge receipt
+  // Sempre retorna 200 para confirmar recebimento
   res.status(200).json({ received: true });
 });
 
 app.listen(3000, () => {
-  console.log('Webhook server running on port 3000');
+  console.log('Servidor webhook rodando na porta 3000');
 });
 ```
 
-### Testing Webhook Delivery
+### Testando Entrega de Webhooks
 
-You can manually trigger test webhooks using online tools:
+Você pode disparar webhooks de teste manualmente usando ferramentas online:
 
 <CardGroup cols={2}>
   <Card title="Webhook.site" icon="globe">
     **URL**: webhook.site  
-    Capture and inspect webhook payloads
+    Capture e inspecione payloads de webhook
   </Card>
   <Card title="RequestBin" icon="inbox">
     **URL**: requestbin.com  
-    Temporary webhook endpoint creation
+    Criação de endpoints temporários de webhook
   </Card>
 </CardGroup>
 
-## Testing Checklist
+## Checklist de Testes
 
-### Pre-Integration Testing
+### Testes Pré-Integração
 
 <CardGroup cols={2}>
-  <Card title="Authentication" icon="key">
-    - [ ] Test token validation  
-    - [ ] Test error responses  
-    - [ ] Verify environment separation
+  <Card title="Autenticação" icon="key">
+    - [ ] Testar validação de token  
+    - [ ] Testar respostas de erro  
+    - [ ] Verificar separação de ambientes
   </Card>
-  <Card title="Basic Operations" icon="check">
-    - [ ] Health check endpoint  
-    - [ ] Account balance retrieval  
-    - [ ] Error handling
+  <Card title="Operações Básicas" icon="check">
+    - [ ] Endpoint de verificação de saúde  
+    - [ ] Recuperação de saldo da conta  
+    - [ ] Tratamento de erros
   </Card>
 </CardGroup>
 
-### Payment Testing
+### Teste de Pagamentos
 
-- [ ] **Successful payment** with approved test card
-- [ ] **Failed payment** with declined test card  
-- [ ] **Invalid card number** handling
-- [ ] **Expired card** error handling
-- [ ] **Invalid amount** validation
-- [ ] **Missing required fields** validation
-- [ ] **Pre-authorization** and capture flow
-- [ ] **Refund** processing
-- [ ] **Multiple installments** testing
+- [ ] **Pagamento bem-sucedido** com cartão de teste aprovado
+- [ ] **Pagamento falhado** com cartão de teste recusado  
+- [ ] Tratamento de **número de cartão inválido**
+- [ ] Tratamento de erro de **cartão vencido**
+- [ ] Validação de **valor inválido**
+- [ ] Validação de **campos obrigatórios ausentes**
+- [ ] Fluxo de **pré-autorização** e captura
+- [ ] Processamento de **estorno**
+- [ ] Teste de **parcelamento múltiplo**
 
-### Card Token Testing
+### Teste de Token de Cartão
 
-- [ ] **Token creation** with valid card
-- [ ] **Token creation** with invalid card
-- [ ] **Token retrieval** by buyer UUID
-- [ ] **Payment with token** (valid CVV)
-- [ ] **Payment with token** (invalid CVV)
-- [ ] **Zero dollar verification** testing
+- [ ] **Criação de token** com cartão válido
+- [ ] **Criação de token** com cartão inválido
+- [ ] **Recuperação de token** por UUID do comprador
+- [ ] **Pagamento com token** (CVV válido)
+- [ ] **Pagamento com token** (CVV inválido)
+- [ ] Teste de **verificação zero dollar**
 
-### Subscription Testing
+### Teste de Assinatura
 
-- [ ] **Monthly subscription** creation
-- [ ] **Quarterly subscription** creation  
-- [ ] **Annual subscription** creation
-- [ ] **Subscription update** (amount and frequency)
-- [ ] **Subscription cancellation**
-- [ ] **Failed payment** handling
-- [ ] **Webhook notifications** for subscription events
+- [ ] Criação de **assinatura mensal**
+- [ ] Criação de **assinatura trimestral**  
+- [ ] Criação de **assinatura anual**
+- [ ] **Atualização de assinatura** (valor e frequência)
+- [ ] **Cancelamento de assinatura**
+- [ ] Tratamento de **pagamento falhado**
+- [ ] **Notificações webhook** para eventos de assinatura
 
-### Error Handling Testing
+### Teste de Tratamento de Erros
 
-- [ ] **Network timeouts** handling
-- [ ] **Rate limit** responses
-- [ ] **Server errors** (500) handling
-- [ ] **Invalid JSON** responses
-- [ ] **Authentication failures**
-- [ ] **Malformed requests**
+- [ ] Tratamento de **timeouts de rede**
+- [ ] Respostas de **limite de taxa**
+- [ ] Tratamento de **erros de servidor** (500)
+- [ ] Respostas de **JSON inválido**
+- [ ] **Falhas de autenticação**
+- [ ] **Requisições malformadas**
 
-### Webhook Testing
+### Teste de Webhook
 
-- [ ] **Webhook endpoint** setup and accessibility
-- [ ] **Authentication** (if required)
-- [ ] **Event processing** for all event types
-- [ ] **Idempotency** (duplicate event handling)
-- [ ] **Retry mechanism** testing
-- [ ] **Error response** handling
+- [ ] Configuração e acessibilidade do **endpoint webhook**
+- [ ] **Autenticação** (se necessário)
+- [ ] **Processamento de eventos** para todos os tipos de evento
+- [ ] **Idempotência** (tratamento de eventos duplicados)
+- [ ] Teste do **mecanismo de retry**
+- [ ] Tratamento de **resposta de erro**
 
-## Testing Tools
+## Ferramentas de Teste
 
-### API Testing Tools
+### Ferramentas de Teste de API
 
 <CardGroup cols={2}>
   <Card title="Postman" icon="globe">
-    **Use**: Interactive API testing and collection management
+    **Uso**: Teste interativo de API e gerenciamento de coleções
   </Card>
   <Card title="Insomnia" icon="moon">
-    **Use**: REST client with environment management
+    **Uso**: Cliente REST com gerenciamento de ambiente
   </Card>
   <Card title="curl" icon="terminal">
-    **Use**: Command-line testing and automation
+    **Uso**: Teste via linha de comando e automação
   </Card>
   <Card title="HTTPie" icon="terminal">
-    **Use**: User-friendly command-line HTTP client
+    **Uso**: Cliente HTTP de linha de comando amigável
   </Card>
 </CardGroup>
 
-### Automated Testing
+### Testes Automatizados
 
-```javascript Jest Test Example
+```javascript Exemplo de Teste Jest
 const request = require('supertest');
 
-describe('FireBanking API', () => {
+describe('API FireBanking', () => {
   const apiToken = process.env.FIREBANKING_TEST_TOKEN;
   const baseURL = 'https://sandbox.firebanking.com/v1';
 
-  test('should create payment successfully', async () => {
+  test('deve criar pagamento com sucesso', async () => {
     const paymentData = {
       purchaseValue: 10000,
       installments: 1,
@@ -441,7 +441,7 @@ describe('FireBanking API', () => {
     expect(response.body.amount).toBe(10000);
   });
 
-  test('should handle declined card', async () => {
+  test('deve tratar cartão recusado', async () => {
     const paymentData = {
       purchaseValue: 10000,
       installments: 1,
@@ -449,12 +449,12 @@ describe('FireBanking API', () => {
         chargeType: 'CREDITO_A_VISTA',
         card: {
           name: 'João da Silva Teste',
-          number: '4000000000000002', // Always declined
+          number: '4000000000000002', // Sempre recusado
           expiration: '12/25',
           securityCode: '123'
         }
       }
-      // ... rest of payment data
+      // ... resto dos dados de pagamento
     };
 
     const response = await request(baseURL)
@@ -468,31 +468,31 @@ describe('FireBanking API', () => {
 });
 ```
 
-## Going Live
+## Indo para Produção
 
-### Pre-Production Checklist
+### Checklist Pré-Produção
 
-Before switching to production:
+Antes de mudar para produção:
 
-- [ ] **Comprehensive testing** completed in sandbox
-- [ ] **Error handling** implemented and tested
-- [ ] **Webhook endpoints** secured and tested
-- [ ] **Production credentials** obtained and secured
-- [ ] **Rate limiting** handling implemented
-- [ ] **Monitoring** and logging set up
-- [ ] **Security review** completed
+- [ ] **Testes abrangentes** concluídos no sandbox
+- [ ] **Tratamento de erros** implementado e testado
+- [ ] **Endpoints de webhook** protegidos e testados
+- [ ] **Credenciais de produção** obtidas e protegidas
+- [ ] Tratamento de **limite de taxa** implementado
+- [ ] **Monitoramento** e logging configurados
+- [ ] **Revisão de segurança** concluída
 
-### Production Migration
+### Migração para Produção
 
-1. **Update base URL** to `https://api.firebanking.com/v1`
-2. **Replace test credentials** with production credentials
-3. **Update webhook URLs** to production endpoints
-4. **Verify real card processing** with small amounts
-5. **Monitor transactions** closely initially
-6. **Set up alerting** for errors and failures
+1. **Atualizar URL base** para `https://api.firebanking.com/v1`
+2. **Substituir credenciais de teste** por credenciais de produção
+3. **Atualizar URLs de webhook** para endpoints de produção
+4. **Verificar processamento de cartão real** com valores pequenos
+5. **Monitorar transações** de perto inicialmente
+6. **Configurar alertas** para erros e falhas
 
 <Info>
-  Start with small transaction amounts in production to verify everything works correctly before processing larger payments.
+  Comece com valores pequenos de transação em produção para verificar se tudo funciona corretamente antes de processar pagamentos maiores.
 </Info>
 
-Ready to start testing? Begin with [authentication setup](/authentication) and then try [creating your first test payment](/api-reference/payment/create).
+Pronto para começar a testar? Comece com a [configuração de autenticação](/authentication) e depois tente [criar seu primeiro pagamento de teste](/api-reference/payment/create).
