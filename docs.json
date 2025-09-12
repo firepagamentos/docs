@@ -52,8 +52,7 @@
               "api-reference/credit-card/payment/get",
               "api-reference/credit-card/payment/capture",
               "api-reference/credit-card/payment/refund",
-              "api-reference/credit-card/payment/cancel",
-              "api-reference/credit-card/payment/sync"
+              "api-reference/credit-card/payment/cancel"
             ]
           },
           {

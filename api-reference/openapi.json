@@ -325,37 +325,6 @@
         }
       }
     },
-    "/credit-card/v1/payment/{paymentId}/sync": {
-      "get": {
-        "tags": ["Pagamento"],
-        "summary": "Sincronizar Pagamento",
-        "description": "Sincronizar status do pagamento com o processador de pagamento",
-        "security": [{"apiKeyAuth": []}],
-        "parameters": [
-          {
-            "name": "paymentId",
-            "in": "path",
-            "required": true,
-            "description": "ID do pagamento a sincronizar",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Pagamento sincronizado com sucesso",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/credit-card/v1/buyer": {
       "post": {
         "tags": ["Comprador"],
