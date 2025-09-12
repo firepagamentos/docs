@@ -1,0 +1,220 @@
+---
+title: "Webhooks e Notificações"
+description: "Sistema de notificações em tempo real para acompanhar transações"
+---
+
+## Visão Geral
+
+Os webhooks do FireBanking permitem que sua aplicação receba **notificações em tempo real** sobre mudanças no status das transações, garantindo sincronização automática entre os sistemas.
+
+## Como Funcionam
+
+### Conceito Base
+Webhooks são requisições HTTP POST enviadas automaticamente pelo FireBanking para URLs específicas da sua aplicação sempre que eventos relevantes ocorrem.
+
+### Características Principais
+- **Notificações em tempo real** para todos os eventos importantes
+- **URLs específicas por transação** para maior flexibilidade
+- **Retry automático** em caso de falha de entrega
+- **Assinatura digital** para validação de autenticidade
+
+## Configuração
+
+### URL de Callback Global
+Configure uma URL padrão para receber todas as notificações no Dashboard.
+
+### URLs Específicas por Transação
+Defina URLs customizadas no momento da criação da transação:
+
+```json
+{
+  "amount": 10000,
+  "callback_url": "https://meusite.com/webhook/transacao-especifica",
+  "buyer": {
+    "email": "cliente@email.com"
+  }
+}
+```
+
+## Eventos Disponíveis
+
+### Transações de Cartão
+- `payment.authorized` - Pagamento autorizado com sucesso
+- `payment.captured` - Valor capturado efetivamente
+- `payment.failed` - Falha na autorização do pagamento
+- `payment.expired` - Pré-autorização expirada (7 dias)
+- `payment.refunded` - Estorno processado
+- `payment.cancelled` - Transação cancelada
+
+### Assinaturas Recorrentes
+- `subscription.created` - Nova assinatura criada
+- `subscription.payment_successful` - Cobrança recorrente bem-sucedida
+- `subscription.payment_failed` - Falha na cobrança recorrente
+- `subscription.cancelled` - Assinatura cancelada
+- `subscription.suspended` - Assinatura suspensa por falha
+
+## Estrutura do Payload
+
+### Cabeçalhos HTTP
+```http
+POST /webhook HTTP/1.1
+Host: meusite.com
+Content-Type: application/json
+X-FireBanking-Signature: sha256=abc123...
+X-FireBanking-Event: payment.captured
+User-Agent: FireBanking-Webhooks/1.0
+```
+
+### Corpo da Requisição
+```json
+{
+  "event": "payment.captured",
+  "transaction_id": "fb_trans_123456789",
+  "external_id": "pedido-001",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "id": "fb_trans_123456789",
+    "status": "captured",
+    "amount": 10000,
+    "currency": "BRL",
+    "captured_amount": 10000,
+    "buyer": {
+      "email": "cliente@email.com",
+      "document": "***.***.***-**"
+    },
+    "created_at": "2024-01-15T10:25:00Z",
+    "captured_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+## Validação de Segurança
+
+### Verificação de Assinatura
+Sempre valide a assinatura do webhook para garantir autenticidade:
+
+<CodeGroup>
+```python Python
+import hmac
+import hashlib
+
+def verify_webhook_signature(payload, signature, secret):
+    expected_signature = 'sha256=' + hmac.new(
+        secret.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(signature, expected_signature)
+```
+
+```javascript Node.js
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+    const expectedSignature = 'sha256=' + crypto
+        .createHmac('sha256', secret)
+        .update(payload)
+        .digest('hex');
+    
+    return crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedSignature)
+    );
+}
+```
+
+```php PHP
+function verifyWebhookSignature($payload, $signature, $secret) {
+    $expectedSignature = 'sha256=' . hash_hmac('sha256', $payload, $secret);
+    return hash_equals($signature, $expectedSignature);
+}
+```
+</CodeGroup>
+
+### Validação de Origem
+- Verifique se a requisição origina dos IPs do FireBanking
+- Valide o timestamp para evitar ataques de replay
+- Use HTTPS obrigatoriamente nos endpoints de webhook
+
+## Implementação Robusta
+
+### Tratamento de Resposta
+Sua aplicação deve responder adequadamente aos webhooks:
+
+```http
+HTTP/1.1 200 OK
+Content-Length: 0
+```
+
+- **Status 200-299**: Webhook processado com sucesso
+- **Outros status**: FireBanking tentará reenviar
+
+### Retry Policy
+O FireBanking implementa retry automático:
+- **Tentativas**: Até 5 tentativas com backoff exponencial
+- **Intervalo**: 1s, 3s, 9s, 27s, 81s
+- **Timeout**: 30 segundos por tentativa
+
+### Idempotência
+Implemente controle de idempotência usando o `transaction_id`:
+
+```python
+def process_webhook(webhook_data):
+    transaction_id = webhook_data['transaction_id']
+    
+    # Verifica se já foi processado
+    if webhook_already_processed(transaction_id):
+        return "OK"  # Resposta de sucesso sem reprocessar
+    
+    # Processa o webhook
+    process_transaction_update(webhook_data)
+    mark_webhook_as_processed(transaction_id)
+    
+    return "OK"
+```
+
+## Monitoramento e Debug
+
+### Logs de Webhook
+O Dashboard FireBanking fornece:
+- Histórico completo de webhooks enviados
+- Status de entrega e tentativas de retry
+- Payload completo enviado
+- Resposta recebida da aplicação
+
+### Webhook de Teste
+Use o ambiente de sandbox para testar sua implementação:
+- Simule diferentes tipos de eventos
+- Valide o tratamento de erros
+- Teste o retry automático
+
+## Boas Práticas
+
+<AccordionGroup>
+  <Accordion title="Performance">
+    - Processe webhooks de forma assíncrona sempre que possível
+    - Responda rapidamente (< 5 segundos) para evitar timeout
+    - Use filas para operações pesadas
+  </Accordion>
+  
+  <Accordion title="Segurança">
+    - Sempre valide a assinatura do webhook
+    - Use HTTPS obrigatoriamente
+    - Limite o acesso aos endpoints de webhook
+    - Registre tentativas de webhook inválidas
+  </Accordion>
+  
+  <Accordion title="Confiabilidade">
+    - Implemente controle de idempotência
+    - Mantenha logs detalhados
+    - Monitore falhas de processamento
+    - Tenha um plano de recuperação para webhooks perdidos
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Passos
+
+- Configure [Tratamento de Erros](/concepts/error-handling) para diferentes cenários de webhook
+- Explore a [API de Webhooks](/api-reference/webhooks/provider) para configuração programática
+- Teste sua implementação no [ambiente de desenvolvimento](/testing)

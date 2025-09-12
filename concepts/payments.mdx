@@ -1,0 +1,67 @@
+---
+title: "Pagamentos com Cartão de Crédito"
+description: "Entenda os conceitos fundamentais do sistema de pagamentos FireBanking"
+---
+
+## Visão Geral
+
+O módulo de cartão de crédito do FireBanking foi projetado para oferecer uma integração **simples, direta e previsível** para processamento de transações de cartão de crédito. O sistema permite transações pontuais ou parceladas, com políticas de taxas configuráveis.
+
+## Características Principais
+
+### Módulo Dedicado
+- Foco exclusivo em transações de cartão de crédito
+- Separação clara das funcionalidades de outros módulos de pagamento
+- Controle de saldo independente de outras modalidades
+
+### Flexibilidade de Pagamento
+- **Pagamento à vista** ou **parcelamento** até 24 vezes
+- Políticas de taxa configuráveis:
+  - Absorvidas pelo estabelecimento comercial
+  - Repassadas para o cliente final
+
+### Gestão Simplificada
+- Não é necessário pré-criar perfis de compradores
+- Contrato JSON único para detalhes da transação
+- Identificadores internos e externos para cada transação
+
+## Fluxo de Liquidez
+
+O FireBanking garante **liquidez previsível** com:
+- Transferência de fundos para conta Pix em **D+2**
+- Transações elegíveis para antecipação de recebíveis
+- Transparência total no cronograma de repasses
+
+## Segurança e Integridade
+
+### Autenticação
+- Utilização obrigatória do header `x-api-key`
+- Recomendação de whitelist de IPs
+- Gestão cuidadosa do ciclo de vida das chaves de API
+
+### Rastreabilidade
+- Sistema de identificadores duplos (interno/externo)
+- Logs completos de transações
+- Auditoria detalhada de operações
+
+## Vantagens Competitivas
+
+<AccordionGroup>
+  <Accordion title="Integração Simplificada">
+    API com estrutura consistente e documentação clara, reduzindo o tempo de implementação
+  </Accordion>
+  
+  <Accordion title="Gestão Flexível de Transações">
+    Suporte a diferentes estratégias de autorização e captura conforme a necessidade do negócio
+  </Accordion>
+  
+  <Accordion title="Previsibilidade Financeira">
+    Cronograma de liquidação transparente e opções de antecipação disponíveis
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Passos
+
+- Explore os [Fluxos de Autorização](/concepts/subscriptions) para entender as estratégias de cobrança
+- Configurе [Webhooks](/concepts/webhooks) para receber notificações em tempo real
+- Implemente [Tratamento de Erros](/concepts/error-handling) robusto em sua aplicação

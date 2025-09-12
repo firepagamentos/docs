@@ -1,0 +1,397 @@
+---
+title: "Tratamento de Erros"
+description: "Guia completo para identificar, tratar e recuperar-se de erros na API FireBanking"
+---
+
+## Visão Geral
+
+Uma implementação robusta da API FireBanking requer **tratamento adequado de erros** para garantir a melhor experiência do usuário e a confiabilidade do sistema. Este guia cobre os diferentes tipos de erro e as estratégias recomendadas para cada cenário.
+
+## Códigos de Status HTTP
+
+### Respostas de Sucesso (2xx)
+- `200 OK` - Requisição processada com sucesso
+- `201 Created` - Recurso criado com sucesso  
+- `204 No Content` - Operação bem-sucedida sem conteúdo de retorno
+
+### Erros do Cliente (4xx)
+- `400 Bad Request` - Dados inválidos na requisição
+- `401 Unauthorized` - Credenciais de autenticação inválidas
+- `403 Forbidden` - Acesso negado aos recursos
+- `404 Not Found` - Recurso não encontrado
+- `422 Unprocessable Entity` - Dados válidos mas regra de negócio violada
+- `429 Too Many Requests` - Rate limit excedido
+
+### Erros do Servidor (5xx)
+- `500 Internal Server Error` - Erro interno do servidor
+- `502 Bad Gateway` - Erro de gateway
+- `503 Service Unavailable` - Serviço temporariamente indisponível
+- `504 Gateway Timeout` - Timeout de gateway
+
+## Estrutura Padrão de Erro
+
+### Formato de Resposta
+```json
+{
+  "error": {
+    "code": "INVALID_CARD_NUMBER",
+    "message": "O número do cartão fornecido é inválido",
+    "details": "O número do cartão deve conter entre 13 e 19 dígitos",
+    "request_id": "req_123456789",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### Campos Explicados
+- `code`: Código único do erro para tratamento programático
+- `message`: Mensagem em português para o usuário final
+- `details`: Informações adicionais sobre o erro (opcional)
+- `request_id`: Identificador único da requisição para suporte
+- `timestamp`: Momento em que o erro ocorreu
+
+## Tipos de Erro Comuns
+
+### Erros de Validação (400 Bad Request)
+
+<AccordionGroup>
+  <Accordion title="Dados Obrigatórios Ausentes">
+    ```json
+    {
+      "error": {
+        "code": "MISSING_REQUIRED_FIELD",
+        "message": "Campo obrigatório não informado: buyer.email",
+        "details": "O email do comprador é obrigatório para processamento"
+      }
+    }
+    ```
+    
+    **Ação**: Verifique se todos os campos obrigatórios estão sendo enviados
+  </Accordion>
+  
+  <Accordion title="Formato Inválido">
+    ```json
+    {
+      "error": {
+        "code": "INVALID_FORMAT",
+        "message": "Formato inválido para o campo amount",
+        "details": "O valor deve ser um número inteiro em centavos"
+      }
+    }
+    ```
+    
+    **Ação**: Corrija o formato dos dados conforme a documentação
+  </Accordion>
+</AccordionGroup>
+
+### Erros de Autenticação (401/403)
+
+<AccordionGroup>
+  <Accordion title="API Key Inválida">
+    ```json
+    {
+      "error": {
+        "code": "INVALID_API_KEY",
+        "message": "Chave de API inválida ou expirada",
+        "details": "Verifique sua chave de API no Dashboard"
+      }
+    }
+    ```
+    
+    **Ação**: Verifique se a chave está correta e ativa no Dashboard
+  </Accordion>
+  
+  <Accordion title="IP Não Autorizado">
+    ```json
+    {
+      "error": {
+        "code": "IP_NOT_WHITELISTED",
+        "message": "IP não está na lista de IPs autorizados",
+        "details": "Adicione este IP na configuração de segurança"
+      }
+    }
+    ```
+    
+    **Ação**: Configure o IP no whitelist através do Dashboard
+  </Accordion>
+</AccordionGroup>
+
+### Erros de Transação (422)
+
+<AccordionGroup>
+  <Accordion title="Cartão Recusado">
+    ```json
+    {
+      "error": {
+        "code": "CARD_DECLINED",
+        "message": "Cartão recusado pelo banco emissor",
+        "details": "Entre em contato com o banco para mais informações"
+      }
+    }
+    ```
+    
+    **Ação**: Solicite ao cliente que entre em contato com o banco
+  </Accordion>
+  
+  <Accordion title="Limite Insuficiente">
+    ```json
+    {
+      "error": {
+        "code": "INSUFFICIENT_FUNDS",
+        "message": "Limite insuficiente no cartão",
+        "details": "O valor excede o limite disponível"
+      }
+    }
+    ```
+    
+    **Ação**: Sugerir valor menor ou outro meio de pagamento
+  </Accordion>
+  
+  <Accordion title="Transação Já Capturada">
+    ```json
+    {
+      "error": {
+        "code": "ALREADY_CAPTURED",
+        "message": "Esta transação já foi capturada",
+        "details": "Não é possível capturar novamente"
+      }
+    }
+    ```
+    
+    **Ação**: Verifique o status atual da transação
+  </Accordion>
+</AccordionGroup>
+
+## Estratégias de Tratamento
+
+### 1. Retry com Backoff Exponencial
+
+Para erros temporários (5xx, timeouts):
+
+<CodeGroup>
+```python Python
+import time
+import random
+
+def api_call_with_retry(func, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except TemporaryError as e:
+            if attempt == max_retries - 1:
+                raise e
+            
+            # Backoff exponencial com jitter
+            delay = (2 ** attempt) + random.uniform(0, 1)
+            time.sleep(delay)
+    
+    raise Exception("Max retries exceeded")
+```
+
+```javascript Node.js
+async function apiCallWithRetry(apiCall, maxRetries = 3) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            return await apiCall();
+        } catch (error) {
+            if (error.status >= 500 && attempt < maxRetries - 1) {
+                // Backoff exponencial com jitter
+                const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            throw error;
+        }
+    }
+}
+```
+</CodeGroup>
+
+### 2. Circuit Breaker
+
+Proteja sua aplicação de falhas consecutivas:
+
+```python
+class CircuitBreaker:
+    def __init__(self, failure_threshold=5, timeout=60):
+        self.failure_threshold = failure_threshold
+        self.timeout = timeout
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = 'CLOSED'  # CLOSED, OPEN, HALF_OPEN
+    
+    def call(self, func):
+        if self.state == 'OPEN':
+            if time.time() - self.last_failure_time > self.timeout:
+                self.state = 'HALF_OPEN'
+            else:
+                raise Exception("Circuit breaker is OPEN")
+        
+        try:
+            result = func()
+            self.reset()
+            return result
+        except Exception as e:
+            self.record_failure()
+            raise e
+    
+    def record_failure(self):
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        
+        if self.failure_count >= self.failure_threshold:
+            self.state = 'OPEN'
+    
+    def reset(self):
+        self.failure_count = 0
+        self.state = 'CLOSED'
+```
+
+### 3. Tratamento por Categoria de Erro
+
+<CodeGroup>
+```python Python
+def handle_firebanking_error(response):
+    if response.status_code == 400:
+        # Erro de validação - não tentar novamente
+        error_data = response.json()['error']
+        log_validation_error(error_data)
+        raise ValidationError(error_data['message'])
+    
+    elif response.status_code == 401:
+        # Erro de autenticação - verificar configuração
+        refresh_api_key()
+        raise AuthenticationError("API key inválida")
+    
+    elif response.status_code == 422:
+        # Erro de negócio - informar usuário
+        error_data = response.json()['error']
+        raise BusinessError(error_data['message'])
+    
+    elif response.status_code >= 500:
+        # Erro do servidor - tentar novamente
+        raise TemporaryError("Erro temporário do servidor")
+```
+
+```javascript Node.js
+function handleFireBankingError(response) {
+    const { status, data } = response;
+    const error = data.error;
+    
+    switch(status) {
+        case 400:
+            // Erro de validação
+            console.error('Validation error:', error.message);
+            throw new ValidationError(error.message);
+        
+        case 401:
+        case 403:
+            // Erro de autenticação
+            console.error('Authentication error:', error.message);
+            throw new AuthenticationError(error.message);
+        
+        case 422:
+            // Erro de negócio
+            console.warn('Business error:', error.message);
+            throw new BusinessError(error.message);
+        
+        case 429:
+            // Rate limit
+            const retryAfter = response.headers['retry-after'] || 60;
+            throw new RateLimitError(`Rate limit exceeded. Retry after ${retryAfter}s`);
+        
+        default:
+            if (status >= 500) {
+                throw new TemporaryError('Server error');
+            }
+            throw new UnknownError(error.message);
+    }
+}
+```
+</CodeGroup>
+
+## Logging e Monitoramento
+
+### Estrutura de Log Recomendada
+
+```json
+{
+  "timestamp": "2024-01-15T10:30:00Z",
+  "level": "ERROR",
+  "service": "firebanking-integration",
+  "transaction_id": "fb_trans_123456789",
+  "external_id": "pedido-001",
+  "error_code": "CARD_DECLINED",
+  "error_message": "Cartão recusado pelo banco emissor",
+  "request_id": "req_123456789",
+  "user_id": "user_789",
+  "additional_context": {
+    "amount": 10000,
+    "payment_method": "credit_card",
+    "attempt_count": 1
+  }
+}
+```
+
+### Métricas de Monitoramento
+
+- **Taxa de erro por tipo** (4xx vs 5xx)
+- **Tempo de resposta** por endpoint
+- **Rate limit** atingido
+- **Tentativas de retry** por transação
+- **Transações com falha** por motivo
+
+## Recuperação de Transações
+
+### Consulta de Status
+Implemente verificação periódica para transações pendentes:
+
+```python
+def check_pending_transactions():
+    pending = get_pending_transactions()
+    
+    for transaction in pending:
+        try:
+            # Consulta status atual na API
+            status = firebanking_client.get_transaction(transaction.id)
+            
+            if status.status != transaction.local_status:
+                # Sincroniza status local
+                update_transaction_status(transaction.id, status.status)
+                
+        except Exception as e:
+            log_error(f"Failed to check transaction {transaction.id}: {e}")
+```
+
+### Webhook de Recuperação
+Configure webhook para receber atualizações perdidas:
+
+```python
+@app.route('/webhook/recovery', methods=['POST'])
+def recovery_webhook():
+    data = request.get_json()
+    
+    # Processa eventos que podem ter sido perdidos
+    transaction_id = data['transaction_id']
+    current_status = data['status']
+    
+    # Atualiza status local se necessário
+    sync_transaction_status(transaction_id, current_status)
+    
+    return '', 200
+```
+
+## Dashboard de Erros
+
+Monitore erros em tempo real através do [Dashboard FireBanking](https://dashboard.firebanking.com):
+- **Volume de erros** por período
+- **Tipos de erro** mais frequentes
+- **Transações com falha** detalhadas
+- **Health check** da API
+
+## Próximos Passos
+
+- Implemente as estratégias de retry em sua aplicação
+- Configure monitoramento e alertas para erros críticos
+- Teste cenários de falha no [ambiente de desenvolvimento](/testing)
+- Explore as [APIs específicas](/api-reference/introduction) para implementação detalhada
