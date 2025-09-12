@@ -1,0 +1,301 @@
+---
+title: 'Webhooks - Cartão de Crédito'
+description: 'Receba notificações em tempo real para transações de cartão de crédito'
+---
+
+## Visão Geral
+
+Os webhooks de cartão de crédito permitem que sua aplicação receba notificações em tempo real sobre mudanças no status das transações, garantindo sincronização automática entre os sistemas.
+
+## Eventos Disponíveis
+
+### Transações de Cartão
+- `payment.authorized` - Pagamento autorizado com sucesso
+- `payment.captured` - Valor capturado efetivamente
+- `payment.failed` - Falha na autorização do pagamento
+- `payment.expired` - Pré-autorização expirada (7 dias)
+- `payment.refunded` - Estorno processado
+- `payment.cancelled` - Transação cancelada
+
+### Assinaturas Recorrentes
+- `subscription.created` - Nova assinatura criada
+- `subscription.payment_successful` - Cobrança recorrente bem-sucedida
+- `subscription.payment_failed` - Falha na cobrança recorrente
+- `subscription.cancelled` - Assinatura cancelada
+- `subscription.suspended` - Assinatura suspensa por falha
+
+## Estrutura do Payload
+
+### Cabeçalhos HTTP
+```http
+POST /webhook HTTP/1.1
+Host: meusite.com
+Content-Type: application/json
+X-FireBanking-Signature: sha256=abc123...
+X-FireBanking-Event: payment.captured
+User-Agent: FireBanking-Webhooks/1.0
+```
+
+### Corpo da Requisição - Pagamento
+```json
+{
+  "event": "payment.captured",
+  "transaction_id": "fb_trans_123456789",
+  "external_id": "pedido-001",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "id": "fb_trans_123456789",
+    "status": "captured",
+    "amount": 10000,
+    "currency": "BRL",
+    "captured_amount": 10000,
+    "installments": 3,
+    "payment": {
+      "method": "credit_card",
+      "brand": "visa",
+      "lastFourDigits": "1111"
+    },
+    "buyer": {
+      "email": "cliente@email.com",
+      "document": "***.***.***-**"
+    },
+    "created_at": "2024-01-15T10:25:00Z",
+    "captured_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### Corpo da Requisição - Assinatura
+```json
+{
+  "event": "subscription.payment_successful",
+  "subscription_id": "fb_sub_123456789",
+  "transaction_id": "fb_trans_987654321",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "subscription_id": "fb_sub_123456789",
+    "status": "active",
+    "amount": 2999,
+    "currency": "BRL",
+    "billing_cycle": "monthly",
+    "payment": {
+      "transaction_id": "fb_trans_987654321",
+      "method": "credit_card",
+      "brand": "mastercard",
+      "lastFourDigits": "4444"
+    },
+    "buyer": {
+      "email": "cliente@email.com"
+    },
+    "next_billing_date": "2024-02-15",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+## Configuração
+
+### URL de Callback Global
+Configure uma URL padrão para receber todas as notificações no Dashboard.
+
+### URLs Específicas por Transação
+Defina URLs customizadas no momento da criação da transação:
+
+```json
+{
+  "amount": 10000,
+  "callback_url": "https://meusite.com/webhook/transacao-especifica",
+  "payment": {
+    "chargeType": "CREDITO_A_VISTA",
+    "capture": true,
+    "card": {
+      "number": "4111111111111111",
+      "expiration": "12/26",
+      "securityCode": "123",
+      "name": "João da Silva"
+    }
+  }
+}
+```
+
+## Validação de Segurança
+
+### Verificação de Assinatura
+Sempre valide a assinatura do webhook para garantir autenticidade:
+
+<CodeGroup>
+```python Python
+import hmac
+import hashlib
+
+def verify_webhook_signature(payload, signature, secret):
+    expected_signature = 'sha256=' + hmac.new(
+        secret.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(signature, expected_signature)
+
+# Uso
+is_valid = verify_webhook_signature(
+    request.body, 
+    request.headers['X-FireBanking-Signature'], 
+    webhook_secret
+)
+```
+
+```javascript Node.js
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+    const expectedSignature = 'sha256=' + crypto
+        .createHmac('sha256', secret)
+        .update(payload)
+        .digest('hex');
+    
+    return crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedSignature)
+    );
+}
+
+// Uso
+const isValid = verifyWebhookSignature(
+    req.body,
+    req.headers['x-firebanking-signature'],
+    webhookSecret
+);
+```
+
+```php PHP
+function verifyWebhookSignature($payload, $signature, $secret) {
+    $expectedSignature = 'sha256=' . hash_hmac('sha256', $payload, $secret);
+    return hash_equals($signature, $expectedSignature);
+}
+
+// Uso
+$isValid = verifyWebhookSignature(
+    file_get_contents('php://input'),
+    $_SERVER['HTTP_X_FIREBANKING_SIGNATURE'],
+    $webhookSecret
+);
+```
+</CodeGroup>
+
+## Implementação Robusta
+
+### Tratamento de Resposta
+Sua aplicação deve responder adequadamente aos webhooks:
+
+```http
+HTTP/1.1 200 OK
+Content-Length: 0
+```
+
+- **Status 200-299**: Webhook processado com sucesso
+- **Outros status**: FireBanking tentará reenviar
+
+### Retry Policy
+O FireBanking implementa retry automático:
+- **Tentativas**: Até 5 tentativas com backoff exponencial
+- **Intervalo**: 1s, 3s, 9s, 27s, 81s
+- **Timeout**: 30 segundos por tentativa
+
+### Idempotência
+Implemente controle de idempotência usando o `transaction_id`:
+
+```python
+def process_webhook(webhook_data):
+    transaction_id = webhook_data['transaction_id']
+    
+    # Verifica se já foi processado
+    if webhook_already_processed(transaction_id):
+        return "OK"  # Resposta de sucesso sem reprocessar
+    
+    # Processa o webhook
+    process_transaction_update(webhook_data)
+    mark_webhook_as_processed(transaction_id)
+    
+    return "OK"
+```
+
+## Exemplo Prático
+
+### Manipulador Express.js
+```javascript
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+
+app.use(express.raw({ type: 'application/json' }));
+
+app.post('/webhooks/credit-card', (req, res) => {
+    const signature = req.headers['x-firebanking-signature'];
+    const payload = req.body;
+    
+    // Verifica assinatura
+    if (!verifyWebhookSignature(payload, signature, process.env.WEBHOOK_SECRET)) {
+        return res.status(401).send('Invalid signature');
+    }
+    
+    const event = JSON.parse(payload);
+    
+    switch (event.event) {
+        case 'payment.captured':
+            console.log('Pagamento capturado:', event.data.id);
+            // Atualizar status no seu sistema
+            updatePaymentStatus(event.data.id, 'captured');
+            break;
+            
+        case 'payment.failed':
+            console.log('Pagamento falhou:', event.data.id);
+            // Notificar cliente sobre falha
+            notifyPaymentFailure(event.data.buyer.email);
+            break;
+            
+        case 'subscription.payment_successful':
+            console.log('Cobrança recorrente bem-sucedida:', event.data.subscription_id);
+            // Renovar acesso do usuário
+            renewUserAccess(event.data.buyer.email);
+            break;
+            
+        default:
+            console.log('Evento desconhecido:', event.event);
+    }
+    
+    res.status(200).send('OK');
+});
+```
+
+## Monitoramento
+
+### Dashboard
+Monitore seus webhooks em tempo real através do [Dashboard FireBanking](https://dashboard.firebanking.com):
+- **Histórico completo** de webhooks enviados
+- **Status de entrega** e tentativas de retry
+- **Payload completo** enviado
+- **Resposta recebida** da aplicação
+
+### Logs Recomendados
+```json
+{
+  "timestamp": "2024-01-15T10:30:00Z",
+  "event": "webhook_received",
+  "webhook_id": "wh_123456",
+  "event_type": "payment.captured",
+  "transaction_id": "fb_trans_123456789",
+  "status": "processed",
+  "processing_time_ms": 150
+}
+```
+
+## Próximos Passos
+
+- Configure [tratamento de erros robusto](/concepts/error-handling)
+- Explore [webhooks de outros métodos](/api-reference/pix/webhooks-cashin)
+- Teste sua implementação no [ambiente sandbox](/testing)
+
+<Info>
+  **Dica**: Use ferramentas como [webhook.site](https://webhook.site) para testar e depurar seus webhooks durante o desenvolvimento.
+</Info>

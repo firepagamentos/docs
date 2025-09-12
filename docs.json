@@ -15,16 +15,24 @@
         "tab": "Documentação",
         "groups": [
           {
-            "group": "Primeiros Passos",
+            "group": "Início",
             "pages": ["index", "quickstart", "authentication", "testing"]
           },
           {
             "group": "Conceitos Principais",
             "pages": [
-              "concepts/payments",
-              "concepts/subscriptions",
+              "concepts/overview",
+              "concepts/payment-methods",
               "concepts/webhooks",
-              "concepts/error-handling"
+              "concepts/error-handling",
+              "concepts/security"
+            ]
+          },
+          {
+            "group": "Guias de Integração",
+            "pages": [
+              "guides/integration-flow",
+              "guides/best-practices"
             ]
           }
         ]
@@ -34,53 +42,145 @@
         "groups": [
           {
             "group": "Visão Geral",
-            "pages": ["api-reference/introduction"]
+            "pages": ["api-reference/credit-card/introduction"]
           },
           {
             "group": "Pagamentos",
             "pages": [
-              "api-reference/payment/create",
-              "api-reference/payment/list",
-              "api-reference/payment/get",
-              "api-reference/payment/capture",
-              "api-reference/payment/refund",
-              "api-reference/payment/cancel",
-              "api-reference/payment/sync"
+              "api-reference/credit-card/payment/create",
+              "api-reference/credit-card/payment/list",
+              "api-reference/credit-card/payment/get",
+              "api-reference/credit-card/payment/capture",
+              "api-reference/credit-card/payment/refund",
+              "api-reference/credit-card/payment/cancel",
+              "api-reference/credit-card/payment/sync"
             ]
           },
           {
-            "group": "Tokens de Cartão",
+            "group": "Tokenização",
             "pages": [
-              "api-reference/payment/create-token",
-              "api-reference/payment/get-tokens"
+              "api-reference/credit-card/token/create",
+              "api-reference/credit-card/token/list"
             ]
-          },
-          {
-            "group": "Gestão de Compradores",
-            "pages": ["api-reference/buyer/create", "api-reference/buyer/list"]
           },
           {
             "group": "Assinaturas",
             "pages": [
-              "api-reference/subscription/create",
-              "api-reference/subscription/update",
-              "api-reference/subscription/cancel"
+              "api-reference/credit-card/subscription/create",
+              "api-reference/credit-card/subscription/update",
+              "api-reference/credit-card/subscription/cancel"
             ]
           },
           {
-            "group": "Conta",
-            "pages": ["api-reference/account/balance"]
+            "group": "Webhooks",
+            "pages": ["api-reference/credit-card/webhooks"]
+          }
+        ]
+      },
+      {
+        "tab": "API - PIX",
+        "groups": [
+          {
+            "group": "Visão Geral",
+            "pages": ["api-reference/pix/introduction"]
+          },
+          {
+            "group": "PIX Cobrança (Cash In)",
+            "pages": [
+              "api-reference/pix/charge/create-qrcode",
+              "api-reference/pix/charge/create-key",
+              "api-reference/pix/charge/get"
+            ]
+          },
+          {
+            "group": "PIX Saque (Cash Out)",
+            "pages": [
+              "api-reference/pix/withdraw/create",
+              "api-reference/pix/withdraw/create-qrcode",
+              "api-reference/pix/withdraw/get"
+            ]
+          },
+          {
+            "group": "Operações",
+            "pages": [
+              "api-reference/pix/refund",
+              "api-reference/pix/transactions",
+              "api-reference/pix/split"
+            ]
           },
           {
             "group": "Webhooks",
             "pages": [
-              "api-reference/webhooks/barte",
-              "api-reference/webhooks/provider"
+              "api-reference/pix/webhooks-cashin",
+              "api-reference/pix/webhooks-cashout"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API - Boleto",
+        "groups": [
+          {
+            "group": "Visão Geral",
+            "pages": [
+              "api-reference/boleto/introduction",
+              "api-reference/boleto/integration-flow"
+            ]
+          },
+          {
+            "group": "Emissão",
+            "pages": [
+              "api-reference/boleto/create",
+              "api-reference/boleto/get",
+              "api-reference/boleto/generate-pdf"
+            ]
+          },
+          {
+            "group": "Gestão",
+            "pages": ["api-reference/boleto/cancel"]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/boleto/webhook-confirmed",
+              "api-reference/boleto/webhook-paid",
+              "api-reference/boleto/webhook-cancelled"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "APIs Comuns",
+        "groups": [
+          {
+            "group": "Conta",
+            "pages": [
+              "api-reference/account/balance",
+              "api-reference/account/transactions"
+            ]
+          },
+          {
+            "group": "Compradores",
+            "pages": [
+              "api-reference/buyer/create",
+              "api-reference/buyer/list",
+              "api-reference/buyer/get"
+            ]
+          },
+          {
+            "group": "Webhooks Gerais",
+            "pages": [
+              "api-reference/webhooks/configure",
+              "api-reference/webhooks/test",
+              "api-reference/webhooks/retry"
             ]
           },
           {
             "group": "Sistema",
-            "pages": ["api-reference/health/check"]
+            "pages": [
+              "api-reference/health/check",
+              "api-reference/health/status"
+            ]
           },
           {
             "group": "APIs Internas",

@@ -16,7 +16,7 @@ description: 'Bem-vindo à documentação da API FireBanking - Processamento de 
 
 ## Comece rapidamente
 
-Integre pagamentos com cartão de crédito em minutos com nossa API **simples, direta e previsível**.
+Integre **múltiplos métodos de pagamento** em uma única plataforma com nossa API **simples, direta e previsível**.
 
 <CardGroup cols={2}>
   <Card
@@ -24,14 +24,40 @@ Integre pagamentos com cartão de crédito em minutos com nossa API **simples, d
     icon="rocket"
     href="/quickstart"
   >
-    Processe seu primeiro pagamento em menos de 5 minutos
+    Processe pagamentos com PIX, Cartão e Boleto em minutos
   </Card>
   <Card
-    title="Referência da API"
-    icon="book"
-    href="/api-reference/introduction"
+    title="Compare Métodos"
+    icon="scale-balanced"
+    href="/concepts/overview"
   >
-    Explore todos os endpoints de cartão de crédito
+    Entenda quando usar cada método de pagamento
+  </Card>
+</CardGroup>
+
+## Métodos de Pagamento Disponíveis
+
+<CardGroup cols={3}>
+  <Card
+    title="💳 Cartão de Crédito"
+    icon="credit-card"
+    href="/api-reference/credit-card/introduction"
+  >
+    Parcelamento até 24x, pré-autorização e tokenização para recorrência
+  </Card>
+  <Card
+    title="📱 PIX"
+    icon="mobile-alt"
+    href="/api-reference/pix/introduction"
+  >
+    Pagamentos instantâneos 24/7 com QR Code e chaves PIX
+  </Card>
+  <Card
+    title="📄 Boleto"
+    icon="file-invoice"
+    href="/api-reference/boleto/introduction"
+  >
+    Cobrança tradicional aceita em qualquer banco do Brasil
   </Card>
 </CardGroup>
 
@@ -39,98 +65,142 @@ Integre pagamentos com cartão de crédito em minutos com nossa API **simples, d
 
 <CardGroup cols={2}>
   <Card
-    title="Integração Simplificada"
-    icon="code"
+    title="Plataforma Unificada"
+    icon="layer-group"
   >
-    Módulo dedicado ao cartão de crédito com contrato JSON único
+    Todos os métodos em uma única API com padrões consistentes
   </Card>
   <Card
-    title="Liquidez Previsível"
+    title="Liquidez Otimizada"
     icon="calendar"
   >
-    Fundos transferidos em D+2 com opção de antecipação
+    PIX instantâneo, Cartão D+2, Boleto D+1 com antecipação disponível
   </Card>
   <Card
-    title="Flexibilidade de Cobrança"
+    title="Flexibilidade Total"
     icon="settings"
   >
-    Pré-autorização ou captura imediata conforme sua necessidade
+    Pré-autorização, split automático e webhooks específicos
   </Card>
   <Card
-    title="Sem Pré-cadastro"
-    icon="user-check"
+    title="Sem Complexidade"
+    icon="magic"
   >
-    Não é necessário criar perfis de compradores previamente
+    Não é necessário pré-cadastrar compradores ou configurações extras
   </Card>
 </CardGroup>
 
-## Recursos Principais
+## Recursos Avançados
 
 <CardGroup cols={2}>
   <Card
-    title="Parcelamento Inteligente"
-    icon="credit-card"
+    title="Split Automático"
+    icon="share-alt"
   >
-    Até 24 parcelas com políticas de taxa configuráveis
+    Divisão automática de valores para marketplaces e plataformas
   </Card>
   <Card
-    title="Webhooks Específicos"
+    title="Webhooks Inteligentes"
     icon="webhook"
   >
-    URLs customizadas por transação com retry automático
+    URLs customizadas por transação com retry e validação automática
   </Card>
   <Card
-    title="Tokenização Segura"
+    title="Tokenização Multi-Método"
     icon="shield-check"
   >
-    Armazenamento seguro de dados de cartão para recorrência
+    Armazenamento seguro para recorrência em cartão e débito automático
   </Card>
   <Card
-    title="Ambiente Sandbox"
+    title="Sandbox Completo"
     icon="flask"
   >
-    Teste completo com cartões específicos antes da produção
+    Ambiente de testes com simulação real de todos os métodos
   </Card>
 </CardGroup>
 
-## Casos de Uso Ideais
+## Casos de Uso por Método
 
 <CardGroup cols={3}>
   <Card
-    title="E-commerce"
+    title="💳 E-commerce Premium"
     icon="shopping-cart"
   >
-    Vendas online com parcelamento e gestão de estoque
+    **Cartão**: Parcelamento até 24x para produtos de alto valor
   </Card>
   <Card
-    title="SaaS e Assinaturas"
-    icon="refresh"
+    title="📱 Delivery e Apps"
+    icon="motorcycle"
   >
-    Cobranças recorrentes mensais, trimestrais e anuais
+    **PIX**: Confirmação instantânea para liberação rápida
   </Card>
   <Card
-    title="Reservas e Serviços"
-    icon="calendar-check"
+    title="📊 B2B e Corporativo"
+    icon="building"
   >
-    Pré-autorização para confirmação posterior
+    **Boleto**: Processo de aprovação e controle financeiro
+  </Card>
+  <Card
+    title="🎓 Educação e Cursos"
+    icon="graduation-cap"
+  >
+    **Mix**: Boleto mensal + PIX avulso + Cartão parcelado
+  </Card>
+  <Card
+    title="🏪 Marketplaces"
+    icon="store"
+  >
+    **Split**: Divisão automática entre vendedores
+  </Card>
+  <Card
+    title="💊 Assinaturas SaaS"
+    icon="sync"
+  >
+    **Recorrente**: Tokenização para cobranças automáticas
   </Card>
 </CardGroup>
 
 ## Próximos passos
 
 <Steps>
-  <Step title="Configure sua conta">
-    Crie sua conta FireBanking e obtenha suas chaves de API
+  <Step title="Escolha seu método principal">
+    Compare os métodos e defina qual atende melhor seu negócio
   </Step>
-  <Step title="Faça seu primeiro pagamento">
-    Use nosso guia de início rápido para processar um pagamento de teste
+  <Step title="Configure sua conta">
+    Crie sua conta FireBanking e ative os métodos desejados
+  </Step>
+  <Step title="Teste no sandbox">
+    Use nosso ambiente de testes para familiarizar-se com as APIs
   </Step>
   <Step title="Configure webhooks">
-    Receba notificações em tempo real sobre mudanças de status
+    Receba notificações em tempo real para todos os métodos
   </Step>
   <Step title="Vá para produção">
-    Mude para suas chaves de produção e comece a processar pagamentos reais
+    Ative suas credenciais reais e comece a processar pagamentos
   </Step>
 </Steps>
 
-Pronto para começar? [Vá para o guia de início rápido →](/quickstart)
+## Comece agora com seu método preferido
+
+<CardGroup cols={3}>
+  <Card
+    title="🚀 PIX Primeiro"
+    href="/api-reference/pix/introduction"
+  >
+    Ideal para **confirmação rápida** e **custos baixos**
+  </Card>
+  <Card
+    title="💳 Cartão Primeiro"
+    href="/api-reference/credit-card/introduction"
+  >
+    Ideal para **parcelamento** e **recorrência**
+  </Card>
+  <Card
+    title="📄 Boleto Primeiro"
+    href="/api-reference/boleto/introduction"
+  >
+    Ideal para **valores altos** e **B2B**
+  </Card>
+</CardGroup>
+
+Ou comece pelo [guia de início rápido multi-método →](/quickstart)

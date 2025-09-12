@@ -1,0 +1,420 @@
+---
+title: "Quando Usar Cada Método"
+description: "Guia prático para escolher o método de pagamento ideal para cada situação"
+---
+
+## Guia de Decisão Rápida
+
+Use este guia para escolher rapidamente o melhor método de pagamento baseado na sua situação específica:
+
+<CardGroup cols={2}>
+  <Card title="🎯 Por Valor da Transação" icon="calculator">
+    **Até R$ 100**: PIX  
+    **R$ 100-500**: PIX ou Cartão  
+    **Acima de R$ 500**: Boleto ou Cartão
+  </Card>
+  <Card title="⚡ Por Urgência" icon="clock">
+    **Instantâneo**: PIX  
+    **Rápido**: Cartão  
+    **Flexível**: Boleto
+  </Card>
+</CardGroup>
+
+## Análise por Cenário de Negócio
+
+### E-commerce e Marketplace
+
+<AccordionGroup>
+  <Accordion title="🛒 Loja Virtual - Produtos Físicos">
+    **Estratégia Recomendada**:
+    - **PIX** (40%): Confirmação instantânea, ideal para envio rápido
+    - **Cartão** (45%): Parcelamento atrai mais vendas
+    - **Boleto** (15%): Backup para clientes sem cartão/PIX
+    
+    **Implementação**:
+    ```javascript
+    const paymentOptions = {
+      pix: { discount: 0.05, highlight: true },
+      card: { installments: 12, main: true },
+      boleto: { dueDays: 3, fallback: true }
+    };
+    ```
+  </Accordion>
+  
+  <Accordion title="📱 Marketplace Multi-Vendedor">
+    **Estratégia Recomendada**:
+    - **PIX** (35%): Split automático instantâneo
+    - **Cartão** (50%): Maior volume de vendas
+    - **Boleto** (15%): Transações B2B
+    
+    **Vantagens do Split**:
+    - PIX: Repasse instantâneo aos vendedores
+    - Cartão: Gestão centralizada de parcelamento  
+    - Boleto: Controle de inadimplência por vendedor
+  </Accordion>
+  
+  <Accordion title="🎮 Produtos Digitais">
+    **Estratégia Recomendada**:
+    - **PIX** (60%): Entrega instantânea após confirmação
+    - **Cartão** (40%): Recorrência e parcelamento
+    - **Boleto**: Não recomendado (demora na confirmação)
+    
+    **Casos Específicos**:
+    - Games/Apps: PIX para créditos, Cartão para assinaturas
+    - Cursos: PIX para acesso imediato, Boleto para parcelamentos
+    - Software: Cartão para mensalidades, PIX para upgrades
+  </Accordion>
+</AccordionGroup>
+
+### Serviços e Assinaturas
+
+<AccordionGroup>
+  <Accordion title="💪 Academia e Fitness">
+    **Perfil do Cliente**: Prefere estabilidade e controle de gastos
+    
+    **Estratégia Recomendada**:
+    - **Boleto** (50%): Mensalidade com prazo, controle familiar
+    - **Cartão** (35%): Débito automático, conveniência
+    - **PIX** (15%): Pagamento avulso, reposição de mensalidades
+    
+    **Benefícios por Método**:
+    - Boleto: Menor inadimplência, planejamento familiar
+    - Cartão: Automatização, menor operacional
+    - PIX: Flexibilidade para pagamentos em atraso
+  </Accordion>
+  
+  <Accordion title="🎓 Educação e Cursos">
+    **Perfil do Cliente**: Planejamento de médio/longo prazo
+    
+    **Estratégia Recomendada**:
+    - **Boleto** (40%): Mensalidades escolares, controle parental  
+    - **Cartão** (35%): Parcelamento de cursos, facilidade
+    - **PIX** (25%): Pagamentos emergenciais, reposições
+    
+    **Sazonalidade**:
+    - Janeiro-Março: ↑ Boleto (planejamento anual)
+    - Meio do ano: ↑ Cartão (parcelamento)
+    - Final do ano: ↑ PIX (pagamentos de recuperação)
+  </Accordion>
+  
+  <Accordion title="🏥 Saúde e Consultorias">
+    **Perfil do Cliente**: Pagamentos eventuais, valores variáveis
+    
+    **Estratégia Recomendada**:
+    - **PIX** (45%): Confirmação de consulta, praticidade
+    - **Cartão** (40%): Parcelamento de procedimentos
+    - **Boleto** (15%): Valores altos, convênios
+    
+    **Vantagens Operacionais**:
+    - PIX: Confirmação em tempo real libera agenda
+    - Cartão: Cobrança automática recorrente
+    - Boleto: Documentação para reembolsos
+  </Accordion>
+</AccordionGroup>
+
+### B2B e Corporativo
+
+<AccordionGroup>
+  <Accordion title="🏢 Pequenas Empresas (até 20 funcionários)">
+    **Características**: Agilidade, fluxo de caixa apertado
+    
+    **Estratégia Recomendada**:
+    - **PIX** (60%): Pagamentos urgentes, fornecedores
+    - **Cartão** (30%): Compras operacionais, despesas
+    - **Boleto** (10%): Planejamento mensal
+    
+    **Casos de Uso**:
+    - PIX: Fornecedores, freelancers, emergências
+    - Cartão: Software, equipamentos, viagens
+    - Boleto: Aluguel, seguros, grandes fornecedores
+  </Accordion>
+  
+  <Accordion title="🏭 Médias Empresas (20-200 funcionários)">
+    **Características**: Processos definidos, aprovação interna
+    
+    **Estratégia Recomendada**:
+    - **Boleto** (50%): Processo de aprovação, controle
+    - **PIX** (30%): Pagamentos aprovados urgentes
+    - **Cartão** (20%): Despesas operacionais
+    
+    **Fluxo de Aprovação**:
+    1. Solicitação → Boleto (prazo para aprovação)
+    2. Aprovação → PIX (execução rápida)
+    3. Operacional → Cartão (limite pré-aprovado)
+  </Accordion>
+  
+  <Accordion title="🏢 Grandes Empresas (200+ funcionários)">
+    **Características**: Compliance, auditoria, processos rígidos
+    
+    **Estratégia Recomendada**:
+    - **Boleto** (70%): Compliance, rastreabilidade
+    - **PIX** (20%): Emergências aprovadas
+    - **Cartão** (10%): Despesas operacionais pequenas
+    
+    **Requisitos Especiais**:
+    - Integração com ERP/SAP
+    - Aprovação multi-nível
+    - Auditoria de pagamentos
+    - Conciliação automática
+  </Accordion>
+</AccordionGroup>
+
+## Análise por Perfil Demográfico
+
+### Por Faixa Etária
+
+| Idade | Método Preferido | Segundo Método | Comportamento |
+|-------|------------------|----------------|---------------|
+| **16-25 anos** | PIX (70%) | Cartão (25%) | Digital native, praticidade |
+| **26-35 anos** | PIX (45%) | Cartão (40%) | Equilibrio digital/tradicional |
+| **36-45 anos** | Cartão (50%) | PIX (30%) | Parcelamento importante |
+| **46-55 anos** | Cartão (45%) | Boleto (35%) | Controle e planejamento |
+| **55+ anos** | Boleto (60%) | Cartão (25%) | Confiança em métodos conhecidos |
+
+### Por Renda Familiar
+
+<AccordionGroup>
+  <Accordion title="💰 Classe A (R$ 15.000+)">
+    **Prioridades**: Conveniência, tempo, status
+    - **Cartão** (60%): Pontos, milhas, conveniência
+    - **PIX** (35%): Agilidade em pagamentos
+    - **Boleto** (5%): Apenas para valores muito altos
+  </Accordion>
+  
+  <Accordion title="💳 Classe B (R$ 5.000-15.000)">
+    **Prioridades**: Parcelamento, controle, praticidade
+    - **Cartão** (50%): Parcelamento essencial
+    - **PIX** (40%): Pagamentos à vista com desconto
+    - **Boleto** (10%): Grandes compras planejadas
+  </Accordion>
+  
+  <Accordion title="🏠 Classe C (R$ 2.000-5.000)">
+    **Prioridades**: Economia, controle de gastos
+    - **PIX** (50%): Evita juros e taxas
+    - **Boleto** (30%): Controle e planejamento
+    - **Cartão** (20%): Emergências e parcelamento
+  </Accordion>
+  
+  <Accordion title="📊 Classe D/E (até R$ 2.000)">
+    **Prioridades**: Menor custo, controle total
+    - **PIX** (60%): Sem taxas, confirmação imediata
+    - **Boleto** (35%): Pagamento quando possível
+    - **Cartão** (5%): Raramente disponível
+  </Accordion>
+</AccordionGroup>
+
+## Estratégias por Região
+
+### Diferenças Regionais
+
+<AccordionGroup>
+  <Accordion title="🏙️ Grandes Centros (SP, RJ, BH)">
+    **Características**: Alto uso de tecnologia, pressa no dia a dia
+    - **PIX** (45%): Agilidade é prioridade
+    - **Cartão** (40%): Parcelamento e conveniência
+    - **Boleto** (15%): Valores altos e B2B
+  </Accordion>
+  
+  <Accordion title="🌆 Cidades Médias">
+    **Características**: Mix entre tradicional e digital
+    - **Cartão** (40%): Parcelamento importante
+    - **PIX** (35%): Crescimento rápido
+    - **Boleto** (25%): Ainda muito usado
+  </Accordion>
+  
+  <Accordion title="🌾 Interior e Rural">
+    **Características**: Mais tradicional, menos conectado
+    - **Boleto** (50%): Confiança no método conhecido
+    - **PIX** (30%): Crescimento acelerado
+    - **Cartão** (20%): Menor penetração
+  </Accordion>
+</AccordionGroup>
+
+## Otimização por Ticket Médio
+
+### Micro Transações (R$ 1-20)
+
+```
+Exemplo: Doações, conteúdo digital, recarga de créditos
+
+✅ PIX (90%): Taxa baixa, confirmação instantânea
+❌ Cartão (10%): Taxa alta percentualmente  
+❌ Boleto (0%): Taxa fixa inviabiliza
+```
+
+**Implementação**:
+```javascript
+if (amount < 2000) { // Até R$ 20
+  return ['pix']; // Apenas PIX disponível
+}
+```
+
+### Pequenas Transações (R$ 20-100)
+
+```
+Exemplo: Fast food, delivery, apps, assinaturas básicas
+
+✅ PIX (60%): Melhor custo-benefício
+✅ Cartão (40%): Parcelamento 2-3x
+❌ Boleto (0%): Taxa ainda alta proporcionalmente
+```
+
+### Transações Médias (R$ 100-500)
+
+```
+Exemplo: Roupas, eletrônicos básicos, cursos
+
+✅ Cartão (45%): Parcelamento atrativo
+✅ PIX (35%): Desconto à vista
+✅ Boleto (20%): Alternativa válida
+```
+
+### Grandes Transações (R$ 500+)
+
+```
+Exemplo: Eletrodomésticos, viagens, consultoria
+
+✅ Boleto (40%): Menor custo operacional
+✅ Cartão (35%): Parcelamento longo
+✅ PIX (25%): Confirmação instantânea
+```
+
+## Matriz de Decisão
+
+### Ferramenta de Escolha Rápida
+
+| Critério | PIX | Cartão | Boleto |
+|----------|-----|---------|---------|
+| **Valor < R$ 50** | ⭐⭐⭐ | ⭐ | ❌ |
+| **Valor R$ 50-200** | ⭐⭐⭐ | ⭐⭐ | ⭐ |
+| **Valor R$ 200-1000** | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
+| **Valor > R$ 1000** | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **Urgência** | ⭐⭐⭐ | ⭐⭐ | ⭐ |
+| **Parcelamento** | ❌ | ⭐⭐⭐ | ❌ |
+| **Custo Baixo** | ⭐⭐ | ⭐ | ⭐⭐⭐ |
+| **Cliente Jovem** | ⭐⭐⭐ | ⭐⭐ | ⭐ |
+| **Cliente Sênior** | ⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **B2B** | ⭐⭐ | ⭐ | ⭐⭐⭐ |
+
+## Implementação Prática
+
+### Algoritmo de Sugestão
+
+```javascript
+function suggestPaymentMethod(transactionData) {
+  const { amount, customerAge, isB2B, urgency } = transactionData;
+  const suggestions = [];
+  
+  // Regra 1: Valor baixo sempre PIX
+  if (amount < 5000) {
+    suggestions.push({ method: 'pix', priority: 1, reason: 'Melhor custo para valor baixo' });
+  }
+  
+  // Regra 2: Parcelamento sempre cartão
+  if (amount > 10000) {
+    suggestions.push({ 
+      method: 'card', 
+      priority: 2, 
+      reason: 'Parcelamento disponível',
+      installments: Math.min(Math.floor(amount / 3000), 12)
+    });
+  }
+  
+  // Regra 3: Valor alto ou B2B sugere boleto
+  if (amount > 50000 || isB2B) {
+    suggestions.push({ 
+      method: 'boleto', 
+      priority: isB2B ? 1 : 3,
+      reason: 'Menor custo operacional' 
+    });
+  }
+  
+  // Regra 4: Urgência favorece PIX
+  if (urgency === 'high') {
+    suggestions.forEach(s => {
+      if (s.method === 'pix') s.priority -= 1;
+    });
+  }
+  
+  return suggestions.sort((a, b) => a.priority - b.priority);
+}
+```
+
+### Interface Adaptativa
+
+```css
+/* Destaque visual baseado na recomendação */
+.payment-method.recommended {
+  border: 2px solid #00C851;
+  background: linear-gradient(135deg, #f8fff8 0%, #f0fff0 100%);
+  position: relative;
+}
+
+.payment-method.recommended::before {
+  content: "⭐ Recomendado";
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background: #00C851;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+```
+
+## Métricas e Otimização Contínua
+
+### KPIs para Acompanhar
+
+<CardGroup cols={2}>
+  <Card title="Conversão por Método">
+    - Taxa de abandono no checkout
+    - Tempo de decisão
+    - Preferência por faixa de valor
+  </Card>
+  <Card title="Satisfação do Cliente">
+    - NPS por método de pagamento
+    - Reclamações relacionadas
+    - Taxa de re-compra por método
+  </Card>
+</CardGroup>
+
+### Testes A/B Recomendados
+
+1. **Ordem dos Métodos**: Teste diferentes ordens de exibição
+2. **Incentivos**: Compare descontos vs. facilidades
+3. **Interface**: Teste layouts diferentes para cada método
+4. **Messaging**: Varie as mensagens de incentivo
+
+## Próximos Passos
+
+Agora que você entende quando usar cada método, implemente sua estratégia:
+
+<Steps>
+  <Step title="Analise seu perfil de cliente">
+    Use as tabelas acima para identificar preferências
+  </Step>
+  <Step title="Defina sua estratégia">
+    Escolha os métodos principais e secundários
+  </Step>
+  <Step title="Implemente com priorização">
+    Configure a ordem e destaque dos métodos
+  </Step>
+  <Step title="Monitore e otimize">
+    Acompanhe métricas e ajuste conforme resultados
+  </Step>
+</Steps>
+
+<CardGroup cols={3}>
+  <Card title="Implementar PIX" href="/api-reference/pix/charge/create-qrcode">
+    Para confirmação instantânea e custos baixos
+  </Card>
+  <Card title="Implementar Cartão" href="/api-reference/credit-card/payment/create">
+    Para parcelamento e recorrência
+  </Card>
+  <Card title="Implementar Boleto" href="/api-reference/boleto/create">
+    Para valores altos e controle de custos
+  </Card>
+</CardGroup>
