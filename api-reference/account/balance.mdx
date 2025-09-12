@@ -27,15 +27,15 @@ curl -X GET "https://api.firebanking.com/v1/account/balance" \
 
 ```json Resposta
 {
-  "availableBalance": 150000,
-  "pendingBalance": 25000,
+  "availableBalance": 1500,
+  "pendingBalance": 250,
   "currency": "BRL",
   "lastUpdated": "2024-01-15T16:30:00Z",
   "accountId": "acc_12345",
   "balanceDetails": {
-    "settlementBalance": 140000,
-    "reserveBalance": 10000,
-    "processingFees": 3500
+    "settlementBalance": 1400,
+    "reserveBalance": 100,
+    "processingFees": 35
   }
 }
 ```
@@ -43,11 +43,11 @@ curl -X GET "https://api.firebanking.com/v1/account/balance" \
 ## Campos da Resposta
 
 <ResponseField name="availableBalance" type="integer">
-  Saldo disponível em centavos (pode ser sacado imediatamente)
+  Saldo disponível em reais (pode ser sacado imediatamente)
 </ResponseField>
 
 <ResponseField name="pendingBalance" type="integer">
-  Saldo pendente em centavos (fundos sendo processados)
+  Saldo pendente em reais (fundos sendo processados)
 </ResponseField>
 
 <ResponseField name="currency" type="string">
@@ -164,11 +164,11 @@ Inscreva-se nestes webhooks para atualizações de saldo:
 
 ## Formato da Moeda
 
-Todos os valores são retornados em **centavos**:
-- R$ 1.500,00 = `150000` centavos
-- R$ 250,00 = `25000` centavos  
-- R$ 35,00 = `3500` centavos
+Todos os valores são retornados em **reais**:
+- R$ 1.500,00 = `1500` reais
+- R$ 250,00 = `250` reais  
+- R$ 35,00 = `35` reais
 
 <Tip>
-  Para exibir moeda adequadamente, divida por 100 e formate de acordo com as convenções de moeda brasileira.
+  Para exibir moeda adequadamente, formate de acordo com as convenções de moeda brasileira.
 </Tip>

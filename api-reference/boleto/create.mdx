@@ -11,7 +11,7 @@ Crie um boleto bancário registrado para recebimento de pagamentos. O boleto ser
 ## Parâmetros da Requisição
 
 <ParamField body="amount" type="integer" required>
-  Valor do boleto em centavos (R$ 100,00 = 10000). Mínimo: 250 (R$ 2,50)
+  Valor do boleto em reais (R$ 100,00 = 100). Mínimo: 2.50 (R$ 2,50)
 </ParamField>
 
 <ParamField body="due_date" type="string" required>
@@ -71,11 +71,11 @@ Crie um boleto bancário registrado para recebimento de pagamentos. O boleto ser
 </ParamField>
 
 <ParamField body="fine_amount" type="integer">
-  Multa em centavos para pagamento após vencimento. Padrão: 2% do valor
+  Multa em reais para pagamento após vencimento. Padrão: 2% do valor
 </ParamField>
 
 <ParamField body="interest_amount" type="integer">
-  Juros diários em centavos após vencimento. Padrão: 0,033% ao dia
+  Juros diários em reais após vencimento. Padrão: 0,033% ao dia
 </ParamField>
 
 <ParamField body="callback_url" type="string">
@@ -98,7 +98,7 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 25000,
+    "amount": 250,
     "due_date": "2024-02-15",
     "description": "Mensalidade Academia FitLife - Janeiro/2024",
     "external_id": "mensalidade-2024-01-joao",
@@ -117,8 +117,8 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
         "zip_code": "01000000"
       }
     },
-    "fine_amount": 500,
-    "interest_amount": 83,
+    "fine_amount": 5,
+    "interest_amount": 0.83,
     "callback_url": "https://meusite.com/webhooks/boleto",
     "instructions": [
       "Pagamento referente à mensalidade de Janeiro/2024",
@@ -136,7 +136,7 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
 
 ```javascript JavaScript
 const boletoData = {
-  amount: 25000, // R$ 250,00
+  amount: 250, // R$ 250,00
   due_date: '2024-02-15',
   description: 'Mensalidade Academia FitLife - Janeiro/2024',
   external_id: 'mensalidade-2024-01-joao',
@@ -155,8 +155,8 @@ const boletoData = {
       zip_code: '01000000'
     }
   },
-  fine_amount: 500, // R$ 5,00 de multa
-  interest_amount: 83, // R$ 0,83 de juros por dia
+  fine_amount: 5, // R$ 5,00 de multa
+  interest_amount: 0.83, // R$ 0,83 de juros por dia
   callback_url: 'https://meusite.com/webhooks/boleto',
   instructions: [
     'Pagamento referente à mensalidade de Janeiro/2024',
@@ -192,7 +192,7 @@ from datetime import datetime, timedelta
 due_date = (datetime.now() + timedelta(days=15)).strftime('%Y-%m-%d')
 
 boleto_data = {
-    "amount": 25000,  # R$ 250,00
+    "amount": 250,  # R$ 250,00
     "due_date": due_date,
     "description": "Mensalidade Academia FitLife - Janeiro/2024",
     "external_id": "mensalidade-2024-01-joao",
@@ -211,8 +211,8 @@ boleto_data = {
             "zip_code": "01000000"
         }
     },
-    "fine_amount": 500,  # R$ 5,00 de multa
-    "interest_amount": 83,  # R$ 0,83 de juros por dia
+    "fine_amount": 5,  # R$ 5,00 de multa
+    "interest_amount": 0.83,  # R$ 0,83 de juros por dia
     "callback_url": "https://meusite.com/webhooks/boleto",
     "instructions": [
         "Pagamento referente à mensalidade de Janeiro/2024",
@@ -246,7 +246,7 @@ print('Boleto criado:', boleto)
 $dueDate = date('Y-m-d', strtotime('+15 days'));
 
 $boletoData = [
-    'amount' => 25000, // R$ 250,00
+    'amount' => 250, // R$ 250,00
     'due_date' => $dueDate,
     'description' => 'Mensalidade Academia FitLife - Janeiro/2024',
     'external_id' => 'mensalidade-2024-01-joao',
@@ -265,8 +265,8 @@ $boletoData = [
             'zip_code' => '01000000'
         ]
     ],
-    'fine_amount' => 500, // R$ 5,00 de multa
-    'interest_amount' => 83, // R$ 0,83 de juros por dia
+    'fine_amount' => 5, // R$ 5,00 de multa
+    'interest_amount' => 0.83, // R$ 0,83 de juros por dia
     'callback_url' => 'https://meusite.com/webhooks/boleto',
     'instructions' => [
         'Pagamento referente à mensalidade de Janeiro/2024',
@@ -308,12 +308,12 @@ echo 'Boleto criado: ' . print_r($boleto, true);
   "id": "bol_1234567890123456",
   "external_id": "mensalidade-2024-01-joao",
   "status": "registered",
-  "amount": 25000,
+  "amount": 250,
   "currency": "BRL",
   "description": "Mensalidade Academia FitLife - Janeiro/2024",
   "due_date": "2024-02-15",
-  "fine_amount": 500,
-  "interest_amount": 83,
+  "fine_amount": 5,
+  "interest_amount": 0.83,
   "barcode": "03399876543210000002500001234567890123456789012",
   "digitable_line": "03399.87654 32100.000002 50000.123456 7 89012345678901",
   "our_number": "12345678901",
@@ -395,7 +395,7 @@ echo 'Boleto criado: ' . print_r($boleto, true);
 </ResponseField>
 
 <ResponseField name="amount" type="integer">
-  Valor original do boleto em centavos
+  Valor original do boleto em reais
 </ResponseField>
 
 <ResponseField name="barcode" type="string">
@@ -504,7 +504,7 @@ function displayBoleto(boletoData) {
   
   // Formatar e exibir dados
   document.getElementById('boleto-amount').textContent = 
-    (boletoData.amount / 100).toLocaleString('pt-BR', {
+    boletoData.amount.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     });
@@ -529,7 +529,7 @@ function sendByEmail() {
   const email = currentBoleto.buyer.email;
   const subject = 'Seu Boleto - ' + currentBoleto.description;
   const body = `Olá!\n\nSeu boleto está pronto para pagamento:\n\n` +
-    `Valor: R$ ${(currentBoleto.amount / 100).toFixed(2)}\n` +
+    `Valor: R$ ${currentBoleto.amount.toFixed(2)}\n` +
     `Vencimento: ${new Date(currentBoleto.due_date).toLocaleDateString('pt-BR')}\n\n` +
     `Link do boleto: ${currentBoleto.payment_link}\n\n` +
     `Você pode pagar em qualquer banco, app bancário ou lotérica.\n\n` +
@@ -542,7 +542,7 @@ function sendByEmail() {
 function shareWhatsApp() {
   const phone = currentBoleto.buyer.phone;
   const message = `🧾 *Boleto Disponível*\n\n` +
-    `💰 Valor: R$ ${(currentBoleto.amount / 100).toFixed(2)}\n` +
+    `💰 Valor: R$ ${currentBoleto.amount.toFixed(2)}\n` +
     `📅 Vencimento: ${new Date(currentBoleto.due_date).toLocaleDateString('pt-BR')}\n\n` +
     `🔗 Link do boleto:\n${currentBoleto.payment_link}\n\n` +
     `📱 Você pode pagar pelo app do seu banco ou em qualquer agência/lotérica`;
@@ -582,7 +582,7 @@ function showPaymentConfirmed(boleto) {
   notification.innerHTML = `
     <h4>✅ Pagamento Confirmado!</h4>
     <p>O boleto foi pago em ${new Date(boleto.paid_at).toLocaleDateString('pt-BR')}</p>
-    <p>Valor pago: ${(boleto.paid_amount / 100).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}</p>
+    <p>Valor pago: ${boleto.paid_amount.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}</p>
   `;
   
   document.body.prepend(notification);

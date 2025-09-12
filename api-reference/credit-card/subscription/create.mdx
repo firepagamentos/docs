@@ -33,25 +33,25 @@ Você pode criar assinaturas usando:
   "uuidPlan": "plan-uuid-12345",
   "basicValue": {
     "type": "MONTHLY",
-    "valuePerMonth": 2999
+    "valuePerMonth": 30
   },
   "additionalValue": {
     "type": "MONTHLY",
-    "value": 500,
+    "value": 5,
     "description": "Taxa adicional de setup"
   },
   "payment": {
     "method": "CREDIT_CARD",
     "card": {
       "name": "Ana Costa",
-      "number": "4111111111111111",
-      "expiration": "08/27",
-      "securityCode": "456"
+      "number": "5186882549895601",
+      "expiration": "12/2025",
+      "securityCode": "220"
     }
   },
   "buyer": {
     "name": "Ana Costa",
-    "document": "12345678901",
+    "document": "25201246010",
     "email": "ana@example.com",
     "phone": "11999998888",
     "countryCode": "+55",
@@ -85,7 +85,7 @@ Você pode criar assinaturas usando:
   "uuidPlan": "plan-uuid-67890",
   "basicValue": {
     "type": "QUARTERLY",
-    "valuePerMonth": 4999
+    "valuePerMonth": 50
   },
   "payment": {
     "method": "CREDIT_CARD",
@@ -110,17 +110,17 @@ Você pode criar assinaturas usando:
   "planUuid": "plan-uuid-12345",
   "basicValue": {
     "type": "MONTHLY",
-    "valuePerMonth": 2999
+    "valuePerMonth": 30
   },
   "additionalValue": {
     "type": "MONTHLY",
-    "value": 500,
+    "value": 5,
     "description": "Taxa adicional de setup"
   },
   "buyerUuid": "buyer-uuid-67890",
   "startDate": "2024-02-01",
   "nextBillingDate": "2024-02-01",
-  "totalMonthlyValue": 3499,
+  "totalMonthlyValue": 35,
   "externalId": "subscription-ext-456",
   "description": "Assinatura mensal premium",
   "createdAt": "2024-01-15T14:30:00Z"
@@ -137,7 +137,7 @@ O valor central da assinatura cobrado na frequência especificada.
 </ParamField>
 
 <ParamField body="basicValue.valuePerMonth" type="integer" required>
-  Valor mensal em centavos (sempre especificar mensal mesmo para trimestral/anual)
+  Valor mensal em reais (sempre especificar mensal mesmo para trimestral/anual)
 </ParamField>
 
 ### Valor Adicional (Opcional)
@@ -148,22 +148,22 @@ Cobranças adicionais únicas ou recorrentes como taxas de configuração.
 </ParamField>
 
 <ParamField body="additionalValue.value" type="integer">
-  Valor adicional em centavos
+  Valor adicional em reais
 </ParamField>
 
 ## Lógica de Cobrança
 
 ### Assinaturas Mensais
-- **Básico**: R$ 29,99/mês = `valuePerMonth: 2999`
-- **Adicional**: R$ 5,00/mês configuração = `value: 500`
+- **Básico**: R$ 29,99/mês = `valuePerMonth: 30`
+- **Adicional**: R$ 5,00/mês configuração = `value: 5`
 - **Total**: R$ 34,99/mês
 
 ### Assinaturas Trimestrais
-- **Básico**: R$ 149,99 a cada 3 meses = `valuePerMonth: 4999` (cobrado como R$ 149,97)
+- **Básico**: R$ 149,99 a cada 3 meses = `valuePerMonth: 50` (cobrado como R$ 150,00)
 - **Cobrança**: Cobrado a cada 3 meses na data de início
 
 ### Assinaturas Anuais
-- **Básico**: R$ 999,99 por ano = `valuePerMonth: 8333` (cobrado como R$ 999,96)
+- **Básico**: R$ 999,99 por ano = `valuePerMonth: 84` (cobrado como R$ 1008,00)
 - **Cobrança**: Cobrado uma vez por ano na data de início
 
 <Warning>

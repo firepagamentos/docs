@@ -134,7 +134,7 @@ graph TB
 </AccordionGroup>
 
 ### Informações da Cobrança
-- **Valor**: Em centavos (R$ 100,00 = 10000)
+- **Valor**: Em reais (R$ 100,00 = 100)
 - **Vencimento**: Data futura (máximo 90 dias)
 - **Descrição**: Detalhamento do produto/serviço
 - **Identificador**: Seu ID único da transação
@@ -223,7 +223,7 @@ graph TB
 function showBoletoPayment(boletoData) {
   // Exibir informações do boleto
   document.getElementById('boleto-amount').textContent = 
-    (boletoData.amount / 100).toLocaleString('pt-BR', {
+    boletoData.amount.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     });

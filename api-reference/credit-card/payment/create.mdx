@@ -31,16 +31,16 @@ Você pode criar pagamentos usando dois métodos:
 </Warning>
 
 <Info>
-  Todos os valores monetários são especificados em **centavos**. Por exemplo, R$ 100,00 = 10000 centavos.
+  Todos os valores monetários são especificados em **reais**. Por exemplo, R$ 100,00 = 100 ou R$ 25,50 = 25.50.
 </Info>
 
 ## Exemplo: Pagamento com Cartão
 
 ```json Exemplo de Requisição
 {
-  "purchaseValue": 10000,
+  "purchaseValue": 1.23,
   "installments": 1,
-  "externalId": "ext-payment-12345",
+  "externalId": "ext-payment-123",
   "purchaseTitle": "Compra de Produto",
   "description": "Descrição da compra",
   "payment": {
@@ -48,14 +48,14 @@ Você pode criar pagamentos usando dois métodos:
     "capture": true,
     "card": {
       "name": "João da Silva",
-      "number": "4111111111111111",
-      "expiration": "12/25",
-      "securityCode": "123"
+      "number": "5186882549895601",
+      "expiration": "12/2025",
+      "securityCode": "220"
     }
   },
   "buyer": {
     "name": "João da Silva",
-    "document": "12345678901",
+    "document": "25201246010",
     "email": "joao@example.com",
     "phone": "11999999999",
     "countryCode": "+55",

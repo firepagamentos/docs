@@ -39,14 +39,14 @@ curl -X DELETE "https://api.firebanking.com/v1/subscription/subscription-uuid-12
   "planUuid": "plan-uuid-12345",
   "basicValue": {
     "type": "MONTHLY",
-    "valuePerMonth": 2999
+    "valuePerMonth": 30
   },
   "buyerUuid": "buyer-uuid-67890",
   "startDate": "2024-02-01",
   "cancelledAt": "2024-02-15T14:30:00Z",
   "accessExpiresAt": "2024-03-01T00:00:00Z",
   "cancellationReason": "customer_request",
-  "remainingValue": 1499
+  "remainingValue": 15
 }
 ```
 
@@ -65,7 +65,7 @@ curl -X DELETE "https://api.firebanking.com/v1/subscription/subscription-uuid-12
 </ResponseField>
 
 <ResponseField name="remainingValue" type="integer">
-  Valor não utilizado em centavos para o período de cobrança atual
+  Valor não utilizado em reais para o período de cobrança atual
 </ResponseField>
 
 ## Tipos de Cancelamento

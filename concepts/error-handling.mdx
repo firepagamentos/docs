@@ -75,7 +75,7 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
       "error": {
         "code": "INVALID_FORMAT",
         "message": "Formato inválido para o campo amount",
-        "details": "O valor deve ser um número inteiro em centavos"
+        "details": "O valor deve ser um número inteiro em reais"
       }
     }
     ```
@@ -326,7 +326,7 @@ function handleFireBankingError(response) {
   "request_id": "req_123456789",
   "user_id": "user_789",
   "additional_context": {
-    "amount": 10000,
+    "amount": 100,
     "payment_method": "credit_card",
     "attempt_count": 1
   }

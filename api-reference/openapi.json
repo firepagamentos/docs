@@ -768,8 +768,8 @@
         "properties": {
           "purchaseValue": {
             "type": "integer",
-            "description": "Valor da compra em centavos",
-            "example": 10000
+            "description": "Valor da compra em reais",
+            "example": 100
           },
           "installments": {
             "type": "integer",
@@ -1114,8 +1114,8 @@
           },
           "valuePerMonth": {
             "type": "integer",
-            "description": "Valor mensal em centavos",
-            "example": 2999
+            "description": "Valor mensal em reais",
+            "example": 30
           }
         }
       },
@@ -1130,8 +1130,8 @@
           },
           "value": {
             "type": "integer",
-            "description": "Valor adicional em centavos",
-            "example": 500
+            "description": "Valor adicional em reais",
+            "example": 5
           },
           "description": {
             "type": "string",
@@ -1171,8 +1171,8 @@
         "properties": {
           "value": {
             "type": "integer",
-            "description": "Valor do resgate em centavos",
-            "example": 50000
+            "description": "Valor do resgate em reais",
+            "example": 500
           },
           "description": {
             "type": "string",
@@ -1228,7 +1228,7 @@
           },
           "amount": {
             "type": "integer",
-            "description": "Valor do pagamento em centavos"
+            "description": "Valor do pagamento em reais"
           },
           "installments": {
             "type": "integer",
@@ -1365,11 +1365,11 @@
         "properties": {
           "availableBalance": {
             "type": "integer",
-            "description": "Saldo disponível em centavos"
+            "description": "Saldo disponível em reais"
           },
           "pendingBalance": {
             "type": "integer",
-            "description": "Saldo pendente em centavos"
+            "description": "Saldo pendente em reais"
           },
           "currency": {
             "type": "string",

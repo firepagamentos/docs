@@ -38,23 +38,24 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "purchaseValue": 10000,
+    "purchaseValue": 1.23,
     "installments": 1,
-    "externalId": "pedido-12345",
+    "externalId": "ext-payment-123",
     "purchaseTitle": "Compra de Produto",
+    "description": "Descrição da compra",
     "payment": {
       "chargeType": "NO_FEE_TO_CUSTOMER",
       "capture": true,
       "card": {
         "name": "João da Silva",
-        "number": "4111111111111111",
-        "expiration": "12/25",
-        "securityCode": "123"
+        "number": "5186882549895601",
+        "expiration": "12/2025",
+        "securityCode": "220"
       }
     },
     "buyer": {
       "name": "João da Silva",
-      "document": "12345678901",
+      "document": "25201246010",
       "email": "joao@example.com",
       "phone": "11999999999",
       "countryCode": "+55",
@@ -62,12 +63,17 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
         "country": "BR",
         "state": "SP",
         "city": "São Paulo",
-        "district": "Centro", 
+        "district": "Centro",
         "street": "Rua das Flores",
         "zipCode": "01000000",
-        "number": "123"
+        "number": "123",
+        "complement": "Apto 45"
       }
-    }
+    },
+    "additionalInfo": {
+      "customerIp": "192.168.1.100"
+    },
+    "callbackUrl": "https://example.com/webhook/callback"
   }'
 ```
 
@@ -91,9 +97,9 @@ x-api-key: SUA_CHAVE_DE_API
 ## Conceitos Fundamentais
 
 ### Valores Monetários
-Todos os valores monetários são especificados em **centavos**:
-- R$ 100,00 = `10000` centavos
-- R$ 25,50 = `2550` centavos
+Todos os valores monetários são especificados em **reais**:
+- R$ 100,00 = `100`
+- R$ 25,50 = `25.50`
 
 ### Tipos de Cobrança
 - **NO_FEE_TO_CUSTOMER**: Sem taxa para o cliente (taxa absorvida pelo estabelecimento)

@@ -124,9 +124,9 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment" \
       "capture": true,
       "card": {
         "name": "João da Silva Teste",
-        "number": "4111111111111111",
-        "expiration": "12/25",
-        "securityCode": "123"
+        "number": "5186882549895601",
+        "expiration": "12/2025",
+        "securityCode": "220"
       }
     },
     "buyer": {
@@ -157,7 +157,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment/token" \
   -d '{
     "card": {
       "name": "João da Silva Teste",
-      "number": "4111111111111111",
+      "number": "5186882549895601",
       "expiration": "12/25",
       "securityCode": "123"
     },
@@ -197,9 +197,9 @@ curl -X POST "https://sandbox.firebanking.com/v1/subscription" \
       "method": "CREDIT_CARD",
       "card": {
         "name": "João da Silva Teste",
-        "number": "4111111111111111",
-        "expiration": "12/25",
-        "securityCode": "123"
+        "number": "5186882549895601",
+        "expiration": "12/2025",
+        "securityCode": "220"
       }
     },
     "buyer": {
@@ -407,7 +407,7 @@ describe('API FireBanking', () => {
         capture: true,
         card: {
           name: 'João da Silva Teste',
-          number: '4111111111111111',
+          number: '5186882549895601',
           expiration: '12/25',
           securityCode: '123'
         }

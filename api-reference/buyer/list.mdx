@@ -37,7 +37,7 @@ curl -X GET "https://api.firebanking.com/v1/buyer" \
 
 ### Filtrar por Documento
 ```bash cURL
-curl -X GET "https://api.firebanking.com/v1/buyer?document=12345678901&page=0&size=10" \
+curl -X GET "https://api.firebanking.com/v1/buyer?document=25201246010&page=0&size=10" \
   -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
@@ -66,7 +66,7 @@ curl -X GET "https://api.firebanking.com/v1/buyer?name=João&email=joao@example.
       "createdAt": "2024-01-15T14:30:00Z",
       "lastTransactionAt": "2024-01-20T10:15:00Z",
       "totalTransactions": 5,
-      "totalAmount": 150000
+      "totalAmount": 1500
     },
     {
       "uuid": "buyer-uuid-67890",
@@ -82,7 +82,7 @@ curl -X GET "https://api.firebanking.com/v1/buyer?name=João&email=joao@example.
       "createdAt": "2024-01-10T09:20:00Z",
       "lastTransactionAt": "2024-01-18T16:45:00Z",
       "totalTransactions": 3,
-      "totalAmount": 75000
+      "totalAmount": 750
     }
   ],
   "pagination": {
@@ -111,7 +111,7 @@ curl -X GET "https://api.firebanking.com/v1/buyer?name=João&email=joao@example.
 </ResponseField>
 
 <ResponseField name="totalAmount" type="integer">
-  Valor total (em centavos) de todas as transações bem-sucedidas
+  Valor total (em reais) de todas as transações bem-sucedidas
 </ResponseField>
 
 <ResponseField name="lastTransactionAt" type="string">

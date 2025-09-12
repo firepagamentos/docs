@@ -15,7 +15,7 @@ Crie um PIX com QR Code dinâmico para receber pagamentos. O QR Code gerado é �
 ## Parâmetros da Requisição
 
 <ParamField body="amount" type="integer" required>
-  Valor da cobrança em centavos (R$ 100,00 = 10000)
+  Valor da cobrança em reais (R$ 100,00 = 100)
 </ParamField>
 
 <ParamField body="description" type="string" required>
@@ -68,7 +68,7 @@ curl -X POST "https://api.firebanking.com/v2/payment" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 15000,
+    "amount": 150,
     "description": "Compra na loja virtual",
     "externalId": "pedido-12345",
     "expiration": "2024-12-31T23:59:59Z",
@@ -95,7 +95,7 @@ const pixPayment = await fetch('https://api.firebanking.com/v2/payment', {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    amount: 15000, // R$ 150,00
+    amount: 150, // R$ 150,00
     description: 'Compra na loja virtual',
     externalId: 'pedido-12345',
     expiration: '2024-12-31T23:59:59Z',
@@ -121,7 +121,7 @@ console.log('PIX criado:', result);
 import requests
 
 pix_data = {
-    "amount": 15000,  # R$ 150,00
+    "amount": 150,  # R$ 150,00
     "description": "Compra na loja virtual",
     "externalId": "pedido-12345",
     "expiration": "2024-12-31T23:59:59Z",
@@ -154,7 +154,7 @@ print('PIX criado:', result)
 ```php PHP
 <?php
 $pixData = [
-    'amount' => 15000, // R$ 150,00
+    'amount' => 150, // R$ 150,00
     'description' => 'Compra na loja virtual',
     'externalId' => 'pedido-12345',
     'expiration' => '2024-12-31T23:59:59Z',
@@ -228,7 +228,7 @@ echo 'PIX criado: ' . print_r($result, true);
   "error": {
     "code": "INVALID_AMOUNT",
     "message": "O valor deve ser maior que R$ 0,01 e menor que R$ 20.000,00",
-    "details": "Valor recebido: 0 centavos",
+    "details": "Valor recebido: 0 reais",
     "request_id": "req_123456789"
   }
 }
@@ -260,7 +260,7 @@ echo 'PIX criado: ' . print_r($result, true);
 </ResponseField>
 
 <ResponseField name="amount" type="integer">
-  Valor da cobrança em centavos
+  Valor da cobrança em reais
 </ResponseField>
 
 <ResponseField name="currency" type="string">
@@ -318,7 +318,7 @@ echo 'PIX criado: ' . print_r($result, true);
 function showPixPayment(pixData) {
   document.getElementById('qr-image').src = pixData.qrCode.image;
   document.getElementById('pix-code').value = pixData.qrCode.text;
-  document.getElementById('amount').textContent = (pixData.amount / 100).toLocaleString('pt-BR', {
+  document.getElementById('amount').textContent = pixData.amount.toLocaleString('pt-BR', {
     minimumFractionDigits: 2
   });
   document.getElementById('expires').textContent = new Date(pixData.expires_at).toLocaleString('pt-BR');
@@ -415,7 +415,7 @@ Quando o PIX for pago, você receberá um webhook:
   "data": {
     "id": "pix_12345678901234567890",
     "status": "paid",
-    "amount": 15000,
+    "amount": 150,
     "paid_at": "2024-01-15T10:35:00Z",
     "payer": {
       "name": "João Silva",
