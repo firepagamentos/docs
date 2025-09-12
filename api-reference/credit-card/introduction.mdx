@@ -43,7 +43,7 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
     "externalId": "pedido-12345",
     "purchaseTitle": "Compra de Produto",
     "payment": {
-      "chargeType": "CREDITO_A_VISTA",
+      "chargeType": "NO_FEE_TO_CUSTOMER",
       "capture": true,
       "card": {
         "name": "João da Silva",
@@ -104,8 +104,9 @@ Todos os valores monetários são especificados em **centavos**:
 - R$ 25,50 = `2550` centavos
 
 ### Tipos de Cobrança
-- **CREDITO_A_VISTA**: Pagamento com cartão de crédito em parcela única
-- **CREDITO_PARCELADO_LOJA**: Pagamento parcelado (crediário da loja)
+- **NO_FEE_TO_CUSTOMER**: Sem taxa para o cliente (taxa absorvida pelo estabelecimento)
+- **FEE_TO_CUSTOMER**: Taxa cobrada do cliente
+- **FEE_TO_SELLER**: Taxa cobrada do vendedor
 
 ### Fluxo de Pagamento
 1. **Criar Pagamento** com dados do cartão ou token

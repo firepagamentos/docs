@@ -819,7 +819,7 @@
         "properties": {
           "chargeType": {
             "type": "string",
-            "enum": ["CREDITO_A_VISTA", "CREDITO_PARCELADO_LOJA"],
+            "enum": ["NO_FEE_TO_CUSTOMER", "FEE_TO_CUSTOMER"],
             "description": "Tipo de cobrança"
           },
           "capture": {

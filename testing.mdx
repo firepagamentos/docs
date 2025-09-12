@@ -120,7 +120,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment" \
     "externalId": "test-payment-001",
     "purchaseTitle": "Compra Teste",
     "payment": {
-      "chargeType": "CREDITO_A_VISTA",
+      "chargeType": "NO_FEE_TO_CUSTOMER",
       "capture": true,
       "card": {
         "name": "João da Silva Teste",
@@ -403,7 +403,7 @@ describe('API FireBanking', () => {
       installments: 1,
       externalId: `test-${Date.now()}`,
       payment: {
-        chargeType: 'CREDITO_A_VISTA',
+        chargeType: 'NO_FEE_TO_CUSTOMER',
         capture: true,
         card: {
           name: 'João da Silva Teste',
@@ -446,7 +446,7 @@ describe('API FireBanking', () => {
       purchaseValue: 10000,
       installments: 1,
       payment: {
-        chargeType: 'CREDITO_A_VISTA',
+        chargeType: 'NO_FEE_TO_CUSTOMER',
         card: {
           name: 'João da Silva Teste',
           number: '4000000000000002', // Sempre recusado

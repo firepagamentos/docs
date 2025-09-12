@@ -20,8 +20,9 @@ Você pode criar pagamentos usando dois métodos:
 
 ## Tipos de Cobrança
 
-- **CREDITO_A_VISTA**: Pagamento com cartão de crédito à vista (parcela única)
-- **CREDITO_PARCELADO_LOJA**: Pagamento parcelado (múltiplas parcelas)
+- **NO_FEE_TO_CUSTOMER**: Sem taxa para o cliente (taxa absorvida pelo estabelecimento)
+- **FEE_TO_CUSTOMER**: Taxa cobrada do cliente
+- **FEE_TO_SELLER**: Taxa cobrada do vendedor
 
 ## Observações Importantes
 
@@ -43,7 +44,7 @@ Você pode criar pagamentos usando dois métodos:
   "purchaseTitle": "Compra de Produto",
   "description": "Descrição da compra",
   "payment": {
-    "chargeType": "CREDITO_A_VISTA",
+    "chargeType": "NO_FEE_TO_CUSTOMER",
     "capture": true,
     "card": {
       "name": "João da Silva",
@@ -85,7 +86,7 @@ Você pode criar pagamentos usando dois métodos:
   "externalId": "ext-payment-token-67890",
   "purchaseTitle": "Pagamento com Token",
   "payment": {
-    "chargeType": "CREDITO_PARCELADO_LOJA",
+    "chargeType": "FEE_TO_CUSTOMER",
     "capture": true,
     "cardToken": {
       "cardToken": "550e8400-e29b-41d4-a716-446655440000",
