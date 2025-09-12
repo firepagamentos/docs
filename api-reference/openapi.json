@@ -12,11 +12,11 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8082/v1",
-      "description": "Servidor de desenvolvimento"
+      "url": "https://api-gateway.firebanking.dev",
+      "description": "Servidor de teste (sandbox)"
     },
     {
-      "url": "https://api.firebanking.com/v1",
+      "url": "https://api-gateway.firebanking.com.br",
       "description": "Servidor de produção"
     }
   ],
@@ -26,7 +26,7 @@
     }
   ],
   "paths": {
-    "/payment": {
+    "/credit-card/v1/payment": {
       "post": {
         "tags": ["Pagamento"],
         "summary": "Criar Pagamento",
@@ -126,7 +126,7 @@
         }
       }
     },
-    "/payment/token": {
+    "/credit-card/v1/payment/token": {
       "post": {
         "tags": ["Pagamento"],
         "summary": "Criar Token de Cartão",
@@ -166,7 +166,7 @@
         }
       }
     },
-    "/payment/token/{buyerUuid}": {
+    "/credit-card/v1/payment/token/{buyerUuid}": {
       "get": {
         "tags": ["Pagamento"],
         "summary": "Obter Tokens de Cartão por Comprador",
@@ -201,7 +201,7 @@
         }
       }
     },
-    "/payment/{paymentId}": {
+    "/credit-card/v1/payment/{paymentId}": {
       "get": {
         "tags": ["Pagamento"],
         "summary": "Obter Pagamento por ID",
@@ -232,7 +232,7 @@
         }
       }
     },
-    "/payment/{paymentId}/capture": {
+    "/credit-card/v1/payment/{paymentId}/capture": {
       "post": {
         "tags": ["Pagamento"],
         "summary": "Capturar Pagamento",
@@ -263,7 +263,7 @@
         }
       }
     },
-    "/payment/{paymentId}/refund": {
+    "/credit-card/v1/payment/{paymentId}/refund": {
       "post": {
         "tags": ["Pagamento"],
         "summary": "Estornar Pagamento",
@@ -294,7 +294,7 @@
         }
       }
     },
-    "/payment/{paymentId}/cancel-capture": {
+    "/credit-card/v1/payment/{paymentId}/cancel-capture": {
       "post": {
         "tags": ["Pagamento"],
         "summary": "Cancelar Pré-Autorização",
@@ -325,7 +325,7 @@
         }
       }
     },
-    "/payment/{paymentId}/sync": {
+    "/credit-card/v1/payment/{paymentId}/sync": {
       "get": {
         "tags": ["Pagamento"],
         "summary": "Sincronizar Pagamento",
@@ -356,7 +356,7 @@
         }
       }
     },
-    "/buyer": {
+    "/credit-card/v1/buyer": {
       "post": {
         "tags": ["Comprador"],
         "summary": "Criar Comprador",
@@ -454,7 +454,7 @@
         }
       }
     },
-    "/subscription": {
+    "/credit-card/v1/subscription": {
       "post": {
         "tags": ["Assinatura"],
         "summary": "Criar Assinatura",
@@ -484,7 +484,7 @@
         }
       }
     },
-    "/subscription/{subscriptionId}": {
+    "/credit-card/v1/subscription/{subscriptionId}": {
       "delete": {
         "tags": ["Assinatura"],
         "summary": "Cancelar Assinatura",
@@ -556,7 +556,7 @@
         }
       }
     },
-    "/account/balance": {
+    "/credit-card/v1/account/balance": {
       "get": {
         "tags": ["Conta"],
         "summary": "Obter Saldo da Conta",
@@ -576,7 +576,7 @@
         }
       }
     },
-    "/health": {
+    "/credit-card/v1/health": {
       "get": {
         "tags": ["Sistema"],
         "summary": "Verificação de Saúde",
@@ -758,7 +758,7 @@
     "schemas": {
       "CreatePaymentRequest": {
         "type": "object",
-        "required": ["purchaseValue", "installments", "payment"],
+        "required": ["purchaseValue", "installments", "externalId", "payment"],
         "properties": {
           "purchaseValue": {
             "type": "integer",
