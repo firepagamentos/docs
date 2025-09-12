@@ -73,23 +73,15 @@ curl -X POST "https://api.firebanking.com/v1/payment" \
 
 ## Métodos de Autenticação
 
-<CardGroup cols={3}>
-  <Card title="Token Bearer" icon="key">
+<CardGroup cols={1}>
+  <Card title="x-api-key" icon="key">
     **Chave de API**  
-    Autenticação padrão para operações de pagamento
-  </Card>
-  <Card title="Auth Básica" icon="shield">
-    **Credenciais de Webhook**  
-    Para endpoints de webhook e operações internas
-  </Card>
-  <Card title="Token Interno" icon="gear">
-    **Integração de Sistema**  
-    Para comunicação autorizada sistema-a-sistema
+    Método único de autenticação para todas as operações
   </Card>
 </CardGroup>
 
-### Autenticação via Chave de API
-A maioria dos endpoints usa autenticação com chave de API:
+### Autenticação x-api-key
+Todos os endpoints da API usam autenticação com chave de API:
 
 ```bash
 x-api-key: SUA_CHAVE_DE_API
