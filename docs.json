@@ -72,6 +72,14 @@
             ]
           },
           {
+            "group": "Gestão de Compradores",
+            "pages": [
+              "api-reference/buyer/create",
+              "api-reference/buyer/list",
+              "api-reference/buyer/get"
+            ]
+          },
+          {
             "group": "Webhooks",
             "pages": ["api-reference/credit-card/webhooks"]
           }
@@ -157,14 +165,6 @@
             "pages": [
               "api-reference/account/balance",
               "api-reference/account/transactions"
-            ]
-          },
-          {
-            "group": "Compradores",
-            "pages": [
-              "api-reference/buyer/create",
-              "api-reference/buyer/list",
-              "api-reference/buyer/get"
             ]
           },
           {
