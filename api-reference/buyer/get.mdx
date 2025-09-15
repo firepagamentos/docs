@@ -1,0 +1,344 @@
+---
+title: 'Obter Comprador'
+openapi: 'GET /credit-card/v1/buyer/{buyerUuid}'
+---
+
+Recuperar informações detalhadas de um comprador específico pelo seu UUID. Este endpoint retorna todos os dados do comprador, incluindo informações pessoais, documento, endereço e metadados de criação.
+
+## Parâmetro do Path
+
+<ParamField path="buyerUuid" type="string" required>
+  O UUID único do comprador que você deseja recuperar
+</ParamField>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://api-gateway.firebanking.com.br/v1/buyer/550e8400-e29b-41d4-a716-446655440000" \
+  -H "x-api-key: fbk_live_sua_chave_aqui"
+```
+
+```javascript JavaScript
+const response = await fetch('https://api-gateway.firebanking.com.br/v1/buyer/550e8400-e29b-41d4-a716-446655440000', {
+  method: 'GET',
+  headers: {
+    'x-api-key': 'fbk_live_sua_chave_aqui'
+  }
+});
+
+const buyer = await response.json();
+console.log('Dados do comprador:', buyer);
+```
+
+```python Python
+import requests
+
+headers = {
+    'x-api-key': 'fbk_live_sua_chave_aqui'
+}
+
+response = requests.get(
+    'https://api-gateway.firebanking.com.br/v1/buyer/550e8400-e29b-41d4-a716-446655440000',
+    headers=headers
+)
+
+buyer = response.json()
+print('Dados do comprador:', buyer)
+```
+
+```php PHP
+<?php
+$buyerUuid = '550e8400-e29b-41d4-a716-446655440000';
+
+$curl = curl_init();
+curl_setopt_array($curl, [
+    CURLOPT_URL => "https://api-gateway.firebanking.com.br/v1/buyer/{$buyerUuid}",
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'x-api-key: fbk_live_sua_chave_aqui'
+    ]
+]);
+
+$response = curl_exec($curl);
+$buyer = json_decode($response, true);
+echo 'Dados do comprador: ' . print_r($buyer, true);
+?>
+```
+</CodeGroup>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "João da Silva Teste",
+  "email": "joao.teste@exemplo.com",
+  "document": {
+    "documentNumber": "11144477735",
+    "documentType": "cpf",
+    "documentNation": "BR"
+  },
+  "phone": "11999999999",
+  "countryCode": "+55",
+  "alternativeEmail": "joao.alternativo@exemplo.com",
+  "address": {
+    "street": "Rua das Flores",
+    "number": "123",
+    "complement": "Apto 45",
+    "district": "Centro",
+    "city": "São Paulo",
+    "state": "SP",
+    "country": "BR",
+    "zipCode": "01000000"
+  },
+  "createdAt": "2024-01-15T14:30:00Z",
+  "updatedAt": "2024-01-15T14:30:00Z"
+}
+```
+
+```json 404 Not Found
+{
+  "error": {
+    "code": "BUYER_NOT_FOUND",
+    "message": "Comprador não encontrado",
+    "details": "Nenhum comprador foi encontrado com o UUID fornecido",
+    "request_id": "req_123456789"
+  }
+}
+```
+
+```json 401 Unauthorized
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Chave de API inválida ou ausente",
+    "details": "Verifique se a chave de API está correta e no cabeçalho x-api-key",
+    "request_id": "req_123456789"
+  }
+}
+```
+</ResponseExample>
+
+## Campos de Resposta
+
+<ResponseField name="uuid" type="string">
+  UUID único do comprador no sistema
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Nome completo do comprador
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Endereço de email principal do comprador
+</ResponseField>
+
+<ResponseField name="document" type="object">
+  Informações do documento do comprador
+  <Expandable title="document">
+    <ResponseField name="document.documentNumber" type="string">
+      Número do documento (CPF ou CNPJ)
+    </ResponseField>
+    <ResponseField name="document.documentType" type="string">
+      Tipo do documento: `cpf` ou `cnpj`
+    </ResponseField>
+    <ResponseField name="document.documentNation" type="string">
+      Código do país do documento (ex: `BR`)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="phone" type="string">
+  Número de telefone com código de área
+</ResponseField>
+
+<ResponseField name="countryCode" type="string">
+  Código do país com prefixo + (ex: `+55`)
+</ResponseField>
+
+<ResponseField name="alternativeEmail" type="string">
+  Endereço de email alternativo (opcional)
+</ResponseField>
+
+<ResponseField name="address" type="object">
+  Endereço completo do comprador (opcional)
+  <Expandable title="address">
+    <ResponseField name="address.street" type="string">
+      Nome da rua/logradouro
+    </ResponseField>
+    <ResponseField name="address.number" type="string">
+      Número da residência/estabelecimento
+    </ResponseField>
+    <ResponseField name="address.complement" type="string">
+      Complemento do endereço (apto, sala, etc.)
+    </ResponseField>
+    <ResponseField name="address.district" type="string">
+      Bairro/distrito
+    </ResponseField>
+    <ResponseField name="address.city" type="string">
+      Nome da cidade
+    </ResponseField>
+    <ResponseField name="address.state" type="string">
+      Código do estado (ex: `SP`)
+    </ResponseField>
+    <ResponseField name="address.country" type="string">
+      Código do país (ex: `BR`)
+    </ResponseField>
+    <ResponseField name="address.zipCode" type="string">
+      CEP/código postal
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  Data e hora de criação do comprador (ISO 8601)
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string">
+  Data e hora da última atualização (ISO 8601)
+</ResponseField>
+
+## Casos de Uso Comuns
+
+### Verificar Dados Antes do Pagamento
+
+```javascript
+async function validateBuyerBeforePayment(buyerUuid) {
+  try {
+    const response = await fetch(`https://api-gateway.firebanking.com.br/v1/buyer/${buyerUuid}`, {
+      headers: {
+        'x-api-key': 'fbk_live_sua_chave_aqui'
+      }
+    });
+
+    if (response.status === 404) {
+      throw new Error('Comprador não encontrado');
+    }
+
+    const buyer = await response.json();
+
+    // Verificar se dados estão completos
+    if (!buyer.address) {
+      console.warn('Comprador sem endereço cadastrado');
+    }
+
+    return buyer;
+  } catch (error) {
+    console.error('Erro ao verificar comprador:', error);
+    throw error;
+  }
+}
+```
+
+### Exibir Perfil do Cliente
+
+```javascript
+function displayBuyerProfile(buyer) {
+  const profileHtml = `
+    <div class="buyer-profile">
+      <h3>${buyer.name}</h3>
+      <p><strong>Email:</strong> ${buyer.email}</p>
+      <p><strong>Telefone:</strong> ${buyer.phone}</p>
+      <p><strong>Documento:</strong> ${buyer.document.documentNumber}</p>
+      ${buyer.address ? `
+        <div class="address">
+          <strong>Endereço:</strong>
+          <p>${buyer.address.street}, ${buyer.address.number}</p>
+          <p>${buyer.address.district}, ${buyer.address.city} - ${buyer.address.state}</p>
+          <p>CEP: ${buyer.address.zipCode}</p>
+        </div>
+      ` : ''}
+      <small>Cliente desde: ${new Date(buyer.createdAt).toLocaleDateString('pt-BR')}</small>
+    </div>
+  `;
+
+  document.getElementById('buyer-profile').innerHTML = profileHtml;
+}
+```
+
+### Validar Dados para Compliance
+
+```javascript
+function validateBuyerCompliance(buyer) {
+  const validations = {
+    hasValidDocument: buyer.document && buyer.document.documentNumber,
+    hasEmail: buyer.email && buyer.email.includes('@'),
+    hasPhone: buyer.phone && buyer.phone.length >= 10,
+    hasAddress: buyer.address && buyer.address.zipCode
+  };
+
+  const isCompliant = Object.values(validations).every(v => v);
+
+  if (!isCompliant) {
+    console.warn('Comprador não está em compliance completo:', validations);
+  }
+
+  return {
+    isCompliant,
+    validations,
+    missingFields: Object.keys(validations).filter(key => !validations[key])
+  };
+}
+```
+
+## Códigos de Erro
+
+| Código HTTP | Código de Erro | Descrição |
+|-------------|----------------|-----------|
+| 400 | `INVALID_UUID` | UUID fornecido não está no formato válido |
+| 401 | `UNAUTHORIZED` | Chave de API inválida ou ausente |
+| 404 | `BUYER_NOT_FOUND` | Comprador não encontrado com o UUID fornecido |
+| 500 | `INTERNAL_SERVER_ERROR` | Erro interno do servidor |
+
+## Boas Práticas
+
+### Cache de Dados
+- Cache os dados do comprador localmente para evitar consultas desnecessárias
+- Implemente TTL (time-to-live) de 1-4 horas para dados do comprador
+- Invalide o cache quando o comprador for atualizado
+
+### Tratamento de Erros
+```javascript
+async function getBuyerSafely(buyerUuid) {
+  try {
+    const response = await fetch(`/v1/buyer/${buyerUuid}`);
+
+    if (response.status === 404) {
+      return null; // Comprador não existe
+    }
+
+    if (!response.ok) {
+      throw new Error(`Erro ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao buscar comprador:', error);
+    return null;
+  }
+}
+```
+
+### Segurança
+- Sempre valide o UUID antes de fazer a requisição
+- Nunca exponha UUIDs de compradores em URLs públicas
+- Implemente rate limiting para prevenir abuso
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Criar Pagamento" href="/api-reference/credit-card/payment/create">
+    Use os dados do comprador para processar pagamentos
+  </Card>
+  <Card title="Listar Compradores" href="/api-reference/buyer/list">
+    Busque compradores por filtros específicos
+  </Card>
+  <Card title="Criar Comprador" href="/api-reference/buyer/create">
+    Cadastre novos compradores no sistema
+  </Card>
+  <Card title="Tokenizar Cartão" href="/api-reference/credit-card/token/create">
+    Crie tokens seguros para o comprador
+  </Card>
+</CardGroup>

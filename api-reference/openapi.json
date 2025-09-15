@@ -423,6 +423,58 @@
         }
       }
     },
+    "/credit-card/v1/buyer/{buyerUuid}": {
+      "get": {
+        "tags": ["Comprador"],
+        "summary": "Obter Comprador por ID",
+        "description": "Recuperar um comprador específico pelo seu UUID",
+        "security": [{"apiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "buyerUuid",
+            "in": "path",
+            "required": true,
+            "description": "UUID do comprador",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comprador recuperado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuyerResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Comprador não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/credit-card/v1/subscription": {
       "post": {
         "tags": ["Assinatura"],
