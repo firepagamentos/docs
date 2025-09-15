@@ -782,7 +782,7 @@
         "properties": {
           "chargeType": {
             "type": "string",
-            "enum": ["NO_FEE_TO_CUSTOMER", "FEE_TO_CUSTOMER"],
+            "enum": ["FEE_TO_CUSTOMER", "FEE_TO_SELLER"],
             "description": "Tipo de cobrança"
           },
           "capture": {
