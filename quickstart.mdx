@@ -32,10 +32,10 @@ fbk_test_1234567890abcdef1234567890abcdef
 
 <CardGroup cols={2}>
   <Card title="Sandbox (Testes)" icon="flask">
-    **Base URL**: `https://sandbox.firebanking.com/v1`
+    **Base URL**: `https://api-gateway.firebanking.dev/v1`
   </Card>
   <Card title="Produção" icon="globe">
-    **Base URL**: `https://api.firebanking.com/v1` 
+    **Base URL**: `https://api-gateway.firebanking.com.br/v1` 
   </Card>
 </CardGroup>
 
@@ -45,13 +45,13 @@ Primeiro, verifique se sua autenticação está funcionando:
 
 <CodeGroup>
 ```bash cURL
-curl -X GET "https://sandbox.firebanking.com/v1/account/balance" \
+curl -X GET "https://api-gateway.firebanking.dev/v1/account/balance" \
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \
   -H "Content-Type: application/json"
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://sandbox.firebanking.com/v1/account/balance', {
+const response = await fetch('https://api-gateway.firebanking.dev/v1/account/balance', {
   method: 'GET',
   headers: {
     'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
@@ -72,7 +72,7 @@ headers = {
 }
 
 response = requests.get(
-    'https://sandbox.firebanking.com/v1/account/balance',
+    'https://api-gateway.firebanking.dev/v1/account/balance',
     headers=headers
 )
 
@@ -85,7 +85,7 @@ print('Saldo:', balance)
 $curl = curl_init();
 
 curl_setopt_array($curl, [
-    CURLOPT_URL => 'https://sandbox.firebanking.com/v1/account/balance',
+    CURLOPT_URL => 'https://api-gateway.firebanking.dev/v1/account/balance',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => [
         'x-api-key: fbk_test_SUA_CHAVE_AQUI',
@@ -115,7 +115,7 @@ Agora vamos criar uma transação de **R$ 100,00 à vista** usando um cartão de
 
 <CodeGroup>
 ```bash cURL
-curl -X POST "https://sandbox.firebanking.com/v1/payment" \
+curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \
   -H "Content-Type: application/json" \
   -d '{
@@ -186,7 +186,7 @@ const paymentData = {
   }
 };
 
-const response = await fetch('https://sandbox.firebanking.com/v1/payment', {
+const response = await fetch('https://api-gateway.firebanking.dev/v1/payment', {
   method: 'POST',
   headers: {
     'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
@@ -236,7 +236,7 @@ payment_data = {
 }
 
 response = requests.post(
-    'https://sandbox.firebanking.com/v1/payment',
+    'https://api-gateway.firebanking.dev/v1/payment',
     json=payment_data,
     headers={
         'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
@@ -285,7 +285,7 @@ $paymentData = [
 
 $curl = curl_init();
 curl_setopt_array($curl, [
-    CURLOPT_URL => 'https://sandbox.firebanking.com/v1/payment',
+    CURLOPT_URL => 'https://api-gateway.firebanking.dev/v1/payment',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => json_encode($paymentData),
@@ -364,12 +364,12 @@ Para verificar o status atual de um pagamento:
 
 <CodeGroup>
 ```bash cURL
-curl -X GET "https://sandbox.firebanking.com/v1/payment/fb_trans_1234567890" \
+curl -X GET "https://api-gateway.firebanking.dev/v1/payment/fb_trans_1234567890" \
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://sandbox.firebanking.com/v1/payment/fb_trans_1234567890', {
+const response = await fetch('https://api-gateway.firebanking.dev/v1/payment/fb_trans_1234567890', {
   headers: {
     'x-api-key': ' fbk_test_SUA_CHAVE_AQUI'
   }
@@ -381,7 +381,7 @@ console.log('Status do pagamento:', payment.status);
 
 ```python Python
 response = requests.get(
-    'https://sandbox.firebanking.com/v1/payment/fb_trans_1234567890',
+    'https://api-gateway.firebanking.dev/v1/payment/fb_trans_1234567890',
     headers={'x-api-key': ' fbk_test_SUA_CHAVE_AQUI'}
 )
 

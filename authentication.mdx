@@ -29,7 +29,7 @@ x-api-key: SUA_CHAVE_DE_API
 ### Exemplo de Requisição
 
 ```bash Exemplo cURL
-curl -X GET "https://api.firebanking.com/v1/account/balance" \
+curl -X GET "https://api-gateway.firebanking.com.br/v1/account/balance" \
   -H "x-api-key: fbk_live_1234567890abcdef..." \
   -H "Content-Type: application/json"
 ```
@@ -119,7 +119,7 @@ Sempre trate erros de autenticação de forma graciosa:
 
 ```javascript Tratamento de Erros
 try {
-  const response = await fetch('https://api.firebanking.com/v1/payment', {
+  const response = await fetch('https://api-gateway.firebanking.com.br/v1/payment', {
     method: 'POST',
     headers: {
       'x-api-key': apiKey,
@@ -213,13 +213,13 @@ Todas as chaves têm os mesmos limites de taxa:
 ### Verificação de Saúde (Sem Autenticação)
 
 ```bash
-curl -X GET "https://api.firebanking.com/v1/health"
+curl -X GET "https://api-gateway.firebanking.com.br/v1/health"
 ```
 
 ### Teste de Chave de API
 
 ```bash
-curl -X GET "https://api.firebanking.com/v1/account/balance" \
+curl -X GET "https://api-gateway.firebanking.com.br/v1/account/balance" \
   -H "x-api-key: SUA_CHAVE"
 ```
 

@@ -1,6 +1,6 @@
 ---
 title: 'Criar PIX QR Code'
-api: 'POST https://api.firebanking.com/v2/payment'
+api: 'POST https://api-gateway.firebanking.com.br/v2/payment'
 description: 'Gera QR Code PIX dinâmico para recebimento de pagamentos'
 ---
 
@@ -64,7 +64,7 @@ Crie um PIX com QR Code dinâmico para receber pagamentos. O QR Code gerado é �
 
 <CodeGroup>
 ```bash cURL
-curl -X POST "https://api.firebanking.com/v2/payment" \
+curl -X POST "https://api-gateway.firebanking.com.br/v2/payment" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
@@ -88,7 +88,7 @@ curl -X POST "https://api.firebanking.com/v2/payment" \
 ```
 
 ```javascript JavaScript
-const pixPayment = await fetch('https://api.firebanking.com/v2/payment', {
+const pixPayment = await fetch('https://api-gateway.firebanking.com.br/v2/payment', {
   method: 'POST',
   headers: {
     'x-api-key': 'fbk_live_sua_chave_aqui',
@@ -139,7 +139,7 @@ pix_data = {
 }
 
 response = requests.post(
-    'https://api.firebanking.com/v2/payment',
+    'https://api-gateway.firebanking.com.br/v2/payment',
     json=pix_data,
     headers={
         'x-api-key': 'fbk_live_sua_chave_aqui',
@@ -173,7 +173,7 @@ $pixData = [
 
 $curl = curl_init();
 curl_setopt_array($curl, [
-    CURLOPT_URL => 'https://api.firebanking.com/v2/payment',
+    CURLOPT_URL => 'https://api-gateway.firebanking.com.br/v2/payment',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => json_encode($pixData),
@@ -202,7 +202,7 @@ echo 'PIX criado: ' . print_r($result, true);
   "currency": "BRL",
   "description": "Compra na loja virtual",
   "qrCode": {
-    "text": "00020101021226830014br.gov.bcb.pix2561api.firebanking.com/pix/v2/12345678901234567890520400005303986540515.005802BR5925Loja Virtual FireBanking6009SAO PAULO62070503***630445E3",
+    "text": "00020101021226830014br.gov.bcb.pix2561api-gateway.firebanking.com.br/pix/v2/12345678901234567890520400005303986540515.005802BR5925Loja Virtual FireBanking6009SAO PAULO62070503***630445E3",
     "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICA...",
     "expires_at": "2024-12-31T23:59:59Z"
   },
@@ -337,7 +337,7 @@ function copyPixCode() {
 ```javascript
 async function checkPaymentStatus(pixId) {
   try {
-    const response = await fetch(`https://api.firebanking.com/v2/payment/${pixId}`, {
+    const response = await fetch(`https://api-gateway.firebanking.com.br/v2/payment/${pixId}`, {
       headers: {
         'x-api-key': 'fbk_live_sua_chave_aqui'
       }

@@ -26,7 +26,7 @@ Cancelar uma assinatura ativa. Isso interrompe todas as cobranças futuras da as
 ## Exemplo de Requisição
 
 ```bash cURL
-curl -X DELETE "https://api.firebanking.com/v1/subscription/subscription-uuid-12345" \
+curl -X DELETE "https://api-gateway.firebanking.com.br/v1/subscription/subscription-uuid-12345" \
   -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
@@ -130,7 +130,7 @@ Assinaturas canceladas não podem ser reativadas diretamente. Para restaurar ser
 Se cancelando assinaturas específicas para clientes com múltiplos planos:
 
 ```bash Cancelar Plano Específico
-curl -X DELETE "https://api.firebanking.com/v1/subscription/550e8400-e29b-41d4-a716-446655440000" \
+curl -X DELETE "https://api-gateway.firebanking.com.br/v1/subscription/550e8400-e29b-41d4-a716-446655440000" \
   -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 

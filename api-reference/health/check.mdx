@@ -14,7 +14,7 @@ Verificar o status operacional da API FireBanking. Este endpoint fornece informa
 ## Exemplo de Requisição
 
 ```bash cURL
-curl -X GET "https://api.firebanking.com/v1/health"
+curl -X GET "https://api-gateway.firebanking.com.br/v1/health"
 ```
 
 ## Exemplo de Resposta (Saudável)
@@ -158,7 +158,7 @@ GET /health?detailed=true
 ### Script de monitoramento Bash/curl
 ```bash
 #!/bin/bash
-HEALTH_URL="https://api.firebanking.com/v1/health"
+HEALTH_URL="https://api-gateway.firebanking.com.br/v1/health"
 STATUS=$(curl -s $HEALTH_URL | jq -r '.status')
 
 if [ "$STATUS" != "healthy" ]; then
@@ -174,7 +174,7 @@ import json
 
 def check_api_health():
     try:
-        response = requests.get('https://api.firebanking.com/v1/health')
+        response = requests.get('https://api-gateway.firebanking.com.br/v1/health')
         health_data = response.json()
         
         if health_data['status'] != 'healthy':

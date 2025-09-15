@@ -31,19 +31,19 @@ Recuperar uma lista de compradores com capacidades de filtragem opcionais. Este 
 
 ### Listar Todos os Compradores (Sem Filtros)
 ```bash cURL
-curl -X GET "https://api.firebanking.com/v1/buyer" \
+curl -X GET "https://api-gateway.firebanking.com.br/v1/buyer" \
   -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 ### Filtrar por Documento
 ```bash cURL
-curl -X GET "https://api.firebanking.com/v1/buyer?document=25201246010&page=0&size=10" \
+curl -X GET "https://api-gateway.firebanking.com.br/v1/buyer?document=25201246010&page=0&size=10" \
   -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 ### Filtrar por Nome e Email
 ```bash cURL
-curl -X GET "https://api.firebanking.com/v1/buyer?name=João&email=joao@example.com&page=0&size=20" \
+curl -X GET "https://api-gateway.firebanking.com.br/v1/buyer?name=João&email=joao@example.com&page=0&size=20" \
   -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 

@@ -9,11 +9,11 @@ O FireBanking oferece ambientes separados para teste e produção, garantindo de
 
 <CardGroup cols={2}>
   <Card title="Ambiente Sandbox" icon="flask">
-    **Base URL**: `https://sandbox.firebanking.com/v1`  
+    **Base URL**: `https://api-gateway.firebanking.dev/v1`  
     Testes seguros com dados e números de cartão fictícios
   </Card>
   <Card title="Ambiente de Produção" icon="globe">
-    **Base URL**: `https://api.firebanking.com/v1`  
+    **Base URL**: `https://api-gateway.firebanking.com.br/v1`  
     Ambiente real para transações efetivas
   </Card>
 </CardGroup>
@@ -109,7 +109,7 @@ Use dados de comprador realistas mas fictícios para testes:
 ### Fluxo Básico de Pagamento
 
 ```bash Pagamento Teste
-curl -X POST "https://sandbox.firebanking.com/v1/payment" \
+curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -149,7 +149,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment" \
 ### Testando Tokenização de Cartão
 
 ```bash Criação de Token Teste
-curl -X POST "https://sandbox.firebanking.com/v1/payment/token" \
+curl -X POST "https://api-gateway.firebanking.dev/v1/payment/token" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -182,7 +182,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment/token" \
 ### Testando Criação de Assinatura
 
 ```bash Assinatura Teste
-curl -X POST "https://sandbox.firebanking.com/v1/subscription" \
+curl -X POST "https://api-gateway.firebanking.dev/v1/subscription" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -217,7 +217,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/subscription" \
 ### Testar Requisições Inválidas
 
 ```bash Valor Inválido
-curl -X POST "https://sandbox.firebanking.com/v1/payment" \
+curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -229,7 +229,7 @@ curl -X POST "https://sandbox.firebanking.com/v1/payment" \
 ### Testar Erros de Autenticação
 
 ```bash Token Inválido
-curl -X POST "https://sandbox.firebanking.com/v1/payment" \
+curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
   -H "x-api-key: token_invalido" \
   -H "Content-Type: application/json" \
   -d '{...}'
@@ -393,7 +393,7 @@ const request = require('supertest');
 
 describe('API FireBanking', () => {
   const apiToken = process.env.FIREBANKING_TEST_TOKEN;
-  const baseURL = 'https://sandbox.firebanking.com/v1';
+  const baseURL = 'https://api-gateway.firebanking.dev/v1';
 
   test('deve criar pagamento com sucesso', async () => {
     const paymentData = {
@@ -482,7 +482,7 @@ Antes de mudar para produção:
 
 ### Migração para Produção
 
-1. **Atualizar URL base** para `https://api.firebanking.com/v1`
+1. **Atualizar URL base** para `https://api-gateway.firebanking.com.br/v1`
 2. **Substituir credenciais de teste** por credenciais de produção
 3. **Atualizar URLs de webhook** para endpoints de produção
 4. **Verificar processamento de cartão real** com valores pequenos
