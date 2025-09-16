@@ -1,11 +1,11 @@
 ---
 title: Introdução
-description: "Bem-vindo à documentação da API FireBanking - Processamento de pagamentos com cartão de crédito no Brasil"
+description: "Bem-vindo à documentação da API FireBanking - Plataforma completa de pagamentos PIX, Cartão e Boleto no Brasil"
 ---
 
 ## Comece rapidamente
 
-Integre **múltiplos métodos de pagamento** em uma única plataforma com nossa API **simples, direta e previsível**.
+Integre **PIX, Cartão de Crédito e Boleto** em uma única plataforma com nossa API **simples, direta e previsível**. Cubra 100% do mercado brasileiro de pagamentos digitais.
 
 <CardGroup cols={2}>
   <Card title="Início Rápido" icon="rocket" href="/quickstart">
@@ -18,7 +18,7 @@ Integre **múltiplos métodos de pagamento** em uma única plataforma com nossa 
 
 ## Arquitetura da API
 
-A **FireBanking** é uma techfin B2B que oferece infraestrutura de pagamentos através de uma **API unificada** que simplifica a integração com múltiplos provedores bancários.
+A **FireBanking** é uma techfin B2B que oferece infraestrutura completa de pagamentos através de uma **API unificada** que conecta PIX, Cartão de Crédito e Boleto em uma única plataforma, simplificando a integração com todo o ecossistema financeiro brasileiro.
 
 ### Estrutura Modular
 
@@ -27,15 +27,15 @@ Nossa API é organizada em **módulos especializados** por método de pagamento:
 <CardGroup cols={3}>
   <Card title="PIX" icon="qrcode">
     **Path**: `/pix`
-    Pagamentos instantâneos e transferências
+    Pagamentos instantâneos 24/7 e transferências
+  </Card>
+  <Card title="Cartão" icon="credit-card">
+    **Path**: `/credit-card`
+    Pagamentos, parcelamento e tokenização
   </Card>
   <Card title="Boleto" icon="file-invoice">
     **Path**: `/bank-slip`
     Cobranças bancárias tradicionais
-  </Card>
-  <Card title="Cartão" icon="credit-card">
-    **Path**: `/credit-card`
-    Pagamentos com cartão e tokenização
   </Card>
 </CardGroup>
 
@@ -67,6 +67,9 @@ Nossa API é organizada em **módulos especializados** por método de pagamento:
 ## Métodos de Pagamento Disponíveis
 
 <CardGroup cols={3}>
+  <Card title="📱 PIX" icon="qrcode" href="/api-reference/pix/introduction">
+    Pagamentos instantâneos 24/7 com QR Code e chaves PIX
+  </Card>
   <Card
     title="💳 Cartão de Crédito"
     icon="credit-card"
@@ -74,13 +77,10 @@ Nossa API é organizada em **módulos especializados** por método de pagamento:
   >
     Parcelamento até 24x, pré-autorização e tokenização para recorrência
   </Card>
-  <Card title="📱 PIX" icon="qrcode" href="/api-reference/pix/introduction">
-    Pagamentos instantâneos 24/7 com QR Code e chaves PIX
-  </Card>
   <Card
     title="📄 Boleto"
     icon="file-invoice"
-    href="/api-reference/boleto/introduction"
+    href="/api-reference/bank-slip/introduction"
   >
     Cobrança tradicional aceita em qualquer banco do Brasil
   </Card>
@@ -89,17 +89,17 @@ Nossa API é organizada em **módulos especializados** por método de pagamento:
 ## Por que escolher FireBanking
 
 <CardGroup cols={2}>
-  <Card title="Plataforma Unificada" icon="layer-group">
-    Todos os métodos em uma única API com padrões consistentes
+  <Card title="Ecossistema Completo de Pagamentos" icon="layer-group">
+    PIX, Cartão e Boleto integrados em uma única API com padrões consistentes
   </Card>
-  <Card title="Liquidez Otimizada" icon="calendar">
+  <Card title="Liquidez Otimizada por Método" icon="calendar">
     PIX instantâneo, Cartão D+2, Boleto D+1 com antecipação disponível
   </Card>
-  <Card title="Flexibilidade Total" icon="wrench">
-    Pré-autorização, split automático e webhooks específicos
+  <Card title="Flexibilidade Multi-Método" icon="wrench">
+    Split automático, webhooks inteligentes e pré-autorização em todos os métodos
   </Card>
-  <Card title="Sem Complexidade" icon="star">
-    Não é necessário pré-cadastrar compradores ou configurações extras
+  <Card title="Integração Simplificada" icon="star">
+    Uma única integração para acessar todo o sistema financeiro brasileiro
   </Card>
 </CardGroup>
 
@@ -167,7 +167,7 @@ Nossa API é organizada em **módulos especializados** por método de pagamento:
 
 <CardGroup cols={3}>
   <Card title="🚀 PIX Primeiro" href="/api-reference/pix/introduction">
-    Ideal para **confirmação rápida** e **custos baixos**
+    Ideal para **confirmação instantânea** e **custos baixos**
   </Card>
   <Card
     title="💳 Cartão Primeiro"
@@ -175,8 +175,8 @@ Nossa API é organizada em **módulos especializados** por método de pagamento:
   >
     Ideal para **parcelamento** e **recorrência**
   </Card>
-  <Card title="📄 Boleto Primeiro" href="/api-reference/boleto/introduction">
-    Ideal para **valores altos** e **B2B**
+  <Card title="📄 Boleto Primeiro" href="/api-reference/bank-slip/introduction">
+    Ideal para **valores altos** e **pagamentos B2B**
   </Card>
 </CardGroup>
 
