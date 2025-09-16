@@ -129,8 +129,7 @@
           {
             "group": "Visão Geral",
             "pages": [
-              "api-reference/bank-slip/introduction",
-              "api-reference/bank-slip/integration-flow"
+              "api-reference/bank-slip/introduction"
             ]
           },
           {
