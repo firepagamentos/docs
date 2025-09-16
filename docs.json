@@ -129,28 +129,28 @@
           {
             "group": "Visão Geral",
             "pages": [
-              "api-reference/boleto/introduction",
-              "api-reference/boleto/integration-flow"
+              "api-reference/bank-slip/introduction",
+              "api-reference/bank-slip/integration-flow"
             ]
           },
           {
             "group": "Emissão",
             "pages": [
-              "api-reference/boleto/create",
-              "api-reference/boleto/get",
-              "api-reference/boleto/generate-pdf"
+              "api-reference/bank-slip/create",
+              "api-reference/bank-slip/get",
+              "api-reference/bank-slip/generate-pdf"
             ]
           },
           {
             "group": "Gestão",
-            "pages": ["api-reference/boleto/cancel"]
+            "pages": ["api-reference/bank-slip/cancel"]
           },
           {
             "group": "Webhooks",
             "pages": [
-              "api-reference/boleto/webhook-confirmed",
-              "api-reference/boleto/webhook-paid",
-              "api-reference/boleto/webhook-cancelled"
+              "api-reference/bank-slip/webhook-confirmed",
+              "api-reference/bank-slip/webhook-paid",
+              "api-reference/bank-slip/webhook-cancelled"
             ]
           }
         ]

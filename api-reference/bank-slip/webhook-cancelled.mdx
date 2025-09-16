@@ -1,0 +1,706 @@
+---
+title: 'Webhook - Boleto Cancelado'
+description: 'Receba notificações automáticas quando um boleto for cancelado'
+---
+
+## Visão Geral
+
+O webhook de cancelamento é enviado automaticamente quando um boleto é cancelado através da API ou por ação administrativa. Este evento informa que o boleto não pode mais ser pago e permite que você tome as ações necessárias em seu sistema.
+
+<Info>
+  Este webhook é enviado imediatamente após o cancelamento ser processado, normalmente em alguns segundos.
+</Info>
+
+## Evento: `boleto.cancelled`
+
+### Quando é Enviado
+- Boleto cancelado via API `/cancel`
+- Cancelamento por ação administrativa
+- Cancelamento automático por regras de negócio
+- Estorno de boleto por problemas técnicos
+
+### Payload do Webhook
+
+```json
+{
+  "event": "boleto.cancelled",
+  "boleto_id": "bol_1234567890123456",
+  "external_id": "pedido-12345",
+  "timestamp": "2024-01-16T10:30:00Z",
+  "data": {
+    "id": "bol_1234567890123456",
+    "external_id": "pedido-12345",
+    "status": "cancelled",
+    "amount": 25000,
+    "currency": "BRL",
+    "description": "Mensalidade Academia FitLife - Janeiro/2024",
+    "due_date": "2024-02-15",
+    "buyer": {
+      "name": "João Silva Santos",
+      "document": "***.***.***-01",
+      "email": "joao@email.com",
+      "phone": "(11) 9****-9999"
+    },
+    "cancellation": {
+      "cancelled_at": "2024-01-16T10:30:00Z",
+      "reason": "Pedido cancelado pelo cliente",
+      "cancelled_by": "api_user",
+      "method": "api",
+      "metadata": {
+        "cancelled_by": "customer_service",
+        "ticket_id": "SUPP-123456"
+      }
+    },
+    "registered_at": "2024-01-15T10:30:00Z",
+    "metadata": {
+      "cliente_id": "12345",
+      "plano": "premium",
+      "mes_referencia": "2024-01"
+    }
+  }
+}
+```
+
+## Implementação do Endpoint
+
+### Node.js/Express
+```javascript
+app.post('/webhooks/boleto-cancelled', express.raw({type: 'application/json'}), async (req, res) => {
+  try {
+    const payload = JSON.parse(req.body);
+
+    // Verificar assinatura do webhook (recomendado)
+    if (!verifyWebhookSignature(req.headers, req.body)) {
+      return res.status(401).send('Assinatura inválida');
+    }
+
+    // Verificar se já processamos este cancelamento (idempotência)
+    const alreadyProcessed = await checkIfCancellationProcessed(payload.boleto_id);
+    if (alreadyProcessed) {
+      console.log(`Cancelamento ${payload.boleto_id} já foi processado`);
+      return res.status(200).send('Já processado');
+    }
+
+    // Processar cancelamento do boleto
+    await processBoletoCancelled(payload);
+
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Erro no webhook boleto cancelado:', error);
+    res.status(500).send('Erro interno');
+  }
+});
+
+async function processBoletoCancelled(payload) {
+  const { boleto_id, external_id, data } = payload;
+
+  try {
+    // Iniciar transação no banco
+    const transaction = await startDatabaseTransaction();
+
+    try {
+      // 1. Atualizar status do boleto
+      await updateBoletoStatus(boleto_id, 'cancelled', {
+        cancelled_at: data.cancellation.cancelled_at,
+        cancellation_reason: data.cancellation.reason,
+        cancelled_by: data.cancellation.cancelled_by,
+        cancellation_method: data.cancellation.method
+      }, transaction);
+
+      // 2. Processar cancelamento do pedido
+      await processCancelledOrder(external_id, {
+        status: 'cancelled',
+        cancelled_reason: data.cancellation.reason,
+        cancelled_at: data.cancellation.cancelled_at,
+        payment_method: 'boleto'
+      }, transaction);
+
+      // 3. Reverter reservas/estoques se necessário
+      await revertReservations(external_id, transaction);
+
+      // Commit da transação
+      await commitTransaction(transaction);
+
+      // 4. Ações pós-cancelamento (fora da transação)
+      await postCancellationActions(data);
+
+    } catch (error) {
+      await rollbackTransaction(transaction);
+      throw error;
+    }
+
+    console.log(`Boleto ${boleto_id} cancelado e processado com sucesso`);
+  } catch (error) {
+    console.error(`Erro ao processar cancelamento do boleto ${boleto_id}:`, error);
+    throw error;
+  }
+}
+
+async function postCancellationActions(boletoData) {
+  // Notificar cliente sobre cancelamento
+  await sendCancellationNotification(boletoData);
+
+  // Processar reembolsos se aplicável
+  await processRefundsIfApplicable(boletoData);
+
+  // Atualizar métricas e analytics
+  await logCancellationEvent(boletoData);
+
+  // Notificar equipes internas
+  await notifyInternalTeams(boletoData);
+}
+```
+
+### Python/Flask
+```python
+from flask import Flask, request, jsonify
+import json
+import logging
+from datetime import datetime
+
+app = Flask(__name__)
+
+@app.route('/webhooks/boleto-cancelled', methods=['POST'])
+def handle_boleto_cancelled():
+    try:
+        payload = request.get_json()
+
+        # Verificar assinatura
+        if not verify_webhook_signature(request.headers, request.data):
+            return 'Assinatura inválida', 401
+
+        # Verificar idempotência
+        if check_if_cancellation_processed(payload['boleto_id']):
+            logging.info(f"Cancelamento {payload['boleto_id']} já processado")
+            return 'Já processado', 200
+
+        # Processar cancelamento
+        process_boleto_cancelled(payload)
+
+        return 'OK', 200
+
+    except Exception as e:
+        logging.error(f'Erro no webhook boleto cancelado: {e}')
+        return 'Erro interno', 500
+
+def process_boleto_cancelled(payload):
+    boleto_id = payload['boleto_id']
+    external_id = payload['external_id']
+    data = payload['data']
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Atualizar boleto
+            cursor.execute("""
+                UPDATE boletos SET
+                    status = 'cancelled',
+                    cancelled_at = %s,
+                    cancellation_reason = %s,
+                    cancelled_by = %s
+                WHERE id = %s
+            """, (
+                data['cancellation']['cancelled_at'],
+                data['cancellation']['reason'],
+                data['cancellation']['cancelled_by'],
+                boleto_id
+            ))
+
+            # Atualizar pedido
+            cursor.execute("""
+                UPDATE orders SET
+                    status = 'cancelled',
+                    cancelled_reason = %s,
+                    cancelled_at = %s
+                WHERE external_id = %s
+            """, (
+                data['cancellation']['reason'],
+                data['cancellation']['cancelled_at'],
+                external_id
+            ))
+
+            # Reverter estoque se necessário
+            revert_inventory_reservation(external_id, cursor)
+
+            # Commit
+            conn.commit()
+
+            # Ações pós-cancelamento
+            send_cancellation_notification(data)
+            update_analytics(data)
+
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    except Exception as e:
+        logging.error(f'Erro ao processar cancelamento {boleto_id}: {e}')
+        raise
+
+def revert_inventory_reservation(external_id, cursor):
+    """Reverter reservas de estoque quando pedido é cancelado"""
+    cursor.execute("""
+        UPDATE inventory SET
+            reserved_quantity = reserved_quantity - oi.quantity,
+            available_quantity = available_quantity + oi.quantity
+        FROM order_items oi
+        WHERE inventory.product_id = oi.product_id
+        AND oi.order_external_id = %s
+    """, (external_id,))
+```
+
+### PHP
+```php
+<?php
+// webhook-boleto-cancelled.php
+
+$payload = json_decode(file_get_contents('php://input'), true);
+
+if (!$payload) {
+    http_response_code(400);
+    die('Payload inválido');
+}
+
+// Verificar assinatura
+if (!verifyWebhookSignature(getallheaders(), file_get_contents('php://input'))) {
+    http_response_code(401);
+    die('Assinatura inválida');
+}
+
+try {
+    // Verificar idempotência
+    if (checkIfCancellationProcessed($payload['boleto_id'])) {
+        error_log("Cancelamento {$payload['boleto_id']} já processado");
+        http_response_code(200);
+        die('Já processado');
+    }
+
+    processBoletoCancelled($payload);
+
+    http_response_code(200);
+    echo 'OK';
+} catch (Exception $e) {
+    error_log('Erro no webhook boleto cancelado: ' . $e->getMessage());
+    http_response_code(500);
+    echo 'Erro interno';
+}
+
+function processBoletoCancelled($payload) {
+    $pdo = new PDO($dsn, $username, $password);
+
+    try {
+        $pdo->beginTransaction();
+
+        $boletoId = $payload['boleto_id'];
+        $externalId = $payload['external_id'];
+        $data = $payload['data'];
+        $cancellation = $data['cancellation'];
+
+        // Atualizar boleto
+        $stmt = $pdo->prepare("
+            UPDATE boletos SET
+                status = 'cancelled',
+                cancelled_at = :cancelled_at,
+                cancellation_reason = :reason,
+                cancelled_by = :cancelled_by
+            WHERE id = :boleto_id
+        ");
+
+        $stmt->execute([
+            'boleto_id' => $boletoId,
+            'cancelled_at' => $cancellation['cancelled_at'],
+            'reason' => $cancellation['reason'],
+            'cancelled_by' => $cancellation['cancelled_by']
+        ]);
+
+        // Atualizar pedido
+        $stmt = $pdo->prepare("
+            UPDATE orders SET
+                status = 'cancelled',
+                cancelled_reason = :reason,
+                cancelled_at = :cancelled_at
+            WHERE external_id = :external_id
+        ");
+
+        $stmt->execute([
+            'external_id' => $externalId,
+            'reason' => $cancellation['reason'],
+            'cancelled_at' => $cancellation['cancelled_at']
+        ]);
+
+        $pdo->commit();
+
+        // Ações pós-cancelamento
+        sendCancellationNotification($data);
+        updateOrderAnalytics($data);
+
+    } catch (Exception $e) {
+        $pdo->rollback();
+        throw $e;
+    }
+}
+?>
+```
+
+## Email de Notificação de Cancelamento
+
+### Template HTML
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Boleto Cancelado</title>
+    <style>
+        .container { max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; }
+        .header { background: #6c757d; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 30px; background: #f8f9fa; }
+        .cancellation-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .cancel-icon { font-size: 48px; margin-bottom: 20px; }
+        .reason-box { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        .next-steps { background: #e9ecef; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="cancel-icon">❌</div>
+            <h1>Boleto Cancelado</h1>
+            <p>Seu boleto foi cancelado</p>
+        </div>
+
+        <div class="content">
+            <p>Olá <strong>{{buyer_name}}</strong>,</p>
+
+            <p>Informamos que seu boleto foi cancelado e não pode mais ser pago.</p>
+
+            <div class="cancellation-details">
+                <h3>📋 Detalhes do Cancelamento</h3>
+                <p><strong>Valor:</strong> R$ {{amount}}</p>
+                <p><strong>Descrição:</strong> {{description}}</p>
+                <p><strong>Data do Cancelamento:</strong> {{cancelled_date}}</p>
+                <p><strong>Referência:</strong> {{external_id}}</p>
+
+                <div class="reason-box">
+                    <strong>Motivo:</strong> {{cancellation_reason}}
+                </div>
+            </div>
+
+            <div class="next-steps">
+                <h4>🔄 Próximos Passos</h4>
+                {{#if_can_regenerate}}
+                <p>Se você ainda deseja efetuar o pagamento, entre em contato conosco para gerar um novo boleto.</p>
+                <p style="text-align: center;">
+                    <a href="{{regenerate_url}}" style="display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
+                        Gerar Novo Boleto
+                    </a>
+                </p>
+                {{else}}
+                <p>{{next_steps_message}}</p>
+                {{/if_can_regenerate}}
+            </div>
+
+            <p>Se você tiver alguma dúvida sobre este cancelamento, entre em contato conosco.</p>
+
+            <p>Att,<br>Equipe de Atendimento</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+### Função de Envio
+```javascript
+async function sendCancellationNotification(boletoData) {
+  const template = await loadEmailTemplate('boleto-cancelled');
+
+  const emailHtml = template
+    .replace('{{buyer_name}}', boletoData.buyer.name)
+    .replace('{{amount}}', formatCurrency(boletoData.amount))
+    .replace('{{description}}', boletoData.description)
+    .replace('{{cancelled_date}}', formatDate(boletoData.cancellation.cancelled_at))
+    .replace('{{external_id}}', boletoData.external_id)
+    .replace('{{cancellation_reason}}', boletoData.cancellation.reason)
+    .replace('{{next_steps_message}}', getNextStepsMessage(boletoData))
+    .replace('{{regenerate_url}}', getRegenerateUrl(boletoData));
+
+  const emailData = {
+    to: boletoData.buyer.email,
+    subject: `❌ Boleto Cancelado - ${boletoData.description}`,
+    html: emailHtml
+  };
+
+  try {
+    await sendEmail(emailData);
+    console.log(`Email de cancelamento enviado para ${boletoData.buyer.email}`);
+  } catch (error) {
+    console.error('Erro ao enviar email de cancelamento:', error);
+  }
+}
+
+function getNextStepsMessage(boletoData) {
+  const reason = boletoData.cancellation.reason.toLowerCase();
+
+  if (reason.includes('cliente')) {
+    return 'Como este cancelamento foi por sua solicitação, não são necessárias outras ações.';
+  } else if (reason.includes('estoque')) {
+    return 'Devido à falta de estoque, vamos entrar em contato assim que o produto estiver disponível.';
+  } else if (reason.includes('erro')) {
+    return 'Por conta de um erro técnico, um novo boleto será gerado automaticamente.';
+  } else {
+    return 'Entre em contato conosco para esclarecimentos sobre este cancelamento.';
+  }
+}
+
+function getRegenerateUrl(boletoData) {
+  // Determinar se pode regenerar baseado no motivo
+  const reason = boletoData.cancellation.reason.toLowerCase();
+  const canRegenerate = !reason.includes('cliente cancelou') && !reason.includes('fraude');
+
+  if (canRegenerate) {
+    return `${process.env.FRONTEND_URL}/orders/${boletoData.external_id}/regenerate-boleto`;
+  }
+
+  return null;
+}
+```
+
+## Processamento de Estornos
+
+### Estorno Automático
+```javascript
+async function processRefundsIfApplicable(boletoData) {
+  const cancellation = boletoData.cancellation;
+
+  // Verificar se deve processar estorno automático
+  const shouldRefund = shouldProcessAutomaticRefund(cancellation);
+
+  if (shouldRefund) {
+    await processAutomaticRefund(boletoData);
+  }
+}
+
+function shouldProcessAutomaticRefund(cancellation) {
+  const autoRefundReasons = [
+    'produto_descontinuado',
+    'erro_sistema',
+    'problema_tecnico',
+    'estoque_insuficiente'
+  ];
+
+  return autoRefundReasons.some(reason =>
+    cancellation.reason.toLowerCase().includes(reason)
+  );
+}
+
+async function processAutomaticRefund(boletoData) {
+  // Verificar se boleto foi pago
+  const paymentHistory = await getPaymentHistory(boletoData.id);
+
+  if (paymentHistory.status === 'paid') {
+    // Processar estorno
+    const refundData = {
+      original_boleto_id: boletoData.id,
+      amount: paymentHistory.paid_amount,
+      reason: `Estorno automático: ${boletoData.cancellation.reason}`,
+      refund_method: 'pix', // ou 'ted' dependendo da configuração
+      beneficiary: {
+        name: boletoData.buyer.name,
+        document: boletoData.buyer.document,
+        bank_account: paymentHistory.refund_account
+      }
+    };
+
+    await createRefundTransaction(refundData);
+  }
+}
+```
+
+## Notificações Internas
+
+### Slack/Teams
+```javascript
+async function notifyInternalTeams(boletoData) {
+  const cancellation = boletoData.cancellation;
+  const reason = cancellation.reason.toLowerCase();
+
+  // Notificar equipes específicas baseado no motivo
+  if (reason.includes('estoque')) {
+    await notifyInventoryTeam(boletoData);
+  } else if (reason.includes('fraude')) {
+    await notifySecurityTeam(boletoData);
+  } else if (reason.includes('erro') || reason.includes('técnico')) {
+    await notifyTechTeam(boletoData);
+  }
+
+  // Notificação geral para financeiro
+  await notifyFinanceTeam(boletoData);
+}
+
+async function notifyInventoryTeam(boletoData) {
+  const message = {
+    text: `🚨 Boleto cancelado por falta de estoque`,
+    attachments: [
+      {
+        color: 'warning',
+        fields: [
+          { title: 'Pedido', value: boletoData.external_id, short: true },
+          { title: 'Valor', value: formatCurrency(boletoData.amount), short: true },
+          { title: 'Cliente', value: boletoData.buyer.name, short: true },
+          { title: 'Motivo', value: boletoData.cancellation.reason, short: false }
+        ],
+        actions: [
+          {
+            type: 'button',
+            text: 'Ver Pedido',
+            url: `${process.env.ADMIN_URL}/orders/${boletoData.external_id}`
+          }
+        ]
+      }
+    ]
+  };
+
+  await sendSlackMessage('#inventory', message);
+}
+```
+
+## Métricas e Analytics
+
+### Registro de Eventos
+```javascript
+async function logCancellationEvent(boletoData) {
+  const event = {
+    event_type: 'boleto_cancelled',
+    timestamp: new Date(),
+    boleto_id: boletoData.id,
+    external_id: boletoData.external_id,
+    amount: boletoData.amount,
+    cancellation_reason: boletoData.cancellation.reason,
+    cancelled_by: boletoData.cancellation.cancelled_by,
+    cancellation_method: boletoData.cancellation.method,
+    time_until_cancellation: calculateTimeUntilCancellation(
+      boletoData.registered_at,
+      boletoData.cancellation.cancelled_at
+    ),
+    metadata: boletoData.metadata
+  };
+
+  // Enviar para sistema de analytics
+  await sendToAnalytics(event);
+
+  // Atualizar métricas em tempo real
+  await updateCancellationMetrics(event);
+}
+
+function calculateTimeUntilCancellation(registeredAt, cancelledAt) {
+  const registered = new Date(registeredAt);
+  const cancelled = new Date(cancelledAt);
+  return Math.round((cancelled - registered) / (1000 * 60 * 60)); // horas
+}
+
+async function updateCancellationMetrics(event) {
+  // Incrementar contadores
+  await incrementMetric('boletos_cancelled_total');
+  await incrementMetric(`boletos_cancelled_by_reason.${event.cancellation_reason}`);
+  await incrementMetric(`boletos_cancelled_by_method.${event.cancellation_method}`);
+
+  // Atualizar médias
+  await updateAverageMetric('time_until_cancellation', event.time_until_cancellation);
+}
+```
+
+## Dashboard em Tempo Real
+
+### WebSocket Updates
+```javascript
+async function notifyDashboard(boletoData) {
+  const dashboardUpdate = {
+    type: 'boleto_cancelled',
+    data: {
+      id: boletoData.id,
+      external_id: boletoData.external_id,
+      amount: boletoData.amount,
+      buyer: boletoData.buyer.name,
+      reason: boletoData.cancellation.reason,
+      cancelled_at: boletoData.cancellation.cancelled_at
+    }
+  };
+
+  // Enviar via WebSocket para dashboards conectados
+  websocketServer.broadcast('boleto-updates', dashboardUpdate);
+
+  // Atualizar contadores em tempo real
+  websocketServer.broadcast('metrics-update', {
+    type: 'cancellation',
+    total_cancelled: await getCancelledBoletosCount(),
+    cancellation_rate: await getCancellationRate()
+  });
+}
+```
+
+## Relatórios de Cancelamento
+
+### Análise de Motivos
+```javascript
+async function generateCancellationReport(startDate, endDate) {
+  const cancellations = await getCancellationsByPeriod(startDate, endDate);
+
+  const report = {
+    period: { start: startDate, end: endDate },
+    total_cancellations: cancellations.length,
+    cancellation_rate: await getCancellationRate(startDate, endDate),
+    by_reason: groupBy(cancellations, 'cancellation_reason'),
+    by_method: groupBy(cancellations, 'cancellation_method'),
+    by_time_period: groupByTimeToCancel(cancellations),
+    financial_impact: {
+      total_amount: cancellations.reduce((sum, c) => sum + c.amount, 0),
+      refunds_processed: cancellations.filter(c => c.refund_processed).length
+    }
+  };
+
+  return report;
+}
+
+function groupByTimeToCancel(cancellations) {
+  const timeRanges = {
+    '0-1h': 0,
+    '1-6h': 0,
+    '6-24h': 0,
+    '1-7d': 0,
+    '7d+': 0
+  };
+
+  cancellations.forEach(cancellation => {
+    const hours = cancellation.time_until_cancellation;
+
+    if (hours <= 1) timeRanges['0-1h']++;
+    else if (hours <= 6) timeRanges['1-6h']++;
+    else if (hours <= 24) timeRanges['6-24h']++;
+    else if (hours <= 168) timeRanges['1-7d']++;
+    else timeRanges['7d+']++;
+  });
+
+  return timeRanges;
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhook - Boleto Confirmado" href="/api-reference/bank-slip/webhook-confirmed">
+    Configure notificações de confirmação
+  </Card>
+  <Card title="Webhook - Boleto Pago" href="/api-reference/bank-slip/webhook-paid">
+    Receba notificações de pagamento
+  </Card>
+  <Card title="Cancelar Boleto" href="/api-reference/bank-slip/cancel">
+    API para cancelar boletos
+  </Card>
+  <Card title="Relatórios" href="/api-reference/reports/bank-slips">
+    Analise cancelamentos e performance
+  </Card>
+</CardGroup>

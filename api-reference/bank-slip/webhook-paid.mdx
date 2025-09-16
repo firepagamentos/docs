@@ -1,0 +1,710 @@
+---
+title: 'Webhook - Boleto Pago'
+description: 'Receba notificações automáticas quando um boleto for pago pelo cliente'
+---
+
+## Visão Geral
+
+O webhook de pagamento é enviado automaticamente quando um boleto é pago pelo cliente. Este é o evento mais importante do fluxo de boletos, pois confirma que o pagamento foi realizado e processado pelo sistema bancário.
+
+<Info>
+  Este webhook é enviado em até 4 horas úteis após o pagamento ser processado pelo banco. Em horário comercial, normalmente é enviado em até 30 minutos.
+</Info>
+
+## Evento: `boleto.paid`
+
+### Quando é Enviado
+- Cliente paga o boleto em qualquer banco
+- Pagamento é processado pelo sistema bancário
+- Valor é creditado na conta FireBanking
+- Confirmação de liquidação é recebida
+
+### Payload do Webhook
+
+```json
+{
+  "event": "boleto.paid",
+  "boleto_id": "bol_1234567890123456",
+  "external_id": "pedido-12345",
+  "timestamp": "2024-01-16T14:30:15Z",
+  "data": {
+    "id": "bol_1234567890123456",
+    "external_id": "pedido-12345",
+    "status": "paid",
+    "amount": 25000,
+    "paid_amount": 25583,
+    "currency": "BRL",
+    "description": "Mensalidade Academia FitLife - Janeiro/2024",
+    "due_date": "2024-02-15",
+    "paid_at": "2024-01-16T14:30:15Z",
+    "payment_info": {
+      "bank_paid": "341",
+      "bank_name": "Itaú Unibanco",
+      "channel": "internet_banking",
+      "auth_code": "123456",
+      "paid_after_due": true
+    },
+    "buyer": {
+      "name": "João Silva Santos",
+      "document": "***.***.***-01",
+      "email": "joao@email.com",
+      "phone": "(11) 9****-9999"
+    },
+    "fees": {
+      "fine": 500,
+      "interest": 83,
+      "total_fees": 583
+    },
+    "reconciliation": {
+      "settlement_date": "2024-01-17",
+      "gross_amount": 25583,
+      "firebanking_fee": 300,
+      "net_amount": 25283
+    },
+    "metadata": {
+      "cliente_id": "12345",
+      "plano": "premium",
+      "mes_referencia": "2024-01"
+    }
+  }
+}
+```
+
+## Implementação do Endpoint
+
+### Node.js/Express
+```javascript
+app.post('/webhooks/boleto-paid', express.raw({type: 'application/json'}), async (req, res) => {
+  try {
+    const payload = JSON.parse(req.body);
+
+    // Verificar assinatura do webhook (recomendado)
+    if (!verifyWebhookSignature(req.headers, req.body)) {
+      return res.status(401).send('Assinatura inválida');
+    }
+
+    // Verificar se já processamos este pagamento (idempotência)
+    const alreadyProcessed = await checkIfPaymentProcessed(payload.boleto_id);
+    if (alreadyProcessed) {
+      console.log(`Pagamento ${payload.boleto_id} já foi processado`);
+      return res.status(200).send('Já processado');
+    }
+
+    // Processar pagamento do boleto
+    await processBoletoPaid(payload);
+
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Erro no webhook boleto pago:', error);
+    res.status(500).send('Erro interno');
+  }
+});
+
+async function processBoletoPaid(payload) {
+  const { boleto_id, external_id, data } = payload;
+
+  try {
+    // Iniciar transação no banco
+    const transaction = await startDatabaseTransaction();
+
+    try {
+      // 1. Atualizar status do boleto
+      await updateBoletoStatus(boleto_id, 'paid', {
+        paid_amount: data.paid_amount,
+        paid_at: data.paid_at,
+        payment_info: data.payment_info,
+        fees: data.fees,
+        reconciliation: data.reconciliation
+      }, transaction);
+
+      // 2. Processar o pedido/serviço
+      await processOrder(external_id, {
+        status: 'paid',
+        payment_method: 'boleto',
+        payment_amount: data.paid_amount,
+        payment_date: data.paid_at
+      }, transaction);
+
+      // 3. Atualizar financeiro
+      await updateFinancialRecords({
+        boleto_id,
+        gross_amount: data.reconciliation.gross_amount,
+        net_amount: data.reconciliation.net_amount,
+        fees: data.reconciliation.firebanking_fee,
+        settlement_date: data.reconciliation.settlement_date
+      }, transaction);
+
+      // Commit da transação
+      await commitTransaction(transaction);
+
+      // 4. Ações pós-pagamento (fora da transação)
+      await postPaymentActions(data);
+
+    } catch (error) {
+      await rollbackTransaction(transaction);
+      throw error;
+    }
+
+    console.log(`Boleto ${boleto_id} pago e processado com sucesso`);
+  } catch (error) {
+    console.error(`Erro ao processar pagamento do boleto ${boleto_id}:`, error);
+    throw error;
+  }
+}
+
+async function postPaymentActions(boletoData) {
+  // Enviar confirmação por email
+  await sendPaymentConfirmationEmail(boletoData);
+
+  // Enviar SMS/Push notification
+  await sendPaymentNotification(boletoData);
+
+  // Processar ações específicas do negócio
+  await triggerBusinessLogic(boletoData);
+
+  // Log para analytics
+  await logPaymentEvent(boletoData);
+}
+```
+
+### Python/Flask
+```python
+from flask import Flask, request, jsonify
+import json
+import logging
+from datetime import datetime
+
+app = Flask(__name__)
+
+@app.route('/webhooks/boleto-paid', methods=['POST'])
+def handle_boleto_paid():
+    try:
+        payload = request.get_json()
+
+        # Verificar assinatura
+        if not verify_webhook_signature(request.headers, request.data):
+            return 'Assinatura inválida', 401
+
+        # Verificar idempotência
+        if check_if_payment_processed(payload['boleto_id']):
+            logging.info(f"Pagamento {payload['boleto_id']} já processado")
+            return 'Já processado', 200
+
+        # Processar pagamento
+        process_boleto_paid(payload)
+
+        return 'OK', 200
+
+    except Exception as e:
+        logging.error(f'Erro no webhook boleto pago: {e}')
+        return 'Erro interno', 500
+
+def process_boleto_paid(payload):
+    boleto_id = payload['boleto_id']
+    external_id = payload['external_id']
+    data = payload['data']
+
+    try:
+        # Começar transação
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Atualizar boleto
+            cursor.execute("""
+                UPDATE boletos SET
+                    status = 'paid',
+                    paid_amount = %s,
+                    paid_at = %s,
+                    payment_info = %s
+                WHERE id = %s
+            """, (
+                data['paid_amount'],
+                data['paid_at'],
+                json.dumps(data['payment_info']),
+                boleto_id
+            ))
+
+            # Atualizar pedido
+            cursor.execute("""
+                UPDATE orders SET
+                    status = 'paid',
+                    payment_method = 'boleto',
+                    payment_date = %s
+                WHERE external_id = %s
+            """, (data['paid_at'], external_id))
+
+            # Commit
+            conn.commit()
+
+            # Ações pós-pagamento
+            send_payment_confirmation(data)
+            trigger_fulfillment(external_id)
+
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    except Exception as e:
+        logging.error(f'Erro ao processar pagamento {boleto_id}: {e}')
+        raise
+```
+
+### PHP
+```php
+<?php
+// webhook-boleto-paid.php
+
+$payload = json_decode(file_get_contents('php://input'), true);
+
+if (!$payload) {
+    http_response_code(400);
+    die('Payload inválido');
+}
+
+// Verificar assinatura
+if (!verifyWebhookSignature(getallheaders(), file_get_contents('php://input'))) {
+    http_response_code(401);
+    die('Assinatura inválida');
+}
+
+try {
+    // Verificar idempotência
+    if (checkIfPaymentProcessed($payload['boleto_id'])) {
+        error_log("Pagamento {$payload['boleto_id']} já processado");
+        http_response_code(200);
+        die('Já processado');
+    }
+
+    processBoletoPaid($payload);
+
+    http_response_code(200);
+    echo 'OK';
+} catch (Exception $e) {
+    error_log('Erro no webhook boleto pago: ' . $e->getMessage());
+    http_response_code(500);
+    echo 'Erro interno';
+}
+
+function processBoletoPaid($payload) {
+    $pdo = new PDO($dsn, $username, $password);
+
+    try {
+        $pdo->beginTransaction();
+
+        $boletoId = $payload['boleto_id'];
+        $externalId = $payload['external_id'];
+        $data = $payload['data'];
+
+        // Atualizar boleto
+        $stmt = $pdo->prepare("
+            UPDATE boletos SET
+                status = 'paid',
+                paid_amount = :paid_amount,
+                paid_at = :paid_at,
+                payment_info = :payment_info
+            WHERE id = :boleto_id
+        ");
+
+        $stmt->execute([
+            'boleto_id' => $boletoId,
+            'paid_amount' => $data['paid_amount'],
+            'paid_at' => $data['paid_at'],
+            'payment_info' => json_encode($data['payment_info'])
+        ]);
+
+        // Atualizar pedido
+        $stmt = $pdo->prepare("
+            UPDATE orders SET
+                status = 'paid',
+                payment_method = 'boleto',
+                payment_date = :payment_date
+            WHERE external_id = :external_id
+        ");
+
+        $stmt->execute([
+            'external_id' => $externalId,
+            'payment_date' => $data['paid_at']
+        ]);
+
+        $pdo->commit();
+
+        // Ações pós-pagamento
+        sendPaymentConfirmation($data);
+        triggerOrderFulfillment($externalId);
+
+    } catch (Exception $e) {
+        $pdo->rollback();
+        throw $e;
+    }
+}
+?>
+```
+
+## Email de Confirmação de Pagamento
+
+### Template HTML
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pagamento Confirmado</title>
+    <style>
+        .container { max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; }
+        .header { background: #28a745; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 30px; background: #f8f9fa; }
+        .payment-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .success-icon { font-size: 48px; margin-bottom: 20px; }
+        .amount { font-size: 24px; font-weight: bold; color: #28a745; }
+        .next-steps { background: #e9ecef; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="success-icon">✅</div>
+            <h1>Pagamento Confirmado!</h1>
+            <p>Seu boleto foi pago com sucesso</p>
+        </div>
+
+        <div class="content">
+            <p>Olá <strong>{{buyer_name}}</strong>,</p>
+
+            <p>Confirmamos o recebimento do pagamento do seu boleto. Obrigado!</p>
+
+            <div class="payment-details">
+                <h3>📋 Detalhes do Pagamento</h3>
+                <p><strong>Valor Pago:</strong> <span class="amount">R$ {{paid_amount}}</span></p>
+                <p><strong>Data do Pagamento:</strong> {{paid_date}}</p>
+                <p><strong>Banco:</strong> {{bank_name}}</p>
+                <p><strong>Referência:</strong> {{external_id}}</p>
+                {{#if_paid_after_due}}
+                <p><strong>Multa/Juros:</strong> R$ {{fees_amount}}</p>
+                {{/if_paid_after_due}}
+            </div>
+
+            <div class="next-steps">
+                <h4>🚀 Próximos Passos</h4>
+                <p>{{next_steps_message}}</p>
+            </div>
+
+            <p>Se você tiver alguma dúvida, entre em contato conosco.</p>
+
+            <p>Obrigado por escolher nossos serviços!</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+### Função de Envio
+```javascript
+async function sendPaymentConfirmationEmail(boletoData) {
+  const template = await loadEmailTemplate('payment-confirmed');
+
+  const emailHtml = template
+    .replace('{{buyer_name}}', boletoData.buyer.name)
+    .replace('{{paid_amount}}', formatCurrency(boletoData.paid_amount))
+    .replace('{{paid_date}}', formatDate(boletoData.paid_at))
+    .replace('{{bank_name}}', boletoData.payment_info.bank_name)
+    .replace('{{external_id}}', boletoData.external_id)
+    .replace('{{fees_amount}}', formatCurrency(boletoData.fees.total_fees))
+    .replace('{{next_steps_message}}', getNextStepsMessage(boletoData));
+
+  const emailData = {
+    to: boletoData.buyer.email,
+    subject: `✅ Pagamento Confirmado - ${boletoData.description}`,
+    html: emailHtml
+  };
+
+  try {
+    await sendEmail(emailData);
+    console.log(`Email de confirmação enviado para ${boletoData.buyer.email}`);
+  } catch (error) {
+    console.error('Erro ao enviar email de confirmação:', error);
+  }
+}
+
+function getNextStepsMessage(boletoData) {
+  // Personalizar mensagem baseada no tipo de produto/serviço
+  const metadata = boletoData.metadata;
+
+  if (metadata.tipo === 'assinatura') {
+    return 'Sua assinatura foi ativada e você já pode acessar todos os recursos.';
+  } else if (metadata.tipo === 'produto') {
+    return 'Seu pedido será processado e enviado em até 2 dias úteis.';
+  } else {
+    return 'Seu pagamento foi processado com sucesso.';
+  }
+}
+```
+
+## Processamento do Pedido
+
+### Ações por Tipo de Negócio
+```javascript
+async function triggerBusinessLogic(boletoData) {
+  const metadata = boletoData.metadata;
+  const externalId = boletoData.external_id;
+
+  switch (metadata.tipo_negocio) {
+    case 'ecommerce':
+      await processEcommerceOrder(externalId, boletoData);
+      break;
+
+    case 'assinatura':
+      await activateSubscription(externalId, boletoData);
+      break;
+
+    case 'servico':
+      await scheduleService(externalId, boletoData);
+      break;
+
+    case 'curso':
+      await grantCourseAccess(externalId, boletoData);
+      break;
+
+    default:
+      await processGenericOrder(externalId, boletoData);
+  }
+}
+
+async function processEcommerceOrder(orderId, paymentData) {
+  // Atualizar estoque
+  await updateInventory(orderId, 'reserved');
+
+  // Gerar etiqueta de envio
+  await generateShippingLabel(orderId);
+
+  // Notificar equipe de logística
+  await notifyFulfillmentTeam(orderId);
+
+  // Enviar email de preparação
+  await sendOrderPreparationEmail(orderId);
+}
+
+async function activateSubscription(subscriptionId, paymentData) {
+  // Ativar assinatura
+  await updateSubscriptionStatus(subscriptionId, 'active');
+
+  // Criar próxima cobrança
+  await scheduleNextBilling(subscriptionId, paymentData.paid_at);
+
+  // Liberar acesso aos recursos
+  await grantSubscriptionAccess(subscriptionId);
+
+  // Enviar boas-vindas
+  await sendWelcomeEmail(subscriptionId);
+}
+```
+
+## Notificações Push e SMS
+
+### Push Notification
+```javascript
+async function sendPaymentNotification(boletoData) {
+  const message = {
+    title: 'Pagamento Confirmado! 🎉',
+    body: `Seu boleto de R$ ${formatCurrency(boletoData.paid_amount)} foi pago com sucesso`,
+    icon: '/icons/payment-success.png',
+    data: {
+      type: 'payment_confirmed',
+      boleto_id: boletoData.id,
+      external_id: boletoData.external_id,
+      amount: boletoData.paid_amount,
+      url: `/orders/${boletoData.external_id}`
+    },
+    actions: [
+      {
+        action: 'view',
+        title: 'Ver Detalhes'
+      }
+    ]
+  };
+
+  // Enviar para todos os dispositivos do usuário
+  await sendPushToUser(boletoData.buyer.id, message);
+}
+```
+
+### SMS
+```javascript
+async function sendPaymentSMS(boletoData) {
+  const phone = boletoData.buyer.phone;
+  const message = `✅ Pagamento confirmado! Boleto de R$ ${formatCurrency(boletoData.paid_amount)} foi pago. Pedido: ${boletoData.external_id}`;
+
+  try {
+    await sendSMS(phone, message);
+  } catch (error) {
+    console.error('Erro ao enviar SMS:', error);
+  }
+}
+```
+
+## Analytics e Métricas
+
+### Registro de Eventos
+```javascript
+async function logPaymentEvent(boletoData) {
+  const event = {
+    event_type: 'boleto_paid',
+    timestamp: new Date(),
+    boleto_id: boletoData.id,
+    external_id: boletoData.external_id,
+    amount: boletoData.amount,
+    paid_amount: boletoData.paid_amount,
+    fees: boletoData.fees.total_fees,
+    payment_delay: calculatePaymentDelay(boletoData.due_date, boletoData.paid_at),
+    bank: boletoData.payment_info.bank_name,
+    channel: boletoData.payment_info.channel,
+    metadata: boletoData.metadata
+  };
+
+  // Enviar para sistema de analytics
+  await sendToAnalytics(event);
+
+  // Atualizar métricas em tempo real
+  await updateRealTimeMetrics(event);
+}
+
+function calculatePaymentDelay(dueDate, paidAt) {
+  const due = new Date(dueDate);
+  const paid = new Date(paidAt);
+  const diffDays = Math.ceil((paid - due) / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+}
+```
+
+## Tratamento de Erros e Retry
+
+### Retry com Backoff Exponencial
+```javascript
+async function processWithRetry(payload, maxRetries = 3) {
+  let attempt = 1;
+
+  while (attempt <= maxRetries) {
+    try {
+      await processBoletoPaid(payload);
+      return; // Sucesso, sair
+    } catch (error) {
+      console.error(`Tentativa ${attempt} falhou:`, error);
+
+      if (attempt === maxRetries) {
+        // Última tentativa falhou - enviar para queue de erro
+        await sendToErrorQueue(payload, error);
+        throw error;
+      }
+
+      // Aguardar antes da próxima tentativa (backoff exponencial)
+      const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      attempt++;
+    }
+  }
+}
+```
+
+### Queue de Erro
+```javascript
+async function sendToErrorQueue(payload, error) {
+  const errorRecord = {
+    payload,
+    error: error.message,
+    stack: error.stack,
+    timestamp: new Date(),
+    retry_count: 0,
+    max_retries: 5
+  };
+
+  await errorQueue.add('boleto-payment-failed', errorRecord);
+}
+```
+
+## Dashboard em Tempo Real
+
+### WebSocket para Updates
+```javascript
+// Quando webhook é processado, notificar dashboard
+async function notifyDashboard(boletoData) {
+  const dashboardUpdate = {
+    type: 'boleto_paid',
+    data: {
+      id: boletoData.id,
+      amount: boletoData.paid_amount,
+      buyer: boletoData.buyer.name,
+      paid_at: boletoData.paid_at
+    }
+  };
+
+  // Enviar via WebSocket para dashboards conectados
+  websocketServer.broadcast('boleto-updates', dashboardUpdate);
+}
+```
+
+## Testes do Webhook
+
+### Simulação para Testes
+```javascript
+async function testBoletoPaidWebhook() {
+  const testPayload = {
+    event: 'boleto.paid',
+    boleto_id: 'bol_test_paid_123',
+    external_id: 'test-order-paid-123',
+    timestamp: new Date().toISOString(),
+    data: {
+      id: 'bol_test_paid_123',
+      external_id: 'test-order-paid-123',
+      status: 'paid',
+      amount: 10000,
+      paid_amount: 10000,
+      paid_at: new Date().toISOString(),
+      payment_info: {
+        bank_paid: '341',
+        bank_name: 'Itaú Unibanco',
+        channel: 'app',
+        auth_code: 'TEST123'
+      },
+      buyer: {
+        name: 'Teste Usuario',
+        email: 'teste@email.com'
+      },
+      fees: {
+        fine: 0,
+        interest: 0,
+        total_fees: 0
+      }
+    }
+  };
+
+  const response = await fetch('http://localhost:3000/webhooks/boleto-paid', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(testPayload)
+  });
+
+  console.log('Teste webhook pago:', response.status);
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhook - Boleto Cancelado" href="/api-reference/bank-slip/webhook-cancelled">
+    Configure notificações de cancelamento
+  </Card>
+  <Card title="Consultar Boleto" href="/api-reference/bank-slip/get">
+    Verifique detalhes dos pagamentos
+  </Card>
+  <Card title="Relatórios Financeiros" href="/api-reference/reports/bank-slips">
+    Analise performance dos boletos
+  </Card>
+  <Card title="Configurar Webhooks" href="/webhooks">
+    Guia completo de configuração
+  </Card>
+</CardGroup>

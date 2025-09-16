@@ -1045,6 +1045,179 @@
           }
         }
       }
+    },
+    "/bank-slip/v1/payment": {
+      "post": {
+        "tags": ["Boleto"],
+        "summary": "Criar Boleto",
+        "description": "Cria um novo boleto bancário com dados do pagador e prazo de vencimento",
+        "security": [{"apiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBoletoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Boleto criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoletoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bank-slip/v1/payment/{id}": {
+      "get": {
+        "tags": ["Boleto"],
+        "summary": "Consultar Boleto",
+        "description": "Consulta o status e detalhes de um boleto pelo ID",
+        "security": [{"apiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do boleto ou externalId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes do boleto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoletoDetailsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Boleto não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bank-slip/v1/payment/{id}/cancel": {
+      "patch": {
+        "tags": ["Boleto"],
+        "summary": "Cancelar Boleto",
+        "description": "Cancela um boleto que ainda não foi pago",
+        "security": [{"apiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do boleto a ser cancelado",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Boleto cancelado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoletoCancelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Boleto não pode ser cancelado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bank-slip/v1/payment/{id}/generate-pdf": {
+      "post": {
+        "tags": ["Boleto"],
+        "summary": "Gerar PDF do Boleto",
+        "description": "Gera e retorna o PDF do boleto para impressão ou envio",
+        "security": [{"apiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do boleto",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF do boleto gerado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoletoPdfResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Boleto não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2234,6 +2407,384 @@
           },
           "account": {
             "type": "string"
+          }
+        }
+      },
+      "CreateBoletoRequest": {
+        "type": "object",
+        "required": ["amount", "dueDate", "payer"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Valor do boleto em reais",
+            "example": 150.75,
+            "minimum": 0.01
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de vencimento do boleto (YYYY-MM-DD)",
+            "example": "2025-04-15"
+          },
+          "payer": {
+            "$ref": "#/components/schemas/BoletoPayer"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Identificador único do boleto em seu sistema",
+            "example": "boleto-12345"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do boleto/finalidade do pagamento",
+            "example": "Mensalidade do curso"
+          },
+          "instructions": {
+            "type": "string",
+            "description": "Instruções para pagamento (multa, juros, etc.)",
+            "example": "Após vencimento multa de 2% + juros de 1% ao mês"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para receber webhooks específicos deste boleto"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Dados adicionais do boleto",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BoletoPayer": {
+        "type": "object",
+        "required": ["name", "document", "address"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome completo do pagador",
+            "example": "Carlos Eduardo Mendes"
+          },
+          "document": {
+            "type": "string",
+            "description": "CPF ou CNPJ do pagador (apenas números)",
+            "example": "12345678901"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email do pagador",
+            "example": "carlos@email.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Telefone do pagador",
+            "example": "11999999999"
+          },
+          "address": {
+            "$ref": "#/components/schemas/BoletoAddress"
+          }
+        }
+      },
+      "BoletoAddress": {
+        "type": "object",
+        "required": ["street", "number", "neighborhood", "city", "state", "zipCode"],
+        "properties": {
+          "street": {
+            "type": "string",
+            "description": "Logradouro/rua",
+            "example": "Rua das Palmeiras"
+          },
+          "number": {
+            "type": "string",
+            "description": "Número",
+            "example": "123"
+          },
+          "complement": {
+            "type": "string",
+            "description": "Complemento",
+            "example": "Apto 45"
+          },
+          "neighborhood": {
+            "type": "string",
+            "description": "Bairro",
+            "example": "Centro"
+          },
+          "city": {
+            "type": "string",
+            "description": "Cidade",
+            "example": "São Paulo"
+          },
+          "state": {
+            "type": "string",
+            "description": "Estado (UF)",
+            "example": "SP"
+          },
+          "zipCode": {
+            "type": "string",
+            "description": "CEP (apenas números)",
+            "example": "01000000"
+          }
+        }
+      },
+      "BoletoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID único do boleto no FireBanking",
+            "example": "3f73ad66-04cb-4c2d-9520-e41e41c576cc"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Seu identificador único do boleto"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "confirmed", "paid", "expired", "cancelled"],
+            "description": "Status atual do boleto"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor do boleto em reais"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de vencimento"
+          },
+          "barCode": {
+            "type": "string",
+            "description": "Código de barras do boleto"
+          },
+          "digitableLine": {
+            "type": "string",
+            "description": "Linha digitável do boleto"
+          },
+          "pdfUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para download do PDF do boleto"
+          },
+          "paymentLink": {
+            "type": "string",
+            "format": "uri",
+            "description": "Link para pagamento online"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de criação do boleto"
+          },
+          "confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de confirmação/registro no banco"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BoletoDetailsResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "confirmed", "paid", "expired", "cancelled"]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "payer": {
+            "$ref": "#/components/schemas/BoletoPayer"
+          },
+          "barCode": {
+            "type": "string"
+          },
+          "digitableLine": {
+            "type": "string"
+          },
+          "pdfUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "paymentLink": {
+            "type": "string",
+            "format": "uri"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "payment_info": {
+            "$ref": "#/components/schemas/BoletoPaymentInfo"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BoletoCancelResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do boleto cancelado"
+          },
+          "status": {
+            "type": "string",
+            "example": "cancelled"
+          },
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora do cancelamento"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem de confirmação",
+            "example": "Boleto cancelado com sucesso"
+          }
+        }
+      },
+      "BoletoPdfResponse": {
+        "type": "object",
+        "properties": {
+          "pdfUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para download do PDF do boleto"
+          },
+          "pdfBase64": {
+            "type": "string",
+            "description": "Conteúdo do PDF em base64"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de expiração do link de download"
+          }
+        }
+      },
+      "BoletoPaymentInfo": {
+        "type": "object",
+        "properties": {
+          "paymentDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Data do pagamento"
+          },
+          "paymentAmount": {
+            "type": "number",
+            "description": "Valor pago (pode incluir juros/multa)"
+          },
+          "paymentType": {
+            "type": "string",
+            "description": "Tipo de pagamento (débito, dinheiro, etc.)"
+          },
+          "bank": {
+            "type": "string",
+            "description": "Banco onde foi pago"
+          },
+          "agency": {
+            "type": "string",
+            "description": "Agência bancária"
+          }
+        }
+      },
+      "BoletoWebhookPayload": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": ["boleto.confirmed", "boleto.paid", "boleto.cancelled"],
+            "description": "Tipo do evento"
+          },
+          "boleto_id": {
+            "type": "string",
+            "description": "ID do boleto"
+          },
+          "external_id": {
+            "type": "string",
+            "description": "ID externo do boleto"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp do evento"
+          },
+          "data": {
+            "type": "object",
+            "description": "Dados específicos do evento",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "dueDate": {
+                "type": "string",
+                "format": "date"
+              },
+              "payment_info": {
+                "$ref": "#/components/schemas/BoletoPaymentInfo"
+              }
+            }
+          },
+          "webhook": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "attempt": {
+                "type": "integer"
+              },
+              "max_attempts": {
+                "type": "integer"
+              }
+            }
           }
         }
       }

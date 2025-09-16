@@ -1,0 +1,602 @@
+---
+title: 'Gerar PDF do Boleto'
+openapi: 'POST /bank-slip/v1/payment/{id}/generate-pdf'
+description: 'Gere e baixe o arquivo PDF de um boleto bancário para impressão ou compartilhamento'
+---
+
+## Visão Geral
+
+Gere o arquivo PDF de um boleto bancário registrado. Este endpoint retorna uma URL temporária para download do arquivo PDF formatado com todos os dados necessários para pagamento em agências bancárias, lotéricas ou para impressão.
+
+<Info>
+  O PDF gerado segue o padrão FEBRABAN e é aceito em toda rede bancária nacional.
+</Info>
+
+## Parâmetros da URL
+
+<ParamField path="id" type="string" required>
+  ID do boleto ou `externalId` para gerar o PDF
+</ParamField>
+
+## Parâmetros de Query
+
+<ParamField query="type" type="string">
+  Tipo de busca: `internal` (padrão) ou `external`
+</ParamField>
+
+<ParamField query="format" type="string">
+  Formato do retorno: `url` (padrão) ou `base64`
+</ParamField>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL - Retornar URL
+curl -X POST "https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456/generate-pdf" \
+  -H "x-api-key: fbk_live_sua_chave_aqui"
+```
+
+```bash cURL - Por External ID
+curl -X POST "https://api-gateway.firebanking.com.br/v1/payment/pedido-123/generate-pdf?type=external" \
+  -H "x-api-key: fbk_live_sua_chave_aqui"
+```
+
+```bash cURL - Retornar Base64
+curl -X POST "https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456/generate-pdf?format=base64" \
+  -H "x-api-key: fbk_live_sua_chave_aqui"
+```
+
+```javascript JavaScript
+// Gerar PDF e retornar URL
+async function generateBoletoPDF(boletoId) {
+  const response = await fetch(`https://api-gateway.firebanking.com.br/v1/payment/${boletoId}/generate-pdf`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'fbk_live_sua_chave_aqui'
+    }
+  });
+
+  const result = await response.json();
+  return result.pdf_url;
+}
+
+// Baixar PDF diretamente
+async function downloadBoletoPDF(boletoId, filename = 'boleto.pdf') {
+  try {
+    const pdfUrl = await generateBoletoPDF(boletoId);
+
+    // Criar link de download
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = filename;
+    link.click();
+  } catch (error) {
+    console.error('Erro ao baixar PDF:', error);
+  }
+}
+
+// Abrir PDF em nova aba
+async function openBoletoPDF(boletoId) {
+  const pdfUrl = await generateBoletoPDF(boletoId);
+  window.open(pdfUrl, '_blank');
+}
+```
+
+```python Python
+import requests
+import base64
+
+def generate_boleto_pdf(boleto_id, format_type='url'):
+    """Gera PDF do boleto e retorna URL ou base64"""
+
+    response = requests.post(
+        f'https://api-gateway.firebanking.com.br/v1/payment/{boleto_id}/generate-pdf',
+        params={'format': format_type},
+        headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
+    )
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f'Erro: {response.json()}')
+
+def download_boleto_pdf(boleto_id, filename='boleto.pdf'):
+    """Baixa PDF do boleto"""
+
+    # Gerar base64 do PDF
+    result = generate_boleto_pdf(boleto_id, 'base64')
+    pdf_content = base64.b64decode(result['pdf_base64'])
+
+    # Salvar arquivo
+    with open(filename, 'wb') as f:
+        f.write(pdf_content)
+
+    print(f'PDF salvo como {filename}')
+
+# Uso
+pdf_data = generate_boleto_pdf('bol_1234567890123456')
+print(f'PDF disponível em: {pdf_data["pdf_url"]}')
+```
+
+```php PHP
+<?php
+function generateBoletoPDF($boletoId, $format = 'url') {
+    $curl = curl_init();
+
+    curl_setopt_array($curl, [
+        CURLOPT_URL => "https://api-gateway.firebanking.com.br/v1/payment/{$boletoId}/generate-pdf?format={$format}",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'x-api-key: fbk_live_sua_chave_aqui'
+        ]
+    ]);
+
+    $response = curl_exec($curl);
+    curl_close($curl);
+
+    return json_decode($response, true);
+}
+
+function downloadBoletoPDF($boletoId, $filename = 'boleto.pdf') {
+    // Gerar base64 do PDF
+    $result = generateBoletoPDF($boletoId, 'base64');
+    $pdfContent = base64_decode($result['pdf_base64']);
+
+    // Salvar arquivo
+    file_put_contents($filename, $pdfContent);
+
+    return $filename;
+}
+
+// Uso
+$pdfData = generateBoletoPDF('bol_1234567890123456');
+echo "PDF disponível em: " . $pdfData['pdf_url'];
+?>
+```
+</CodeGroup>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK - URL do PDF
+{
+  "pdf_url": "https://cdn.firebanking.com/boletos/bol_1234567890123456.pdf?token=abc123&expires=1705593600",
+  "expires_at": "2024-01-18T18:00:00Z",
+  "file_size": 245760,
+  "generated_at": "2024-01-15T17:30:00Z"
+}
+```
+
+```json 200 OK - Base64 do PDF
+{
+  "pdf_base64": "JVBERi0xLjQKJYCAgICAgICAgICAgICAgICAgICAgICAgICAgCg...",
+  "file_size": 245760,
+  "mime_type": "application/pdf",
+  "generated_at": "2024-01-15T17:30:00Z"
+}
+```
+
+```json 404 Not Found
+{
+  "error": {
+    "code": "BOLETO_NOT_FOUND",
+    "message": "Boleto não encontrado",
+    "details": "Nenhum boleto foi encontrado com o ID fornecido",
+    "request_id": "req_123456789"
+  }
+}
+```
+
+```json 422 Unprocessable Entity
+{
+  "error": {
+    "code": "BOLETO_NOT_GENERATED",
+    "message": "PDF não pode ser gerado",
+    "details": "Boleto deve estar registrado para gerar PDF",
+    "request_id": "req_123456789"
+  }
+}
+```
+</ResponseExample>
+
+## Implementação Frontend
+
+### Interface de Download
+```html
+<div class="boleto-pdf-section">
+  <h4>📄 Arquivo do Boleto</h4>
+
+  <div class="pdf-actions">
+    <button id="download-btn" class="btn btn-primary" onclick="downloadPDF()">
+      ⬇️ Baixar PDF
+    </button>
+
+    <button id="view-btn" class="btn btn-secondary" onclick="viewPDF()">
+      👁️ Visualizar
+    </button>
+
+    <button id="email-btn" class="btn btn-info" onclick="sendByEmail()">
+      📧 Enviar por Email
+    </button>
+  </div>
+
+  <div id="pdf-preview" class="pdf-preview" style="display: none;">
+    <iframe id="pdf-iframe" width="100%" height="600"></iframe>
+  </div>
+
+  <div class="pdf-instructions">
+    <p>💡 <strong>Dica:</strong> Você pode pagar este boleto em:</p>
+    <ul>
+      <li>Qualquer agência bancária</li>
+      <li>Internet banking do seu banco</li>
+      <li>App do banco pelo celular</li>
+      <li>Lotéricas e casas lotéricas</li>
+    </ul>
+  </div>
+</div>
+```
+
+### JavaScript para Manipular PDF
+```javascript
+class BoletoPDFManager {
+  constructor(boletoId) {
+    this.boletoId = boletoId;
+    this.currentPdfUrl = null;
+    this.setupEventListeners();
+  }
+
+  setupEventListeners() {
+    document.getElementById('download-btn').addEventListener('click', () => this.downloadPDF());
+    document.getElementById('view-btn').addEventListener('click', () => this.viewPDF());
+    document.getElementById('email-btn').addEventListener('click', () => this.sendByEmail());
+  }
+
+  async generatePDF(format = 'url') {
+    try {
+      this.setLoadingState(true);
+
+      const response = await fetch(`/api/boleto/${this.boletoId}/pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ format })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao gerar PDF');
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      this.showError('Erro ao gerar PDF. Tente novamente.');
+      throw error;
+    } finally {
+      this.setLoadingState(false);
+    }
+  }
+
+  async downloadPDF() {
+    try {
+      const pdfData = await this.generatePDF('url');
+
+      // Criar link de download
+      const link = document.createElement('a');
+      link.href = pdfData.pdf_url;
+      link.download = `boleto-${this.boletoId}.pdf`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      this.showSuccess('PDF baixado com sucesso!');
+    } catch (error) {
+      this.showError('Erro ao baixar PDF');
+    }
+  }
+
+  async viewPDF() {
+    try {
+      const pdfData = await this.generatePDF('url');
+
+      // Mostrar preview
+      const iframe = document.getElementById('pdf-iframe');
+      iframe.src = pdfData.pdf_url;
+
+      const preview = document.getElementById('pdf-preview');
+      preview.style.display = 'block';
+
+      // Scroll para o preview
+      preview.scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+      this.showError('Erro ao visualizar PDF');
+    }
+  }
+
+  async sendByEmail() {
+    try {
+      const response = await fetch(`/api/boleto/${this.boletoId}/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        this.showSuccess('PDF enviado por email!');
+      } else {
+        throw new Error('Erro ao enviar email');
+      }
+    } catch (error) {
+      this.showError('Erro ao enviar email');
+    }
+  }
+
+  setLoadingState(loading) {
+    const buttons = ['download-btn', 'view-btn', 'email-btn'];
+    buttons.forEach(btnId => {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+
+      if (loading) {
+        btn.classList.add('loading');
+        btn.textContent = 'Gerando...';
+      } else {
+        btn.classList.remove('loading');
+        // Restaurar texto original baseado no ID
+        const originalTexts = {
+          'download-btn': '⬇️ Baixar PDF',
+          'view-btn': '👁️ Visualizar',
+          'email-btn': '📧 Enviar por Email'
+        };
+        btn.textContent = originalTexts[btnId];
+      }
+    });
+  }
+
+  showSuccess(message) {
+    this.showNotification(message, 'success');
+  }
+
+  showError(message) {
+    this.showNotification(message, 'error');
+  }
+
+  showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    // Auto-remove após 3 segundos
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
+}
+
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', () => {
+  const boletoId = document.querySelector('[data-boleto-id]')?.dataset.boletoId;
+  if (boletoId) {
+    new BoletoPDFManager(boletoId);
+  }
+});
+```
+
+### Compartilhamento por WhatsApp
+```javascript
+function shareViaWhatsApp(boletoData) {
+  const phone = boletoData.buyer.phone;
+  const pdfUrl = boletoData.pdf_url;
+
+  const message = `🧾 *Seu Boleto Bancário*\n\n` +
+    `💰 Valor: R$ ${(boletoData.amount / 100).toFixed(2)}\n` +
+    `📅 Vencimento: ${formatDate(boletoData.due_date)}\n\n` +
+    `📎 Link do PDF:\n${pdfUrl}\n\n` +
+    `📱 Você pode pagar pelo app do seu banco escaneando o código de barras ou usar a linha digitável:\n\n` +
+    `${boletoData.digitable_line}\n\n` +
+    `💡 Também pode pagar em qualquer agência bancária ou lotérica.`;
+
+  const whatsappUrl = `https://wa.me/55${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+  window.open(whatsappUrl, '_blank');
+}
+```
+
+## Backend - Implementação
+
+### Endpoint para Gerar PDF
+```javascript
+// Node.js/Express
+app.post('/api/boleto/:id/pdf', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { format = 'url' } = req.body;
+
+    // Validar formato
+    if (!['url', 'base64'].includes(format)) {
+      return res.status(400).json({
+        error: 'Formato inválido. Use "url" ou "base64"'
+      });
+    }
+
+    // Chamar API da FireBanking
+    const response = await fetch(
+      `https://api-gateway.firebanking.com.br/v1/payment/${id}/generate-pdf?format=${format}`,
+      {
+        method: 'POST',
+        headers: {
+          'x-api-key': process.env.FIREBANKING_API_KEY
+        }
+      }
+    );
+
+    const result = await response.json();
+
+    if (response.ok) {
+      res.json(result);
+    } else {
+      res.status(response.status).json(result);
+    }
+  } catch (error) {
+    console.error('Erro ao gerar PDF:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+```
+
+### Envio por Email
+```javascript
+app.post('/api/boleto/:id/send-email', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Buscar dados do boleto
+    const boleto = await getBoletoById(id);
+
+    if (!boleto) {
+      return res.status(404).json({ error: 'Boleto não encontrado' });
+    }
+
+    // Gerar PDF
+    const pdfData = await generateBoletoPDF(id, 'base64');
+
+    // Enviar email
+    await sendBoletoEmail({
+      to: boleto.buyer.email,
+      boleto: boleto,
+      pdfBase64: pdfData.pdf_base64
+    });
+
+    res.json({ message: 'Email enviado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao enviar email:', error);
+    res.status(500).json({ error: 'Erro ao enviar email' });
+  }
+});
+
+async function sendBoletoEmail({ to, boleto, pdfBase64 }) {
+  const emailData = {
+    to: to,
+    subject: `Seu Boleto - ${boleto.description}`,
+    html: `
+      <h2>Seu Boleto Bancário</h2>
+
+      <p>Olá! Segue em anexo seu boleto para pagamento.</p>
+
+      <div style="background: #f5f5f5; padding: 20px; border-radius: 8px;">
+        <h3>Detalhes do Boleto:</h3>
+        <p><strong>Valor:</strong> R$ ${(boleto.amount / 100).toFixed(2)}</p>
+        <p><strong>Vencimento:</strong> ${formatDate(boleto.due_date)}</p>
+        <p><strong>Código de Barras:</strong> ${boleto.digitable_line}</p>
+      </div>
+
+      <h4>Como Pagar:</h4>
+      <ul>
+        <li>📱 App do banco: escaneie o código de barras</li>
+        <li>💻 Internet banking: use a linha digitável</li>
+        <li>🏪 Agência ou lotérica: apresente o boleto impresso</li>
+      </ul>
+
+      <p>Obrigado!</p>
+    `,
+    attachments: [
+      {
+        filename: `boleto-${boleto.id}.pdf`,
+        content: pdfBase64,
+        encoding: 'base64',
+        contentType: 'application/pdf'
+      }
+    ]
+  };
+
+  return await sendEmail(emailData);
+}
+```
+
+## Cache e Performance
+
+### Cache de PDFs
+```javascript
+const pdfCache = new Map();
+const CACHE_TTL = 60 * 60 * 1000; // 1 hora
+
+async function getCachedPDF(boletoId) {
+  const cacheKey = `pdf-${boletoId}`;
+  const cached = pdfCache.get(cacheKey);
+
+  if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+    return cached.data;
+  }
+
+  // Gerar novo PDF
+  const pdfData = await generateBoletoPDF(boletoId);
+
+  // Cachear resultado
+  pdfCache.set(cacheKey, {
+    data: pdfData,
+    timestamp: Date.now()
+  });
+
+  return pdfData;
+}
+```
+
+### Processamento Assíncrono
+```javascript
+// Queue para processar PDFs pesados
+const pdfQueue = [];
+let processing = false;
+
+async function processPDFQueue() {
+  if (processing || pdfQueue.length === 0) return;
+
+  processing = true;
+
+  while (pdfQueue.length > 0) {
+    const task = pdfQueue.shift();
+    try {
+      await task.execute();
+      task.resolve();
+    } catch (error) {
+      task.reject(error);
+    }
+  }
+
+  processing = false;
+}
+```
+
+## Códigos de Erro
+
+| Código | Descrição |
+|--------|-----------|
+| `BOLETO_NOT_FOUND` | Boleto não encontrado |
+| `BOLETO_NOT_GENERATED` | Boleto deve estar registrado para gerar PDF |
+| `PDF_GENERATION_FAILED` | Falha na geração do PDF |
+| `INVALID_FORMAT` | Formato de retorno inválido |
+| `PDF_TOO_LARGE` | Arquivo PDF muito grande |
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Consultar Boleto" href="/api-reference/bank-slip/get">
+    Verifique status antes de gerar PDF
+  </Card>
+  <Card title="Cancelar Boleto" href="/api-reference/bank-slip/cancel">
+    Cancele boletos não pagos
+  </Card>
+  <Card title="Webhooks" href="/api-reference/bank-slip/webhook-paid">
+    Monitore status dos boletos
+  </Card>
+  <Card title="Relatórios" href="/api-reference/reports/bank-slips">
+    Relatórios de boletos emitidos
+  </Card>
+</CardGroup>

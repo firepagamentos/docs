@@ -1,0 +1,734 @@
+---
+title: 'Cancelar Boleto'
+openapi: 'PATCH /bank-slip/v1/payment/{id}/cancel'
+description: 'Cancele um boleto bancário não pago para impedir pagamentos futuros'
+---
+
+## Visão Geral
+
+Cancele um boleto bancário que ainda não foi pago. O cancelamento é irreversível e impede que o boleto seja pago posteriormente. Esta ação é útil quando o pedido foi cancelado, houve erro na geração ou o cliente optou por outro método de pagamento.
+
+<Warning>
+  Apenas boletos com status `registered` (registrado) podem ser cancelados. Boletos pagos, expirados ou já cancelados não podem ser cancelados.
+</Warning>
+
+## Parâmetros da URL
+
+<ParamField path="id" type="string" required>
+  ID do boleto ou `externalId` para cancelar
+</ParamField>
+
+## Parâmetros de Query
+
+<ParamField query="type" type="string">
+  Tipo de busca: `internal` (padrão) ou `external`
+</ParamField>
+
+## Parâmetros do Body
+
+<ParamField body="reason" type="string">
+  Motivo do cancelamento (máximo 200 caracteres)
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Dados adicionais sobre o cancelamento
+</ParamField>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL - Cancelamento Simples
+curl -X PATCH "https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456/cancel" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Pedido cancelado pelo cliente"
+  }'
+```
+
+```bash cURL - Por External ID
+curl -X PATCH "https://api-gateway.firebanking.com.br/v1/payment/pedido-123/cancel?type=external" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Produto em falta no estoque",
+    "metadata": {
+      "cancelled_by": "system",
+      "original_status": "awaiting_stock"
+    }
+  }'
+```
+
+```javascript JavaScript
+async function cancelBoleto(boletoId, reason) {
+  const response = await fetch(`https://api-gateway.firebanking.com.br/v1/payment/${boletoId}/cancel`, {
+    method: 'PATCH',
+    headers: {
+      'x-api-key': 'fbk_live_sua_chave_aqui',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      reason: reason,
+      metadata: {
+        cancelled_by: 'user',
+        timestamp: new Date().toISOString()
+      }
+    })
+  });
+
+  const result = await response.json();
+
+  if (response.ok) {
+    console.log('Boleto cancelado:', result);
+    return result;
+  } else {
+    throw new Error(result.error.message);
+  }
+}
+
+// Uso
+try {
+  await cancelBoleto('bol_1234567890123456', 'Cliente escolheu cartão de crédito');
+  showSuccess('Boleto cancelado com sucesso!');
+} catch (error) {
+  showError('Erro ao cancelar boleto: ' + error.message);
+}
+```
+
+```python Python
+import requests
+from datetime import datetime
+
+def cancel_boleto(boleto_id, reason, metadata=None):
+    """Cancela um boleto bancário"""
+
+    data = {
+        'reason': reason,
+        'metadata': metadata or {}
+    }
+
+    response = requests.patch(
+        f'https://api-gateway.firebanking.com.br/v1/payment/{boleto_id}/cancel',
+        json=data,
+        headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
+    )
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f'Erro ao cancelar boleto: {response.json()}')
+
+def cancel_boleto_by_order(order_id, reason):
+    """Cancela boleto usando external_id (ID do pedido)"""
+
+    data = {'reason': reason}
+
+    response = requests.patch(
+        f'https://api-gateway.firebanking.com.br/v1/payment/{order_id}/cancel',
+        params={'type': 'external'},
+        json=data,
+        headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
+    )
+
+    return response.json()
+
+# Exemplo de uso
+result = cancel_boleto(
+    'bol_1234567890123456',
+    'Produto fora de estoque',
+    {'cancelled_by': 'admin', 'order_status': 'out_of_stock'}
+)
+
+print(f'Boleto cancelado: {result["status"]}')
+```
+
+```php PHP
+<?php
+function cancelBoleto($boletoId, $reason, $metadata = []) {
+    $data = [
+        'reason' => $reason,
+        'metadata' => $metadata
+    ];
+
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL => "https://api-gateway.firebanking.com.br/v1/payment/{$boletoId}/cancel",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => 'PATCH',
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'x-api-key: fbk_live_sua_chave_aqui',
+            'Content-Type: application/json'
+        ]
+    ]);
+
+    $response = curl_exec($curl);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+
+    $result = json_decode($response, true);
+
+    if ($httpCode === 200) {
+        return $result;
+    } else {
+        throw new Exception('Erro ao cancelar boleto: ' . $result['error']['message']);
+    }
+}
+
+// Exemplo de uso
+try {
+    $result = cancelBoleto(
+        'bol_1234567890123456',
+        'Cliente optou por cartão de crédito',
+        ['cancelled_by' => 'customer_service']
+    );
+
+    echo "Boleto cancelado com sucesso!";
+} catch (Exception $e) {
+    echo "Erro: " . $e->getMessage();
+}
+?>
+```
+</CodeGroup>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK - Cancelamento Realizado
+{
+  "id": "bol_1234567890123456",
+  "external_id": "pedido-123",
+  "status": "cancelled",
+  "amount": 25000,
+  "currency": "BRL",
+  "description": "Mensalidade Academia FitLife - Janeiro/2024",
+  "due_date": "2024-02-15",
+  "cancellation": {
+    "cancelled_at": "2024-01-16T10:30:00Z",
+    "reason": "Pedido cancelado pelo cliente",
+    "cancelled_by": "api_user",
+    "metadata": {
+      "cancelled_by": "system",
+      "original_status": "awaiting_stock"
+    }
+  },
+  "buyer": {
+    "name": "João Silva Santos",
+    "document": "***.***.***-01",
+    "email": "joao@email.com"
+  },
+  "registered_at": "2024-01-15T10:30:00Z",
+  "metadata": {
+    "cliente_id": "12345",
+    "plano": "premium"
+  }
+}
+```
+
+```json 400 Bad Request - Boleto Não Pode Ser Cancelado
+{
+  "error": {
+    "code": "BOLETO_CANNOT_BE_CANCELLED",
+    "message": "Boleto não pode ser cancelado",
+    "details": "Apenas boletos com status 'registered' podem ser cancelados. Status atual: paid",
+    "request_id": "req_123456789"
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "error": {
+    "code": "BOLETO_NOT_FOUND",
+    "message": "Boleto não encontrado",
+    "details": "Nenhum boleto foi encontrado com o ID fornecido",
+    "request_id": "req_123456789"
+  }
+}
+```
+</ResponseExample>
+
+## Estados de Cancelamento
+
+### Quando Cancelar
+
+<AccordionGroup>
+  <Accordion title="Pedido Cancelado">
+    - Cliente cancelou a compra
+    - Produto fora de estoque
+    - Erro no processamento do pedido
+    - Cliente escolheu outro método de pagamento
+  </Accordion>
+
+  <Accordion title="Erro na Geração">
+    - Dados incorretos do boleto
+    - Valor errado informado
+    - Data de vencimento inadequada
+    - Necessidade de reemitir com correções
+  </Accordion>
+
+  <Accordion title="Gestão de Estoque">
+    - Produto descontinuado
+    - Reserva de estoque expirada
+    - Problema com fornecedor
+    - Mudança de preço significativa
+  </Accordion>
+</AccordionGroup>
+
+### Quando NÃO Cancelar
+
+<AccordionGroup>
+  <Accordion title="Boleto Pago">
+    - Status: `paid`
+    - Ação: Processar estorno se necessário
+    - Impossível cancelar após pagamento
+  </Accordion>
+
+  <Accordion title="Boleto Expirado">
+    - Status: `expired`
+    - Já não pode mais ser pago
+    - Cancelamento desnecessário
+  </Accordion>
+
+  <Accordion title="Já Cancelado">
+    - Status: `cancelled`
+    - Cancelamento é irreversível
+    - Não é possível cancelar novamente
+  </Accordion>
+</AccordionGroup>
+
+## Implementação Frontend
+
+### Interface de Cancelamento
+```html
+<div class="boleto-management">
+  <div class="boleto-status">
+    <span class="status-badge status-registered">Aguardando Pagamento</span>
+  </div>
+
+  <div class="boleto-actions">
+    <button id="cancel-btn" class="btn btn-danger" onclick="showCancelModal()">
+      ❌ Cancelar Boleto
+    </button>
+  </div>
+</div>
+
+<!-- Modal de Cancelamento -->
+<div id="cancel-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <h3>Cancelar Boleto</h3>
+
+    <div class="warning-box">
+      ⚠️ <strong>Atenção:</strong> O cancelamento é irreversível. O boleto não poderá mais ser pago.
+    </div>
+
+    <form id="cancel-form">
+      <div class="form-group">
+        <label for="cancel-reason">Motivo do Cancelamento *</label>
+        <select id="cancel-reason" required>
+          <option value="">Selecione o motivo</option>
+          <option value="Pedido cancelado pelo cliente">Pedido cancelado pelo cliente</option>
+          <option value="Produto fora de estoque">Produto fora de estoque</option>
+          <option value="Erro na geração do boleto">Erro na geração do boleto</option>
+          <option value="Cliente escolheu outro método">Cliente escolheu outro método</option>
+          <option value="Outro">Outro motivo</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="custom-reason" style="display: none;">
+        <label for="custom-reason-text">Descreva o motivo:</label>
+        <textarea id="custom-reason-text" placeholder="Explique o motivo do cancelamento"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" onclick="closeCancelModal()" class="btn btn-secondary">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-danger">
+          Confirmar Cancelamento
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+```
+
+### JavaScript para Cancelamento
+```javascript
+class BoletoCancellation {
+  constructor(boletoId) {
+    this.boletoId = boletoId;
+    this.setupEventListeners();
+  }
+
+  setupEventListeners() {
+    document.getElementById('cancel-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleCancelSubmit();
+    });
+
+    document.getElementById('cancel-reason').addEventListener('change', (e) => {
+      this.toggleCustomReason(e.target.value === 'Outro');
+    });
+  }
+
+  showCancelModal() {
+    document.getElementById('cancel-modal').style.display = 'block';
+  }
+
+  closeCancelModal() {
+    document.getElementById('cancel-modal').style.display = 'none';
+    this.resetForm();
+  }
+
+  toggleCustomReason(show) {
+    const customReasonDiv = document.getElementById('custom-reason');
+    customReasonDiv.style.display = show ? 'block' : 'none';
+
+    const textarea = document.getElementById('custom-reason-text');
+    textarea.required = show;
+  }
+
+  async handleCancelSubmit() {
+    const reasonSelect = document.getElementById('cancel-reason');
+    const customReasonText = document.getElementById('custom-reason-text');
+
+    let reason = reasonSelect.value;
+    if (reason === 'Outro') {
+      reason = customReasonText.value.trim();
+    }
+
+    if (!reason) {
+      this.showError('Por favor, informe o motivo do cancelamento');
+      return;
+    }
+
+    try {
+      this.setLoadingState(true);
+
+      const result = await this.cancelBoleto(reason);
+
+      this.showSuccess('Boleto cancelado com sucesso!');
+      this.closeCancelModal();
+      this.updateBoletoStatus('cancelled');
+
+      // Opcional: redirecionar ou atualizar interface
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
+    } catch (error) {
+      this.showError('Erro ao cancelar boleto: ' + error.message);
+    } finally {
+      this.setLoadingState(false);
+    }
+  }
+
+  async cancelBoleto(reason) {
+    const response = await fetch(`/api/boleto/${this.boletoId}/cancel`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        reason: reason,
+        metadata: {
+          cancelled_by: 'user_interface',
+          user_agent: navigator.userAgent,
+          timestamp: new Date().toISOString()
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Erro desconhecido');
+    }
+
+    return response.json();
+  }
+
+  updateBoletoStatus(newStatus) {
+    const statusBadge = document.querySelector('.status-badge');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    // Atualizar badge
+    statusBadge.className = 'status-badge status-cancelled';
+    statusBadge.textContent = 'Cancelado';
+
+    // Desabilitar botão
+    cancelBtn.disabled = true;
+    cancelBtn.style.display = 'none';
+
+    // Mostrar informação de cancelamento
+    const actionsDiv = document.querySelector('.boleto-actions');
+    actionsDiv.innerHTML = `
+      <div class="cancellation-info">
+        <span class="cancelled-icon">❌</span>
+        <span>Boleto cancelado</span>
+      </div>
+    `;
+  }
+
+  setLoadingState(loading) {
+    const submitBtn = document.querySelector('#cancel-form button[type="submit"]');
+    const cancelBtn = document.querySelector('#cancel-form button[type="button"]');
+
+    submitBtn.disabled = loading;
+    cancelBtn.disabled = loading;
+
+    if (loading) {
+      submitBtn.textContent = 'Cancelando...';
+    } else {
+      submitBtn.textContent = 'Confirmar Cancelamento';
+    }
+  }
+
+  resetForm() {
+    document.getElementById('cancel-form').reset();
+    this.toggleCustomReason(false);
+  }
+
+  showSuccess(message) {
+    this.showNotification(message, 'success');
+  }
+
+  showError(message) {
+    this.showNotification(message, 'error');
+  }
+
+  showNotification(message, type) {
+    // Implementar sistema de notificação
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 5000);
+  }
+}
+
+// Funções globais para o HTML
+function showCancelModal() {
+  boletoCancellation.showCancelModal();
+}
+
+function closeCancelModal() {
+  boletoCancellation.closeCancelModal();
+}
+
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', () => {
+  const boletoId = document.querySelector('[data-boleto-id]')?.dataset.boletoId;
+  if (boletoId) {
+    window.boletoCancellation = new BoletoCancellation(boletoId);
+  }
+});
+```
+
+## Backend - Implementação
+
+### Endpoint de Cancelamento
+```javascript
+// Node.js/Express
+app.patch('/api/boleto/:id/cancel', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason, metadata = {} } = req.body;
+
+    // Validar motivo
+    if (!reason || reason.trim().length === 0) {
+      return res.status(400).json({
+        error: 'Motivo do cancelamento é obrigatório'
+      });
+    }
+
+    // Verificar se boleto pode ser cancelado
+    const boleto = await getBoletoById(id);
+
+    if (!boleto) {
+      return res.status(404).json({
+        error: 'Boleto não encontrado'
+      });
+    }
+
+    if (boleto.status !== 'registered') {
+      return res.status(400).json({
+        error: `Boleto não pode ser cancelado. Status atual: ${boleto.status}`
+      });
+    }
+
+    // Chamar API da FireBanking
+    const response = await fetch(
+      `https://api-gateway.firebanking.com.br/v1/payment/${id}/cancel`,
+      {
+        method: 'PATCH',
+        headers: {
+          'x-api-key': process.env.FIREBANKING_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: reason.trim(),
+          metadata: {
+            ...metadata,
+            cancelled_by: req.user?.id || 'system',
+            cancelled_at: new Date().toISOString()
+          }
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (response.ok) {
+      // Atualizar status no banco local
+      await updateBoletoStatus(id, 'cancelled', {
+        cancellation_reason: reason,
+        cancelled_at: new Date(),
+        cancelled_by: req.user?.id || 'system'
+      });
+
+      // Log da ação
+      await logAction('boleto_cancelled', {
+        boleto_id: id,
+        reason: reason,
+        user_id: req.user?.id
+      });
+
+      res.json(result);
+    } else {
+      res.status(response.status).json(result);
+    }
+  } catch (error) {
+    console.error('Erro ao cancelar boleto:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+```
+
+### Cancelamento em Lote
+```javascript
+app.patch('/api/boletos/cancel-batch', async (req, res) => {
+  try {
+    const { boleto_ids, reason } = req.body;
+
+    if (!Array.isArray(boleto_ids) || boleto_ids.length === 0) {
+      return res.status(400).json({
+        error: 'Lista de IDs de boletos é obrigatória'
+      });
+    }
+
+    const results = [];
+    const errors = [];
+
+    // Processar cancelamentos
+    for (const boletoId of boleto_ids) {
+      try {
+        const result = await cancelSingleBoleto(boletoId, reason);
+        results.push({ boleto_id: boletoId, status: 'cancelled', ...result });
+      } catch (error) {
+        errors.push({ boleto_id: boletoId, error: error.message });
+      }
+    }
+
+    res.json({
+      success: results,
+      errors: errors,
+      summary: {
+        total: boleto_ids.length,
+        cancelled: results.length,
+        failed: errors.length
+      }
+    });
+  } catch (error) {
+    console.error('Erro no cancelamento em lote:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+```
+
+## Notificações e Webhooks
+
+### Webhook de Cancelamento
+```javascript
+// O webhook será enviado automaticamente quando o boleto for cancelado
+{
+  "event": "boleto.cancelled",
+  "boleto_id": "bol_1234567890123456",
+  "external_id": "pedido-123",
+  "timestamp": "2024-01-16T10:30:00Z",
+  "data": {
+    "id": "bol_1234567890123456",
+    "external_id": "pedido-123",
+    "status": "cancelled",
+    "amount": 25000,
+    "cancellation": {
+      "cancelled_at": "2024-01-16T10:30:00Z",
+      "reason": "Pedido cancelado pelo cliente",
+      "cancelled_by": "api_user"
+    }
+  }
+}
+```
+
+### Notificar Cliente
+```javascript
+async function notifyCustomerCancellation(boleto) {
+  const emailData = {
+    to: boleto.buyer.email,
+    subject: 'Boleto Cancelado',
+    html: `
+      <h2>Boleto Cancelado</h2>
+
+      <p>Olá ${boleto.buyer.name},</p>
+
+      <p>Informamos que seu boleto foi cancelado.</p>
+
+      <div style="background: #f5f5f5; padding: 20px; border-radius: 8px;">
+        <h3>Detalhes:</h3>
+        <p><strong>Valor:</strong> R$ ${(boleto.amount / 100).toFixed(2)}</p>
+        <p><strong>Descrição:</strong> ${boleto.description}</p>
+        <p><strong>Motivo:</strong> ${boleto.cancellation.reason}</p>
+      </div>
+
+      <p>Se você precisar de um novo boleto, entre em contato conosco.</p>
+
+      <p>Obrigado!</p>
+    `
+  };
+
+  await sendEmail(emailData);
+}
+```
+
+## Códigos de Erro
+
+| Código | Descrição |
+|--------|-----------|
+| `BOLETO_NOT_FOUND` | Boleto não encontrado |
+| `BOLETO_CANNOT_BE_CANCELLED` | Boleto não pode ser cancelado (status inadequado) |
+| `BOLETO_ALREADY_CANCELLED` | Boleto já foi cancelado anteriormente |
+| `CANCELLATION_REASON_REQUIRED` | Motivo do cancelamento é obrigatório |
+| `CANCELLATION_FAILED` | Falha no processo de cancelamento |
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Consultar Status" href="/api-reference/bank-slip/get">
+    Verifique se boleto pode ser cancelado
+  </Card>
+  <Card title="Webhook Cancelamento" href="/api-reference/bank-slip/webhook-cancelled">
+    Receba notificações de cancelamento
+  </Card>
+  <Card title="Criar Novo Boleto" href="/api-reference/bank-slip/create">
+    Gere um novo boleto se necessário
+  </Card>
+  <Card title="Relatórios" href="/api-reference/reports/bank-slips">
+    Monitore boletos cancelados
+  </Card>
+</CardGroup>

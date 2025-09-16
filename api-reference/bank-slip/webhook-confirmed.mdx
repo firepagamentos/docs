@@ -1,0 +1,480 @@
+---
+title: 'Webhook - Boleto Confirmado'
+description: 'Receba notificações automáticas quando um boleto for registrado com sucesso no banco'
+---
+
+## Visão Geral
+
+O webhook de confirmação é enviado automaticamente quando um boleto é registrado com sucesso no sistema bancário. Este evento confirma que o boleto está disponível para pagamento em toda rede bancária nacional e pode ser pago pelo cliente.
+
+<Info>
+  Este webhook é enviado logo após a criação do boleto, confirmando que o registro no banco foi realizado com sucesso.
+</Info>
+
+## Evento: `boleto.confirmed`
+
+### Quando é Enviado
+- Boleto registrado com sucesso no banco
+- Código de barras e linha digitável gerados
+- PDF do boleto disponível para download
+- Boleto pronto para pagamento
+
+### Payload do Webhook
+
+```json
+{
+  "event": "boleto.confirmed",
+  "boleto_id": "bol_1234567890123456",
+  "external_id": "pedido-12345",
+  "timestamp": "2024-01-15T10:35:00Z",
+  "data": {
+    "id": "bol_1234567890123456",
+    "external_id": "pedido-12345",
+    "status": "registered",
+    "amount": 25000,
+    "currency": "BRL",
+    "description": "Mensalidade Academia FitLife - Janeiro/2024",
+    "due_date": "2024-02-15",
+    "fine_amount": 500,
+    "interest_amount": 83,
+    "barcode": "03399876543210000025000001234567890123456789012",
+    "digitable_line": "03399.87654 32100.000025 00000.123456 7 89012345678901",
+    "our_number": "12345678901",
+    "document_number": "DOC123456",
+    "buyer": {
+      "name": "João Silva Santos",
+      "document": "***.***.***-01",
+      "email": "joao@email.com",
+      "phone": "(11) 9****-9999"
+    },
+    "bank": {
+      "name": "Banco FireBanking",
+      "code": "033",
+      "agency": "0001",
+      "account": "123456-7"
+    },
+    "pdf_url": "https://api-gateway.firebanking.com.br/v1/boleto/bol_1234567890123456/pdf",
+    "payment_link": "https://pay.firebanking.com/boleto/bol_1234567890123456",
+    "registered_at": "2024-01-15T10:35:00Z",
+    "expires_at": "2024-05-15T23:59:59Z",
+    "metadata": {
+      "cliente_id": "12345",
+      "plano": "premium",
+      "mes_referencia": "2024-01"
+    }
+  }
+}
+```
+
+## Implementação do Endpoint
+
+### Node.js/Express
+```javascript
+app.post('/webhooks/boleto-confirmed', express.raw({type: 'application/json'}), async (req, res) => {
+  try {
+    const payload = JSON.parse(req.body);
+
+    // Verificar assinatura do webhook (recomendado)
+    if (!verifyWebhookSignature(req.headers, req.body)) {
+      return res.status(401).send('Assinatura inválida');
+    }
+
+    // Processar confirmação do boleto
+    await processBoletoConfirmed(payload);
+
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Erro no webhook boleto confirmado:', error);
+    res.status(500).send('Erro interno');
+  }
+});
+
+async function processBoletoConfirmed(payload) {
+  const { boleto_id, external_id, data } = payload;
+
+  try {
+    // Atualizar status no banco de dados
+    await updateBoletoStatus(boleto_id, 'registered', {
+      barcode: data.barcode,
+      digitable_line: data.digitable_line,
+      our_number: data.our_number,
+      pdf_url: data.pdf_url,
+      registered_at: data.registered_at
+    });
+
+    // Enviar email com boleto para o cliente
+    await sendBoletoEmail(data);
+
+    // Atualizar status do pedido
+    await updateOrderStatus(external_id, 'waiting_payment');
+
+    // Log da ação
+    await logWebhookEvent('boleto_confirmed', {
+      boleto_id,
+      external_id,
+      timestamp: payload.timestamp
+    });
+
+    console.log(`Boleto ${boleto_id} confirmado e processado`);
+  } catch (error) {
+    console.error(`Erro ao processar confirmação do boleto ${boleto_id}:`, error);
+    throw error;
+  }
+}
+```
+
+### Python/Flask
+```python
+from flask import Flask, request, jsonify
+import json
+import hmac
+import hashlib
+
+app = Flask(__name__)
+
+@app.route('/webhooks/boleto-confirmed', methods=['POST'])
+def handle_boleto_confirmed():
+    try:
+        payload = request.get_json()
+
+        # Verificar assinatura
+        if not verify_webhook_signature(request.headers, request.data):
+            return 'Assinatura inválida', 401
+
+        # Processar confirmação
+        process_boleto_confirmed(payload)
+
+        return 'OK', 200
+
+    except Exception as e:
+        print(f'Erro no webhook: {e}')
+        return 'Erro interno', 500
+
+def process_boleto_confirmed(payload):
+    boleto_id = payload['boleto_id']
+    external_id = payload['external_id']
+    data = payload['data']
+
+    # Atualizar banco de dados
+    update_boleto_status(boleto_id, 'registered', {
+        'barcode': data['barcode'],
+        'digitable_line': data['digitable_line'],
+        'our_number': data['our_number'],
+        'pdf_url': data['pdf_url'],
+        'registered_at': data['registered_at']
+    })
+
+    # Enviar email
+    send_boleto_email(data)
+
+    # Atualizar pedido
+    update_order_status(external_id, 'waiting_payment')
+
+    print(f'Boleto {boleto_id} confirmado')
+
+def send_boleto_email(boleto_data):
+    """Envia email com boleto para o cliente"""
+
+    email_data = {
+        'to': boleto_data['buyer']['email'],
+        'subject': f'Seu Boleto - {boleto_data["description"]}',
+        'html': generate_boleto_email_html(boleto_data)
+    }
+
+    # Enviar email usando seu provedor
+    send_email(email_data)
+```
+
+### PHP
+```php
+<?php
+// webhook-boleto-confirmed.php
+
+// Receber payload
+$payload = json_decode(file_get_contents('php://input'), true);
+
+if (!$payload) {
+    http_response_code(400);
+    die('Payload inválido');
+}
+
+// Verificar assinatura
+$headers = getallheaders();
+if (!verifyWebhookSignature($headers, file_get_contents('php://input'))) {
+    http_response_code(401);
+    die('Assinatura inválida');
+}
+
+try {
+    processBoletoConfirmed($payload);
+    http_response_code(200);
+    echo 'OK';
+} catch (Exception $e) {
+    error_log('Erro no webhook boleto confirmado: ' . $e->getMessage());
+    http_response_code(500);
+    echo 'Erro interno';
+}
+
+function processBoletoConfirmed($payload) {
+    $boletoId = $payload['boleto_id'];
+    $externalId = $payload['external_id'];
+    $data = $payload['data'];
+
+    // Conectar ao banco
+    $pdo = new PDO($dsn, $username, $password);
+
+    // Atualizar status do boleto
+    $stmt = $pdo->prepare("
+        UPDATE boletos
+        SET status = 'registered',
+            barcode = :barcode,
+            digitable_line = :digitable_line,
+            our_number = :our_number,
+            pdf_url = :pdf_url,
+            registered_at = :registered_at
+        WHERE id = :boleto_id
+    ");
+
+    $stmt->execute([
+        'boleto_id' => $boletoId,
+        'barcode' => $data['barcode'],
+        'digitable_line' => $data['digitable_line'],
+        'our_number' => $data['our_number'],
+        'pdf_url' => $data['pdf_url'],
+        'registered_at' => $data['registered_at']
+    ]);
+
+    // Enviar email
+    sendBoletoEmail($data);
+
+    // Atualizar pedido
+    updateOrderStatus($externalId, 'waiting_payment');
+}
+?>
+```
+
+## Email Automático para Cliente
+
+### Template HTML
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seu Boleto Bancário</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
+        .boleto-info { background: #e9ecef; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .button { display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; }
+        .barcode { font-family: monospace; font-size: 14px; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; }
+        .instructions { background: #d4edda; padding: 15px; border-radius: 4px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧾 Seu Boleto Bancário</h1>
+            <p>Boleto gerado com sucesso!</p>
+        </div>
+
+        <p>Olá <strong>{{buyer_name}}</strong>,</p>
+
+        <p>Seu boleto foi gerado e está pronto para pagamento. Você pode pagar em qualquer banco, app bancário ou lotérica.</p>
+
+        <div class="boleto-info">
+            <h3>📋 Detalhes do Boleto</h3>
+            <p><strong>Valor:</strong> R$ {{amount}}</p>
+            <p><strong>Vencimento:</strong> {{due_date}}</p>
+            <p><strong>Descrição:</strong> {{description}}</p>
+        </div>
+
+        <div class="barcode">
+            <h4>Código de Barras:</h4>
+            <p>{{digitable_line}}</p>
+        </div>
+
+        <p style="text-align: center;">
+            <a href="{{pdf_url}}" class="button" target="_blank">
+                📄 Visualizar/Baixar Boleto
+            </a>
+        </p>
+
+        <div class="instructions">
+            <h4>💡 Como Pagar:</h4>
+            <ul>
+                <li><strong>App do Banco:</strong> Escaneie o código de barras</li>
+                <li><strong>Internet Banking:</strong> Use a linha digitável acima</li>
+                <li><strong>Agência Bancária:</strong> Leve o boleto impresso</li>
+                <li><strong>Lotérica:</strong> Apresente o código de barras</li>
+            </ul>
+        </div>
+
+        <p><small>Este boleto é válido até {{expires_at}}. Após o vencimento, podem ser aplicadas multa e juros conforme legislação bancária.</small></p>
+
+        <hr>
+        <p><small>Se você não solicitou este boleto, ignore este email.</small></p>
+    </div>
+</body>
+</html>
+```
+
+### Função para Envio
+```javascript
+async function sendBoletoEmail(boletoData) {
+  const emailHtml = generateBoletoEmailHtml(boletoData);
+
+  const emailData = {
+    to: boletoData.buyer.email,
+    subject: `Seu Boleto - ${boletoData.description}`,
+    html: emailHtml,
+    attachments: [
+      {
+        filename: `boleto-${boletoData.id}.pdf`,
+        path: boletoData.pdf_url,
+        contentType: 'application/pdf'
+      }
+    ]
+  };
+
+  try {
+    await sendEmail(emailData);
+    console.log(`Email enviado para ${boletoData.buyer.email}`);
+  } catch (error) {
+    console.error('Erro ao enviar email:', error);
+  }
+}
+
+function generateBoletoEmailHtml(boletoData) {
+  return template
+    .replace('{{buyer_name}}', boletoData.buyer.name)
+    .replace('{{amount}}', formatCurrency(boletoData.amount))
+    .replace('{{due_date}}', formatDate(boletoData.due_date))
+    .replace('{{description}}', boletoData.description)
+    .replace('{{digitable_line}}', boletoData.digitable_line)
+    .replace('{{pdf_url}}', boletoData.pdf_url)
+    .replace('{{expires_at}}', formatDate(boletoData.expires_at));
+}
+```
+
+## Notificação Push/SMS
+
+### Push Notification
+```javascript
+async function sendPushNotification(boletoData) {
+  const message = {
+    title: 'Boleto Gerado ✅',
+    body: `Seu boleto de R$ ${formatCurrency(boletoData.amount)} está pronto para pagamento`,
+    data: {
+      boleto_id: boletoData.id,
+      type: 'boleto_confirmed',
+      action_url: boletoData.payment_link
+    }
+  };
+
+  // Enviar para dispositivos do usuário
+  await sendPushToUser(boletoData.buyer.id, message);
+}
+```
+
+### SMS (Opcional)
+```javascript
+async function sendSMSNotification(boletoData) {
+  const phone = boletoData.buyer.phone;
+  const message = `Boleto gerado! Valor: R$ ${formatCurrency(boletoData.amount)}, Vencimento: ${formatDate(boletoData.due_date)}. Link: ${boletoData.payment_link}`;
+
+  await sendSMS(phone, message);
+}
+```
+
+## Dashboard - Monitoramento
+
+### Interface Administrativa
+```javascript
+function updateBoletoDashboard(payload) {
+  // Atualizar contadores
+  const confirmedCount = document.getElementById('boletos-confirmed-count');
+  confirmedCount.textContent = parseInt(confirmedCount.textContent) + 1;
+
+  // Adicionar à lista de boletos recentes
+  const recentList = document.getElementById('recent-boletos');
+  const boletoItem = createBoletoListItem(payload.data);
+  recentList.prepend(boletoItem);
+
+  // Atualizar gráficos em tempo real
+  updateBoletoCharts();
+}
+
+function createBoletoListItem(boletoData) {
+  const div = document.createElement('div');
+  div.className = 'boleto-item confirmed';
+  div.innerHTML = `
+    <div class="boleto-info">
+      <span class="boleto-id">${boletoData.id}</span>
+      <span class="boleto-amount">${formatCurrency(boletoData.amount)}</span>
+      <span class="boleto-buyer">${boletoData.buyer.name}</span>
+    </div>
+    <div class="boleto-status">
+      <span class="status-badge confirmed">Confirmado</span>
+      <span class="timestamp">${formatTime(boletoData.registered_at)}</span>
+    </div>
+  `;
+  return div;
+}
+```
+
+## Testes do Webhook
+
+### Teste Local
+```javascript
+// Simular webhook para testes
+async function testBoletoConfirmedWebhook() {
+  const testPayload = {
+    event: 'boleto.confirmed',
+    boleto_id: 'bol_test_123456',
+    external_id: 'test-order-123',
+    timestamp: new Date().toISOString(),
+    data: {
+      id: 'bol_test_123456',
+      external_id: 'test-order-123',
+      status: 'registered',
+      amount: 10000,
+      barcode: '03399876543210000010000001234567890123456789012',
+      digitable_line: '03399.87654 32100.000010 00000.123456 7 89012345678901',
+      buyer: {
+        name: 'Teste Usuario',
+        email: 'teste@email.com'
+      }
+    }
+  };
+
+  const response = await fetch('http://localhost:3000/webhooks/boleto-confirmed', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(testPayload)
+  });
+
+  console.log('Teste webhook:', response.status);
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhook - Boleto Pago" href="/api-reference/bank-slip/webhook-paid">
+    Configure notificações de pagamento
+  </Card>
+  <Card title="Webhook - Boleto Cancelado" href="/api-reference/bank-slip/webhook-cancelled">
+    Receba notificações de cancelamento
+  </Card>
+  <Card title="Consultar Boleto" href="/api-reference/bank-slip/get">
+    Verifique status dos boletos
+  </Card>
+  <Card title="Configurar Webhooks" href="/webhooks">
+    Guia completo de configuração
+  </Card>
+</CardGroup>

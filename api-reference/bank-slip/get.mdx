@@ -1,0 +1,518 @@
+---
+title: 'Consultar Boleto'
+openapi: 'GET /bank-slip/v1/payment/{id}'
+description: 'Consulte o status e detalhes de um boleto bancário pelo ID da transação'
+---
+
+## Visão Geral
+
+Consulte informações detalhadas de um boleto bancário utilizando o ID da transação ou seu `externalId`. Este endpoint retorna dados completos sobre o status, valores, pagador e metadados do boleto.
+
+<Info>
+  Use este endpoint para verificar se um boleto foi pago, cancelado ou ainda está aguardando pagamento.
+</Info>
+
+## Parâmetros da URL
+
+<ParamField path="id" type="string" required>
+  ID do boleto ou `externalId` fornecido na criação
+</ParamField>
+
+## Parâmetros de Query
+
+<ParamField query="type" type="string">
+  Tipo de busca: `internal` (padrão) ou `external`
+</ParamField>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL - Por ID Interno
+curl -X GET "https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456" \
+  -H "x-api-key: fbk_live_sua_chave_aqui"
+```
+
+```bash cURL - Por External ID
+curl -X GET "https://api-gateway.firebanking.com.br/v1/payment/pedido-123?type=external" \
+  -H "x-api-key: fbk_live_sua_chave_aqui"
+```
+
+```javascript JavaScript
+// Consultar por ID interno
+const response = await fetch('https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456', {
+  headers: {
+    'x-api-key': 'fbk_live_sua_chave_aqui'
+  }
+});
+
+const boleto = await response.json();
+console.log('Status do boleto:', boleto.status);
+
+// Consultar por external_id
+const responseExternal = await fetch('https://api-gateway.firebanking.com.br/v1/payment/pedido-123?type=external', {
+  headers: {
+    'x-api-key': 'fbk_live_sua_chave_aqui'
+  }
+});
+
+const boletoExternal = await responseExternal.json();
+```
+
+```python Python
+import requests
+
+# Por ID interno
+response = requests.get(
+    'https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456',
+    headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
+)
+
+boleto = response.json()
+print(f'Status: {boleto["status"]}')
+
+# Por external_id
+response_external = requests.get(
+    'https://api-gateway.firebanking.com.br/v1/payment/pedido-123',
+    params={'type': 'external'},
+    headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
+)
+
+boleto_external = response_external.json()
+```
+
+```php PHP
+<?php
+// Por ID interno
+$curl = curl_init();
+curl_setopt_array($curl, [
+    CURLOPT_URL => 'https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'x-api-key: fbk_live_sua_chave_aqui'
+    ]
+]);
+
+$response = curl_exec($curl);
+$boleto = json_decode($response, true);
+echo 'Status: ' . $boleto['status'];
+
+// Por external_id
+curl_setopt($curl, CURLOPT_URL, 'https://api-gateway.firebanking.com.br/v1/payment/pedido-123?type=external');
+$response_external = curl_exec($curl);
+curl_close($curl);
+?>
+```
+</CodeGroup>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK - Boleto Registrado
+{
+  "id": "bol_1234567890123456",
+  "external_id": "pedido-123",
+  "status": "registered",
+  "amount": 25000,
+  "currency": "BRL",
+  "description": "Mensalidade Academia FitLife - Janeiro/2024",
+  "due_date": "2024-02-15",
+  "fine_amount": 500,
+  "interest_amount": 83,
+  "barcode": "03399876543210000025000001234567890123456789012",
+  "digitable_line": "03399.87654 32100.000025 00000.123456 7 89012345678901",
+  "our_number": "12345678901",
+  "document_number": "DOC123456",
+  "buyer": {
+    "name": "João Silva Santos",
+    "document": "***.***.***-01",
+    "email": "joao@email.com",
+    "phone": "(11) 9****-9999",
+    "address": {
+      "street": "Rua das Flores",
+      "number": "123",
+      "complement": "Apto 45",
+      "district": "Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "zip_code": "01000-000"
+    }
+  },
+  "bank": {
+    "name": "Banco FireBanking",
+    "code": "033",
+    "agency": "0001",
+    "account": "123456-7"
+  },
+  "pdf_url": "https://api-gateway.firebanking.com.br/v1/boleto/bol_1234567890123456/pdf",
+  "payment_link": "https://pay.firebanking.com/boleto/bol_1234567890123456",
+  "instructions": [
+    "Pagamento referente à mensalidade de Janeiro/2024",
+    "Após vencimento será cobrada multa de 2%"
+  ],
+  "registered_at": "2024-01-15T10:30:00Z",
+  "expires_at": "2024-05-15T23:59:59Z",
+  "metadata": {
+    "cliente_id": "12345",
+    "plano": "premium"
+  }
+}
+```
+
+```json 200 OK - Boleto Pago
+{
+  "id": "bol_1234567890123456",
+  "external_id": "pedido-123",
+  "status": "paid",
+  "amount": 25000,
+  "paid_amount": 25583,
+  "currency": "BRL",
+  "description": "Mensalidade Academia FitLife - Janeiro/2024",
+  "due_date": "2024-02-15",
+  "paid_at": "2024-02-16T14:30:15Z",
+  "payment_info": {
+    "bank_paid": "341",
+    "bank_name": "Itaú Unibanco",
+    "channel": "internet_banking",
+    "auth_code": "123456"
+  },
+  "fees": {
+    "fine": 500,
+    "interest": 83,
+    "total_fees": 583
+  },
+  "buyer": {
+    "name": "João Silva Santos",
+    "document": "***.***.***-01",
+    "email": "joao@email.com"
+  },
+  "reconciliation": {
+    "settlement_date": "2024-02-17",
+    "net_amount": 24417,
+    "firebanking_fee": 300
+  },
+  "metadata": {
+    "cliente_id": "12345",
+    "plano": "premium"
+  }
+}
+```
+
+```json 200 OK - Boleto Expirado
+{
+  "id": "bol_1234567890123456",
+  "external_id": "pedido-123",
+  "status": "expired",
+  "amount": 25000,
+  "currency": "BRL",
+  "description": "Mensalidade Academia FitLife - Janeiro/2024",
+  "due_date": "2024-02-15",
+  "expired_at": "2024-05-15T23:59:59Z",
+  "buyer": {
+    "name": "João Silva Santos",
+    "document": "***.***.***-01",
+    "email": "joao@email.com"
+  },
+  "metadata": {
+    "cliente_id": "12345",
+    "plano": "premium"
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "error": {
+    "code": "BOLETO_NOT_FOUND",
+    "message": "Boleto não encontrado",
+    "details": "Nenhum boleto foi encontrado com o ID fornecido",
+    "request_id": "req_123456789"
+  }
+}
+```
+</ResponseExample>
+
+## Status do Boleto
+
+### Estados Possíveis
+
+<AccordionGroup>
+  <Accordion title="registered">
+    - **Descrição**: Boleto registrado no banco, aguardando pagamento
+    - **Ações possíveis**: Cancelar, gerar PDF, aguardar pagamento
+    - **Próximo status**: `paid`, `expired`, `cancelled`
+  </Accordion>
+
+  <Accordion title="paid">
+    - **Descrição**: Boleto pago com sucesso
+    - **Dados adicionais**: Valor pago, data de pagamento, banco pagador
+    - **Status final**: Transação concluída
+  </Accordion>
+
+  <Accordion title="expired">
+    - **Descrição**: Boleto expirou (90 dias após vencimento)
+    - **Ação**: Não é mais possível pagar
+    - **Status final**: Criar novo boleto se necessário
+  </Accordion>
+
+  <Accordion title="cancelled">
+    - **Descrição**: Boleto cancelado pelo lojista
+    - **Ação**: Não é mais possível pagar
+    - **Status final**: Cancelamento irreversível
+  </Accordion>
+</AccordionGroup>
+
+## Implementação Frontend
+
+### Verificar Status Automaticamente
+```javascript
+class BoletoStatusChecker {
+  constructor(boletoId) {
+    this.boletoId = boletoId;
+    this.checkInterval = null;
+    this.maxChecks = 120; // 2 horas (verificar a cada 60s)
+    this.currentCheck = 0;
+  }
+
+  start() {
+    this.checkInterval = setInterval(() => {
+      this.checkStatus();
+    }, 60000); // Verificar a cada 1 minuto
+
+    // Primeira verificação imediata
+    this.checkStatus();
+  }
+
+  async checkStatus() {
+    try {
+      const response = await fetch(`/api/boleto/${this.boletoId}/status`);
+      const boleto = await response.json();
+
+      this.handleStatusUpdate(boleto);
+
+      // Parar verificação se pago ou expirado
+      if (['paid', 'expired', 'cancelled'].includes(boleto.status)) {
+        this.stop();
+      }
+
+      // Parar após limite de verificações
+      this.currentCheck++;
+      if (this.currentCheck >= this.maxChecks) {
+        this.stop();
+      }
+    } catch (error) {
+      console.error('Erro ao verificar status:', error);
+    }
+  }
+
+  handleStatusUpdate(boleto) {
+    switch (boleto.status) {
+      case 'paid':
+        this.showPaymentSuccess(boleto);
+        break;
+      case 'expired':
+        this.showBoletoExpired(boleto);
+        break;
+      case 'cancelled':
+        this.showBoletoCancelled(boleto);
+        break;
+      default:
+        this.updateStatusDisplay(boleto.status);
+    }
+  }
+
+  showPaymentSuccess(boleto) {
+    document.getElementById('boleto-status').innerHTML = `
+      <div class="alert alert-success">
+        <h4>✅ Pagamento Confirmado!</h4>
+        <p>Boleto pago em ${formatDate(boleto.paid_at)}</p>
+        <p>Valor pago: ${formatCurrency(boleto.paid_amount)}</p>
+      </div>
+    `;
+
+    // Redirecionar ou processar próximos passos
+    setTimeout(() => {
+      window.location.href = '/pedido/confirmado';
+    }, 3000);
+  }
+
+  showBoletoExpired(boleto) {
+    document.getElementById('boleto-status').innerHTML = `
+      <div class="alert alert-warning">
+        <h4>⏰ Boleto Expirado</h4>
+        <p>Este boleto expirou e não pode mais ser pago.</p>
+        <button onclick="generateNewBoleto()">Gerar Novo Boleto</button>
+      </div>
+    `;
+  }
+
+  stop() {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+  }
+}
+
+// Uso
+const statusChecker = new BoletoStatusChecker('bol_1234567890123456');
+statusChecker.start();
+```
+
+### Exibir Dados do Boleto
+```html
+<div id="boleto-details">
+  <div class="boleto-header">
+    <h3>Boleto Bancário</h3>
+    <span class="status-badge" id="status-badge">Aguardando Pagamento</span>
+  </div>
+
+  <div class="boleto-info">
+    <div class="info-group">
+      <label>Valor:</label>
+      <span id="boleto-amount" class="amount">R$ 250,00</span>
+    </div>
+
+    <div class="info-group">
+      <label>Vencimento:</label>
+      <span id="boleto-due-date">15/02/2024</span>
+    </div>
+
+    <div class="info-group">
+      <label>Código de Barras:</label>
+      <div class="barcode-input">
+        <input type="text" id="barcode" readonly>
+        <button onclick="copyBarcode()">📋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="boleto-actions">
+    <a href="#" id="pdf-link" class="btn btn-primary" target="_blank">
+      📄 Visualizar PDF
+    </a>
+    <button onclick="checkPayment()" class="btn btn-secondary">
+      🔄 Verificar Pagamento
+    </button>
+  </div>
+
+  <div id="payment-details" style="display: none;">
+    <!-- Detalhes do pagamento aparecerão aqui quando pago -->
+  </div>
+</div>
+```
+
+### Funções de Utilidade
+```javascript
+function formatCurrency(amount) {
+  return (amount / 100).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+}
+
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('pt-BR');
+}
+
+function updateBoletoDisplay(boleto) {
+  document.getElementById('boleto-amount').textContent = formatCurrency(boleto.amount);
+  document.getElementById('boleto-due-date').textContent = formatDate(boleto.due_date);
+  document.getElementById('barcode').value = boleto.digitable_line;
+  document.getElementById('pdf-link').href = boleto.pdf_url;
+
+  updateStatusBadge(boleto.status);
+
+  if (boleto.status === 'paid') {
+    showPaymentDetails(boleto);
+  }
+}
+
+function updateStatusBadge(status) {
+  const badge = document.getElementById('status-badge');
+  const statusMap = {
+    'registered': { text: 'Aguardando Pagamento', class: 'status-pending' },
+    'paid': { text: 'Pago', class: 'status-success' },
+    'expired': { text: 'Expirado', class: 'status-error' },
+    'cancelled': { text: 'Cancelado', class: 'status-error' }
+  };
+
+  const statusInfo = statusMap[status] || { text: status, class: 'status-default' };
+  badge.textContent = statusInfo.text;
+  badge.className = `status-badge ${statusInfo.class}`;
+}
+
+function showPaymentDetails(boleto) {
+  const detailsDiv = document.getElementById('payment-details');
+  detailsDiv.innerHTML = `
+    <div class="payment-success">
+      <h4>✅ Pagamento Confirmado</h4>
+      <div class="payment-info">
+        <p><strong>Valor Pago:</strong> ${formatCurrency(boleto.paid_amount)}</p>
+        <p><strong>Data do Pagamento:</strong> ${formatDate(boleto.paid_at)}</p>
+        <p><strong>Banco:</strong> ${boleto.payment_info.bank_name}</p>
+        ${boleto.fees.total_fees > 0 ?
+          `<p><strong>Multa/Juros:</strong> ${formatCurrency(boleto.fees.total_fees)}</p>` :
+          ''
+        }
+      </div>
+    </div>
+  `;
+  detailsDiv.style.display = 'block';
+}
+```
+
+## Casos de Uso
+
+### Dashboard Administrativo
+```javascript
+async function loadBoletosDashboard() {
+  const boletos = await fetch('/api/boletos/recent').then(r => r.json());
+
+  const statusCounts = boletos.reduce((acc, boleto) => {
+    acc[boleto.status] = (acc[boleto.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  displayDashboardMetrics(statusCounts);
+}
+
+function displayDashboardMetrics(statusCounts) {
+  document.getElementById('total-registered').textContent = statusCounts.registered || 0;
+  document.getElementById('total-paid').textContent = statusCounts.paid || 0;
+  document.getElementById('total-expired').textContent = statusCounts.expired || 0;
+}
+```
+
+### Reconciliação Financeira
+```javascript
+async function generateReconciliationReport(startDate, endDate) {
+  const response = await fetch(`/api/boletos/paid?start=${startDate}&end=${endDate}`);
+  const paidBoletos = await response.json();
+
+  const report = {
+    total_transactions: paidBoletos.length,
+    gross_amount: paidBoletos.reduce((sum, b) => sum + b.paid_amount, 0),
+    fees_amount: paidBoletos.reduce((sum, b) => sum + b.reconciliation.firebanking_fee, 0),
+    net_amount: paidBoletos.reduce((sum, b) => sum + b.reconciliation.net_amount, 0)
+  };
+
+  return report;
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Gerar PDF" href="/api-reference/bank-slip/generate-pdf">
+    Baixe o arquivo PDF do boleto
+  </Card>
+  <Card title="Cancelar Boleto" href="/api-reference/bank-slip/cancel">
+    Cancele boletos não pagos
+  </Card>
+  <Card title="Webhooks" href="/api-reference/bank-slip/webhook-paid">
+    Configure notificações automáticas
+  </Card>
+  <Card title="Relatórios" href="/api-reference/reports/bank-slips">
+    Gere relatórios de boletos
+  </Card>
+</CardGroup>
