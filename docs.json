@@ -31,7 +31,10 @@
           {
             "group": "Guias de Integração",
             "pages": [
-              "guides/integration-flow",
+              "guides/integration/overview",
+              "guides/integration/pix",
+              "guides/integration/credit-card",
+              "guides/integration/bank-slip",
               "guides/best-practices"
             ]
           }
