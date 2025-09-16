@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "API de Cartão de Crédito FireBanking",
-    "description": "API abrangente para processamento de pagamentos com cartão de crédito, incluindo pagamentos, assinaturas, gestão de compradores e muito mais.",
+    "title": "API FireBanking",
+    "description": "API abrangente para processamento de pagamentos, incluindo cartão de crédito, PIX, pagamentos instantâneos, assinaturas, gestão de compradores e muito mais.",
     "version": "1.0.0",
     "contact": {
       "name": "Suporte da API FireBanking",
@@ -773,6 +773,278 @@
           }
         }
       }
+    },
+    "/pix/v2/payment": {
+      "post": {
+        "tags": ["PIX"],
+        "summary": "Criar Cobrança PIX",
+        "description": "Cria uma cobrança PIX com QR Code dinâmico ou por chave PIX",
+        "security": [{"apiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePixPaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cobrança PIX criada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixPaymentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pix/v2/payment/{id}": {
+      "get": {
+        "tags": ["PIX"],
+        "summary": "Consultar Transação PIX",
+        "description": "Consulta o status e detalhes de uma transação PIX",
+        "security": [{"apiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID da transação PIX ou externalId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Tipo de busca: internal ou external",
+            "schema": {
+              "type": "string",
+              "enum": ["internal", "external"],
+              "default": "internal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes da transação PIX",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixTransactionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transação não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pix/v2/payment/withdraw": {
+      "post": {
+        "tags": ["PIX"],
+        "summary": "Criar Transferência PIX",
+        "description": "Realiza transferências PIX para chaves PIX ou contas bancárias",
+        "security": [{"apiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePixWithdrawRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transferência PIX criada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixWithdrawResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pix/v2/payment/refund/{id}": {
+      "post": {
+        "tags": ["PIX"],
+        "summary": "Estornar Transação PIX",
+        "description": "Solicita o estorno de uma transação PIX paga",
+        "security": [{"apiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID da transação PIX a ser estornada",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PixRefundRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estorno processado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixRefundResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Transação não elegível para estorno",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pix/v2/transactions": {
+      "get": {
+        "tags": ["PIX"],
+        "summary": "Listar Transações PIX",
+        "description": "Lista todas as transações PIX com filtros avançados",
+        "security": [{"apiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Número da página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Itens por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Tipo de transação",
+            "schema": {
+              "type": "string",
+              "enum": ["cash_in", "cash_out", "all"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Status da transação",
+            "schema": {
+              "type": "string",
+              "enum": ["paid", "waiting_payment", "expired", "cancelled", "refund_in"]
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "description": "Data de início (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "description": "Data de fim (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de transações PIX",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixTransactionListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1445,6 +1717,523 @@
           "details": {
             "type": "object",
             "description": "Detalhes adicionais do erro"
+          }
+        }
+      },
+      "CreatePixPaymentRequest": {
+        "type": "object",
+        "required": ["amount", "description", "externalId"],
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "description": "Valor da cobrança em reais",
+            "example": 150,
+            "minimum": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da cobrança (máximo 140 caracteres)",
+            "example": "Compra na loja virtual",
+            "maxLength": 140
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Identificador único da transação em seu sistema",
+            "example": "pedido-12345"
+          },
+          "expiration": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de expiração da cobrança (ISO 8601)"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/PixBuyer"
+          },
+          "pixKey": {
+            "type": "string",
+            "description": "Chave PIX do recebedor (para cobrança por chave)"
+          },
+          "keyType": {
+            "type": "string",
+            "enum": ["DOCUMENT", "EMAIL", "PHONE", "RANDOM_KEY"],
+            "description": "Tipo da chave PIX"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para receber webhooks específicos desta transação"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Dados adicionais da transação",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "splits": {
+            "type": "array",
+            "description": "Configuração de split de pagamento",
+            "items": {
+              "$ref": "#/components/schemas/PixSplit"
+            }
+          }
+        }
+      },
+      "CreatePixWithdrawRequest": {
+        "type": "object",
+        "required": ["type", "value", "details"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["PIX"],
+            "description": "Tipo da operação"
+          },
+          "value": {
+            "type": "number",
+            "description": "Valor da transferência em reais",
+            "example": 250.50,
+            "minimum": 0.01
+          },
+          "details": {
+            "$ref": "#/components/schemas/PixWithdrawDetails"
+          },
+          "qrCodeData": {
+            "type": "string",
+            "description": "Dados do QR Code PIX (para transferência por QR Code)"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Identificador único da transferência em seu sistema"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da transferência",
+            "maxLength": 140
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para receber webhooks específicos desta transferência"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Dados adicionais da transferência",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PixRefundRequest": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "description": "Valor do estorno em reais. Se não informado, será estorno total",
+            "minimum": 0.01
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do motivo do estorno"
+          }
+        }
+      },
+      "PixBuyer": {
+        "type": "object",
+        "required": ["name", "document"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome completo do pagador",
+            "example": "Maria Silva Santos"
+          },
+          "document": {
+            "type": "string",
+            "description": "CPF ou CNPJ do pagador (apenas números)",
+            "example": "12345678901"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email do pagador para notificações",
+            "example": "maria@email.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Telefone do pagador",
+            "example": "11999999999"
+          }
+        }
+      },
+      "PixWithdrawDetails": {
+        "type": "object",
+        "required": ["key", "keyType", "name", "document"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Chave PIX do beneficiário",
+            "example": "usuario@email.com"
+          },
+          "keyType": {
+            "type": "string",
+            "enum": ["DOCUMENT", "EMAIL", "PHONE", "RANDOM_KEY"],
+            "description": "Tipo da chave PIX"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome completo do beneficiário",
+            "example": "Ana Silva Santos"
+          },
+          "document": {
+            "type": "string",
+            "description": "CPF ou CNPJ do beneficiário (apenas números)",
+            "example": "12345678901"
+          }
+        }
+      },
+      "PixSplit": {
+        "type": "object",
+        "required": ["recipient_id", "type", "value"],
+        "properties": {
+          "recipient_id": {
+            "type": "string",
+            "description": "ID do beneficiário"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["percentage", "fixed_amount"],
+            "description": "Tipo de divisão"
+          },
+          "value": {
+            "type": "number",
+            "description": "Valor (% para percentage, R$ para fixed_amount)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da participação"
+          }
+        }
+      },
+      "PixPaymentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID único da transação PIX no FireBanking"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Seu identificador único da transação"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["waiting_payment", "paid", "expired", "cancelled"],
+            "description": "Status atual da transação"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Valor da cobrança em centavos"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da cobrança"
+          },
+          "qrCode": {
+            "$ref": "#/components/schemas/PixQRCode"
+          },
+          "pixKey": {
+            "type": "string",
+            "description": "Chave PIX gerada para esta transação"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/PixBuyer"
+          },
+          "paymentLink": {
+            "type": "string",
+            "format": "uri",
+            "description": "Link direto para pagamento"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data/hora de expiração da cobrança"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data/hora de criação da transação"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PixWithdrawResponse": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "ID único da transferência no FireBanking"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Seu identificador único da transferência"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["WAITING_CONFIRMATION", "WITHDRAW_PAID", "ERROR"],
+            "description": "Status da transferência"
+          },
+          "type": {
+            "type": "string",
+            "example": "cash_out"
+          },
+          "value": {
+            "type": "integer",
+            "description": "Valor transferido em centavos"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "description": {
+            "type": "string"
+          },
+          "beneficiary": {
+            "$ref": "#/components/schemas/PixBeneficiary"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "processed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PixRefundResponse": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "ID único do estorno"
+          },
+          "originalTransactionId": {
+            "type": "string",
+            "description": "ID da transação original"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do estorno"
+          },
+          "refundValue": {
+            "type": "integer",
+            "description": "Valor do estorno em centavos"
+          },
+          "originalValue": {
+            "type": "integer",
+            "description": "Valor original em centavos"
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PixTransactionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["waiting_payment", "paid", "expired", "cancelled", "refund_in", "WITHDRAW_PAID", "ERROR"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["cash_in", "cash_out"]
+          },
+          "amount": {
+            "type": "integer"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "description": {
+            "type": "string"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/PixBuyer"
+          },
+          "beneficiary": {
+            "$ref": "#/components/schemas/PixBeneficiary"
+          },
+          "payer": {
+            "$ref": "#/components/schemas/PixPayer"
+          },
+          "qrCode": {
+            "$ref": "#/components/schemas/PixQRCode"
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "processed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PixTransactionListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PixTransactionResponse"
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer"
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "pages": {
+                "type": "integer"
+              }
+            }
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_transactions": {
+                "type": "integer"
+              },
+              "total_cash_in": {
+                "type": "integer"
+              },
+              "total_cash_out": {
+                "type": "integer"
+              },
+              "total_value": {
+                "type": "integer"
+              },
+              "total_fees": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "PixQRCode": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Código PIX Copia e Cola"
+          },
+          "image": {
+            "type": "string",
+            "description": "QR Code em formato base64 (PNG)"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data/hora de expiração do QR Code"
+          }
+        }
+      },
+      "PixBeneficiary": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "document": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "keyType": {
+            "type": "string"
+          },
+          "bank": {
+            "$ref": "#/components/schemas/BankInfo"
+          }
+        }
+      },
+      "PixPayer": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "document": {
+            "type": "string"
+          },
+          "bank": {
+            "$ref": "#/components/schemas/BankInfo"
+          }
+        }
+      },
+      "BankInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "ispb": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "account": {
+            "type": "string"
           }
         }
       }
