@@ -1,18 +1,24 @@
 ---
-title: 'Introdução - PIX'
-description: 'Sistema de pagamentos instantâneos brasileiro com transferências 24/7'
+title: 'Visão Geral da API PIX'
+description: 'Guia completo para a API de Processamento PIX FireBanking'
 ---
 
-## Visão Geral
+## Bem-vindo à API PIX FireBanking
 
-O **PIX** é o sistema de pagamentos instantâneos brasileiro que permite transferências e recebimentos em tempo real, funcionando 24 horas por dia, 7 dias por semana, incluindo finais de semana e feriados.
+A FireBanking oferece uma API completa de PIX que permite às empresas receber pagamentos instantâneos, realizar transferências e processar transações PIX de forma segura e em escala. O PIX é o sistema de pagamentos instantâneos brasileiro que funciona 24 horas por dia, 7 dias por semana, incluindo finais de semana e feriados.
 
 <CardGroup cols={2}>
-  <Card title="PIX Cobrança (Cash In)" icon="money-bill-transfer">
-    **Receba pagamentos**: Gere QR Codes ou cobranças por chave PIX para receber valores de seus clientes
+  <Card title="PIX Cobrança" icon="qr-code" href="/api-reference/pix/charge/create-qrcode">
+    Receba pagamentos via QR Code ou chave PIX
   </Card>
-  <Card title="PIX Saque (Cash Out)" icon="hand-holding-dollar">
-    **Realize transferências**: Envie valores para chaves PIX ou contas bancárias de terceiros
+  <Card title="PIX Transferência" icon="paper-plane" href="/api-reference/pix/withdraw/create">
+    Realize transferências para terceiros
+  </Card>
+  <Card title="Split PIX" icon="users" href="/api-reference/pix/split">
+    Divida pagamentos entre múltiplos beneficiários
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api-reference/pix/webhooks-cashin">
+    Receba notificações de transação em tempo real
   </Card>
 </CardGroup>
 
@@ -148,22 +154,32 @@ graph LR
 - **Limite noturno**: Valores reduzidos entre 20h e 6h
 - **Feriados**: Funcionamento normal sem restrições
 
-## Primeiros Passos
+## Início Rápido
 
-<Steps>
-  <Step title="Configure sua conta">
-    Ative o PIX em sua conta FireBanking através do Dashboard
-  </Step>
-  <Step title="Teste no Sandbox">
-    Use o ambiente de testes para familiarizar-se com as APIs
-  </Step>
-  <Step title="Configure Webhooks">
-    Implemente endpoints para receber confirmações em tempo real
-  </Step>
-  <Step title="Vá para produção">
-    Ative suas credenciais de produção e comece a processar PIX real
-  </Step>
-</Steps>
+### 1. Obtenha suas Chaves de API
+
+Obtenha suas credenciais de API no painel FireBanking:
+- **Chave de API**: Para operações padrão de PIX
+- **Credenciais de Webhook**: Para receber notificações de transação
+- **Token Interno**: Para integrações sistema-a-sistema (se aplicável)
+
+### 2. Faça sua Primeira Cobrança PIX
+
+```bash Primeira Cobrança PIX
+curl -X POST "https://api-gateway.firebanking.com.br/v2/payment" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100,
+    "description": "Primeira cobrança PIX",
+    "externalId": "pedido-001",
+    "buyer": {
+      "name": "João da Silva",
+      "document": "12345678901",
+      "email": "joao@email.com"
+    }
+  }'
+```
 
 ## Recursos Avançados
 
