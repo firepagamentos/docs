@@ -34,7 +34,7 @@ Obtenha suas credenciais de API no painel FireBanking:
 ### 2. Faça seu Primeiro Pagamento
 
 ```bash Primeira Requisição de Pagamento
-curl -X POST "https://api-gateway.firebanking.com.br/v1/payment" \
+curl -X POST "https://api-gateway.firebanking.com.br/credit-card/v1/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
@@ -175,11 +175,11 @@ Códigos de status HTTP comuns:
 
 <CardGroup cols={2}>
   <Card title="Sandbox" icon="flask">
-    **URL Base**: `https://api-gateway.firebanking.dev/v1`  
+    **URL Base**: `https://api-gateway.firebanking.dev/credit-card/v1`
     Ambiente de teste com números de cartão fictícios
   </Card>
   <Card title="Produção" icon="globe">
-    **URL Base**: `https://api-gateway.firebanking.com.br/v1`  
+    **URL Base**: `https://api-gateway.firebanking.com.br/credit-card/v1`
     Ambiente ao vivo para transações reais
   </Card>
 </CardGroup>
