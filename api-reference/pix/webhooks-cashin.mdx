@@ -30,7 +30,7 @@ Dispara quando um split de pagamento é finalizado.
 ### URL do Webhook
 ```bash
 # Configurar webhook global
-curl -X POST "https://api-gateway.firebanking.com.br/v2/webhooks" \
+curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/webhooks" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
@@ -430,7 +430,7 @@ Se todas as tentativas falharem, você receberá um webhook especial:
 
 ### Webhook de Teste
 ```bash
-curl -X POST "https://api-gateway.firebanking.com.br/v2/webhooks/test" \
+curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/webhooks/test" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
@@ -456,7 +456,7 @@ Acompanhe a saúde dos seus webhooks:
 ### Logs Detalhados
 ```bash
 # Consultar logs de webhook
-curl -X GET "https://api-gateway.firebanking.com.br/v2/webhooks/logs?pix_id=pix_12345678901234567890" \
+curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/webhooks/logs?pix_id=pix_12345678901234567890" \
   -H "x-api-key: fbk_live_sua_chave_aqui"
 ```
 

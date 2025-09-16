@@ -44,7 +44,7 @@ O Split de Pagamento PIX permite dividir automaticamente o valor recebido entre 
 
 <CodeGroup>
 ```bash cURL - Split por Percentual
-curl -X POST "https://api-gateway.firebanking.com.br/v2/payment" \
+curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
@@ -80,7 +80,7 @@ curl -X POST "https://api-gateway.firebanking.com.br/v2/payment" \
 ```
 
 ```bash cURL - Split Misto
-curl -X POST "https://api-gateway.firebanking.com.br/v2/payment" \
+curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
@@ -299,27 +299,34 @@ curl -X POST "https://api-gateway.firebanking.com.br/v2/payment" \
   </Accordion>
 </AccordionGroup>
 
-## Gerenciamento de Beneficiários
+## Configuração de Beneficiários
 
-### Cadastrar Beneficiário
-```bash
-curl -X POST "https://api-gateway.firebanking.com.br/v2/recipients" \
-  -H "x-api-key: fbk_live_sua_chave_aqui" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Loja ABC Ltda",
-    "document": "12345678000195",
-    "email": "financeiro@lojaabc.com",
-    "pix_key": "12345678000195",
-    "pix_key_type": "DOCUMENT"
-  }'
+Os beneficiários do split são definidos diretamente no payload da cobrança PIX. Cada beneficiário deve incluir:
+
+### Dados Obrigatórios do Beneficiário
+- **pixKey**: Chave PIX do beneficiário
+- **pixKeyType**: Tipo da chave (DOCUMENT, EMAIL, PHONE, RANDOM_KEY)
+- **document**: CPF ou CNPJ do beneficiário
+- **percentage** ou **value**: Percentual ou valor fixo do split
+
+### Exemplo de Configuração
+```json
+{
+  "splits": [
+    {
+      "pixKey": "12345678000195",
+      "pixKeyType": "DOCUMENT",
+      "document": "12345678000195",
+      "percentage": 85,
+      "description": "Vendedor principal"
+    }
+  ]
+}
 ```
 
-### Listar Beneficiários
-```bash
-curl -X GET "https://api-gateway.firebanking.com.br/v2/recipients" \
-  -H "x-api-key: fbk_live_sua_chave_aqui"
-```
+<Info>
+  Os beneficiários são configurados no momento da criação da cobrança, não existindo endpoint separado para gerenciamento.
+</Info>
 
 ## Webhook de Split
 
@@ -393,8 +400,8 @@ Após a execução do split, você receberá webhooks detalhados:
 ## Próximos Passos
 
 <CardGroup cols={2}>
-  <Card title="Gerenciar Beneficiários" href="/api-reference/recipients/list">
-    Cadastre e gerencie beneficiários de split
+  <Card title="Criar Cobrança PIX" href="/api-reference/pix/charge/create-qrcode">
+    Crie cobranças PIX com split configurado
   </Card>
   <Card title="Webhooks" href="/api-reference/pix/webhooks-cashin">
     Configure notificações de split

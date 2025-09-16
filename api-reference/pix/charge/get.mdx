@@ -30,20 +30,20 @@ Consulte informações detalhadas de uma cobrança PIX utilizando o ID da transa
 
 <CodeGroup>
 ```bash cURL - ID Interno
-curl -X GET "https://api-gateway.firebanking.com.br/v2/payment/pix_12345678901234567890" \
+curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/pix_12345678901234567890" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json"
 ```
 
 ```bash cURL - ID Externo
-curl -X GET "https://api-gateway.firebanking.com.br/v2/payment/pedido-12345?type=external" \
+curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/pedido-12345?type=external" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json"
 ```
 
 ```javascript JavaScript
 // Buscar por ID interno
-const response = await fetch('https://api-gateway.firebanking.com.br/v2/payment/pix_12345678901234567890', {
+const response = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment/pix_12345678901234567890', {
   headers: {
     'x-api-key': 'fbk_live_sua_chave_aqui',
     'Content-Type': 'application/json'
@@ -54,7 +54,7 @@ const payment = await response.json();
 console.log('Status da cobrança:', payment.status);
 
 // Buscar por ID externo
-const responseExternal = await fetch('https://api-gateway.firebanking.com.br/v2/payment/pedido-12345?type=external', {
+const responseExternal = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment/pedido-12345?type=external', {
   headers: {
     'x-api-key': 'fbk_live_sua_chave_aqui',
     'Content-Type': 'application/json'
@@ -69,7 +69,7 @@ import requests
 
 # Buscar por ID interno
 response = requests.get(
-    'https://api-gateway.firebanking.com.br/v2/payment/pix_12345678901234567890',
+    'https://api-gateway.firebanking.com.br/pix/v2/payment/pix_12345678901234567890',
     headers={
         'x-api-key': 'fbk_live_sua_chave_aqui',
         'Content-Type': 'application/json'
@@ -81,7 +81,7 @@ print(f"Status: {payment['status']}")
 
 # Buscar por ID externo
 response_external = requests.get(
-    'https://api-gateway.firebanking.com.br/v2/payment/pedido-12345',
+    'https://api-gateway.firebanking.com.br/pix/v2/payment/pedido-12345',
     params={'type': 'external'},
     headers={
         'x-api-key': 'fbk_live_sua_chave_aqui',
@@ -345,7 +345,7 @@ payment_external = response_external.json()
 ### Verificação de Pagamento
 ```javascript
 async function verificarPagamento(transactionId) {
-  const response = await fetch(`https://api-gateway.firebanking.com.br/v2/payment/${transactionId}`, {
+  const response = await fetch(`https://api-gateway.firebanking.com.br/pix/v2/payment/${transactionId}`, {
     headers: {
       'x-api-key': 'sua_chave_api'
     }

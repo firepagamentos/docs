@@ -32,7 +32,7 @@ Solicite o estorno (refund) de uma transação PIX que foi paga com sucesso. O e
 
 <CodeGroup>
 ```bash cURL - Estorno Total
-curl -X POST "https://api-gateway.firebanking.com.br/v2/payment/refund/pix_12345678901234567890" \
+curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment/refund/pix_12345678901234567890" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
@@ -41,7 +41,7 @@ curl -X POST "https://api-gateway.firebanking.com.br/v2/payment/refund/pix_12345
 ```
 
 ```bash cURL - Estorno Parcial
-curl -X POST "https://api-gateway.firebanking.com.br/v2/payment/refund/pix_12345678901234567890" \
+curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment/refund/pix_12345678901234567890" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
