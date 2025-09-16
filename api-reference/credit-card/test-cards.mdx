@@ -1,0 +1,308 @@
+---
+title: 'Cartões para Testes'
+description: 'Cartões de crédito para teste em ambiente sandbox'
+---
+
+## Visão Geral
+
+Para testar integrações de cartão de crédito em **ambiente sandbox**, utilize os cartões de teste específicos listados abaixo. Cada cartão tem um comportamento pré-definido que simula diferentes cenários reais de processamento.
+
+<Note>
+  **Importante**: Estes cartões funcionam apenas no ambiente de **sandbox**. Em produção, use apenas cartões reais válidos.
+</Note>
+
+## Como Testar Cobranças de Cartão em Sandbox
+
+Os cartões utilizados para teste devem ter **números válidos** e podem ser gerados através de qualquer gerador de cartões. O comportamento do teste segue regras específicas baseadas no **último dígito** do número do cartão:
+
+## Cartões de Teste Disponíveis
+
+| Último Dígito | Autorizado? | Status | Exemplo de Cartão |
+|---------------|-------------|--------|-------------------|
+| **0, 1 ou 4** | ✅ SIM | Aprovado | `5186 8825 4989 5601` |
+| **2** | ❌ NÃO | Não autorizado | `5465 4157 3697 6082` |
+| **3** | ❌ NÃO | Cartão expirado | `5112 9708 0010 5403` |
+| **5** | ❌ NÃO | Cartão bloqueado | `5528 4303 3551 3025` |
+| **6** | ❌ NÃO | Timeout | `5186 8825 4989 5601` |
+| **7** | ❌ NÃO | Cartão cancelado | `5325 8272 3667 3227` |
+| **8** | 🎲 Aleatório | Aprovado / Timeout | `5397 5499 7073 5078` |
+
+## Detalhes dos Cenários
+
+<AccordionGroup>
+  <Accordion title="Transações Aprovadas (Final 0, 1, 4)">
+    **Comportamento:** Transação sempre aprovada
+    ```json
+    {
+      "status": "APPROVED",
+      "authorizationCode": "123456",
+      "nsu": "000001"
+    }
+    ```
+    **Use para:** Testar fluxo de sucesso, captura, webhooks de aprovação
+  </Accordion>
+
+  <Accordion title="Não Autorizado (Final 2)">
+    **Comportamento:** Cartão recusado pelo banco
+    ```json
+    {
+      "error": {
+        "code": "CARD_DECLINED",
+        "message": "Cartão recusado pelo banco emissor"
+      }
+    }
+    ```
+    **Use para:** Testar tratamento de erro, fallback para outros métodos
+  </Accordion>
+
+  <Accordion title="Cartão Expirado (Final 3)">
+    **Comportamento:** Cartão com data de validade vencida
+    ```json
+    {
+      "error": {
+        "code": "CARD_EXPIRED",
+        "message": "Cartão expirado"
+      }
+    }
+    ```
+    **Use para:** Validar tratamento de cartões vencidos
+  </Accordion>
+
+  <Accordion title="Cartão Bloqueado (Final 5)">
+    **Comportamento:** Cartão bloqueado pelo banco
+    ```json
+    {
+      "error": {
+        "code": "CARD_BLOCKED",
+        "message": "Cartão bloqueado"
+      }
+    }
+    ```
+    **Use para:** Testar cenário de cartão bloqueado
+  </Accordion>
+
+  <Accordion title="Timeout (Final 6)">
+    **Comportamento:** Timeout na comunicação com o banco
+    ```json
+    {
+      "error": {
+        "code": "TIMEOUT",
+        "message": "Timeout na comunicação com o banco"
+      }
+    }
+    ```
+    **Use para:** Testar retry e tratamento de timeout
+  </Accordion>
+
+  <Accordion title="Cartão Cancelado (Final 7)">
+    **Comportamento:** Cartão cancelado pelo banco
+    ```json
+    {
+      "error": {
+        "code": "CARD_CANCELLED",
+        "message": "Cartão cancelado"
+      }
+    }
+    ```
+    **Use para:** Validar tratamento de cartões cancelados
+  </Accordion>
+
+  <Accordion title="Comportamento Aleatório (Final 8)">
+    **Comportamento:** 50% chance de aprovação, 50% de timeout
+    ```json
+    // Pode retornar aprovação OU timeout aleatoriamente
+    {
+      "status": "APPROVED" // ou erro de timeout
+    }
+    ```
+    **Use para:** Testes de stress e comportamento imprevisível
+  </Accordion>
+</AccordionGroup>
+
+## Regras de Validação
+
+### CVV (Código de Segurança)
+
+<Note>
+  **Regra Importante**: Em sandbox, o CVV **sempre deve ser um número de 3 dígitos terminado em zero**.
+</Note>
+
+**Exemplos válidos:**
+- `220` ✅
+- `120` ✅
+- `340` ✅
+- `010` ✅
+
+**Exemplos inválidos:**
+- `221` ❌ (não termina em zero)
+- `123` ❌ (não termina em zero)
+- `12` ❌ (menos de 3 dígitos)
+
+**Comportamento:** Um CVV que não termine em zero resultará em **falha na geração da transação**.
+
+### Data de Validade
+
+Use qualquer data **futura** no formato `MM/YYYY`:
+- `12/2025` ✅
+- `06/2026` ✅
+- `01/2024` ❌ (data passada)
+
+## Gerador de Cartões
+
+Para gerar cartões de teste válidos com diferentes finais, use o gerador online:
+
+<Card title="Gerador de Cartões de Teste" icon="credit-card" href="https://www.4devs.com.br/gerador_de_numero_cartao_credito">
+  **4devs.com.br** - Gerador gratuito de números de cartão
+
+  Gere cartões válidos terminados no dígito desejado para testar cenários específicos
+</Card>
+
+### Como Usar o Gerador
+
+1. Acesse [4devs.com.br/gerador_de_numero_cartao_credito](https://www.4devs.com.br/gerador_de_numero_cartao_credito)
+2. Escolha a bandeira (Visa, Mastercard, etc.)
+3. Gere um número válido
+4. Modifique o último dígito conforme o cenário desejado
+5. Use CVV terminado em zero (ex: `220`)
+
+## Exemplos de Teste
+
+### Teste de Aprovação
+
+<CodeGroup>
+```json Cartão Aprovado (Final 1)
+{
+  "purchaseValue": 100,
+  "installments": 1,
+  "externalId": "test-approved-001",
+  "payment": {
+    "chargeType": "FEE_TO_CUSTOMER",
+    "capture": true,
+    "card": {
+      "name": "JOSE TESTADOR",
+      "number": "5186882549895601", // Final 1 = Aprovado
+      "expiration": "12/2025",
+      "securityCode": "220" // Terminado em 0
+    }
+  }
+}
+```
+
+```json Cartão Negado (Final 2)
+{
+  "purchaseValue": 50,
+  "installments": 1,
+  "externalId": "test-declined-002",
+  "payment": {
+    "chargeType": "FEE_TO_CUSTOMER",
+    "capture": true,
+    "card": {
+      "name": "MARIA TESTADORA",
+      "number": "5465415736976082", // Final 2 = Negado
+      "expiration": "12/2025",
+      "securityCode": "120" // Terminado em 0
+    }
+  }
+}
+```
+
+```json Cartão Expirado (Final 3)
+{
+  "purchaseValue": 75,
+  "installments": 1,
+  "externalId": "test-expired-003",
+  "payment": {
+    "chargeType": "FEE_TO_CUSTOMER",
+    "capture": true,
+    "card": {
+      "name": "JOAO TESTADOR",
+      "number": "5112970800105403", // Final 3 = Expirado
+      "expiration": "12/2025",
+      "securityCode": "340" // Terminado em 0
+    }
+  }
+}
+```
+</CodeGroup>
+
+## Teste de Cenários Avançados
+
+### Retry com Timeout (Final 6)
+
+```javascript Implementação de Retry
+async function testTimeoutScenario() {
+  const timeoutCard = {
+    name: "TESTE TIMEOUT",
+    number: "5186882549895606", // Final 6 = Timeout
+    expiration: "12/2025",
+    securityCode: "220"
+  };
+
+  try {
+    const payment = await createPayment({
+      purchaseValue: 100,
+      payment: { card: timeoutCard }
+    });
+  } catch (error) {
+    if (error.code === 'TIMEOUT') {
+      console.log('Timeout detectado, implementar retry...');
+      // Implementar lógica de retry
+    }
+  }
+}
+```
+
+### Comportamento Aleatório (Final 8)
+
+```javascript Teste de Stress
+async function testRandomBehavior() {
+  const randomCard = {
+    name: "TESTE ALEATORIO",
+    number: "5397549970735078", // Final 8 = Aleatório
+    expiration: "12/2025",
+    securityCode: "180"
+  };
+
+  // Execute múltiplas vezes para testar ambos cenários
+  for (let i = 0; i < 10; i++) {
+    try {
+      const payment = await createPayment({
+        purchaseValue: 25,
+        externalId: `random-test-${i}`,
+        payment: { card: randomCard }
+      });
+
+      console.log(`Teste ${i}: Aprovado`);
+    } catch (error) {
+      console.log(`Teste ${i}: ${error.code}`);
+    }
+  }
+}
+```
+
+## Checklist de Testes
+
+### Cenários Obrigatórios
+
+- [ ] **Aprovação** - Teste com final 0, 1 ou 4
+- [ ] **Negação** - Teste com final 2
+- [ ] **Cartão Expirado** - Teste com final 3
+- [ ] **Timeout** - Teste com final 6 e retry
+- [ ] **CVV Inválido** - Teste com CVV não terminado em 0
+
+### Cenários Opcionais
+
+- [ ] **Cartão Bloqueado** - Final 5
+- [ ] **Cartão Cancelado** - Final 7
+- [ ] **Comportamento Aleatório** - Final 8 (múltiplas tentativas)
+
+### Validações Importantes
+
+- [ ] Webhooks funcionando para todos os cenários
+- [ ] Tratamento de erro adequado
+- [ ] Retry implementado para timeouts
+- [ ] Logs estruturados para debug
+
+---
+
+**🧪 Pronto para testar!** Use estes cartões para validar todos os cenários de sua integração antes de ir para produção.

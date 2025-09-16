@@ -45,7 +45,10 @@
         "groups": [
           {
             "group": "Visão Geral",
-            "pages": ["api-reference/credit-card/introduction"]
+            "pages": [
+              "api-reference/credit-card/introduction",
+              "api-reference/credit-card/test-cards"
+            ]
           },
           {
             "group": "Pagamentos",
