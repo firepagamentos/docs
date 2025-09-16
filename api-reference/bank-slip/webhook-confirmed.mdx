@@ -31,7 +31,7 @@ O webhook de confirmação é enviado automaticamente quando um boleto é regist
     "id": "bol_1234567890123456",
     "external_id": "pedido-12345",
     "status": "registered",
-    "amount": 25000,
+    "amount": 250.00,
     "currency": "BRL",
     "description": "Mensalidade Academia FitLife - Janeiro/2024",
     "due_date": "2024-02-15",
@@ -440,7 +440,7 @@ async function testBoletoConfirmedWebhook() {
       id: 'bol_test_123456',
       external_id: 'test-order-123',
       status: 'registered',
-      amount: 10000,
+      amount: 100.00,
       barcode: '03399876543210000010000001234567890123456789012',
       digitable_line: '03399.87654 32100.000010 00000.123456 7 89012345678901',
       buyer: {

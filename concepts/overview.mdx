@@ -270,7 +270,7 @@ class PaymentMethodSelector {
     const methods = [];
     
     // PIX sempre disponível para valores baixos
-    if (this.amount <= 100000) { // Até R$ 1.000
+    if (this.amount <= 1000.00) { // Até R$ 1.000
       methods.push({
         method: 'pix',
         priority: 1,

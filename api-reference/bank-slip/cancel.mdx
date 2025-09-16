@@ -199,7 +199,7 @@ try {
   "id": "bol_1234567890123456",
   "external_id": "pedido-123",
   "status": "cancelled",
-  "amount": 25000,
+  "amount": 250.00,
   "currency": "BRL",
   "description": "Mensalidade Academia FitLife - Janeiro/2024",
   "due_date": "2024-02-15",
@@ -666,7 +666,7 @@ app.patch('/api/boletos/cancel-batch', async (req, res) => {
     "id": "bol_1234567890123456",
     "external_id": "pedido-123",
     "status": "cancelled",
-    "amount": 25000,
+    "amount": 250.00,
     "cancellation": {
       "cancelled_at": "2024-01-16T10:30:00Z",
       "reason": "Pedido cancelado pelo cliente",
