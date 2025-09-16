@@ -25,10 +25,12 @@ A API FireBanking usa um método de autenticação **simples e consistente** par
   </Accordion>
 
   <Accordion title="Segurança Integrada">
+    - **Identificação do cliente**: A chave API identifica unicamente cada cliente
+    - **Controle de acesso**: Habilita roteamento e permissões específicas
+    - **Auditoria completa**: Rastreamento detalhado de todas as operações
     - **Webhooks assinados**: Verificação automática de integridade
     - **Erro 403 Forbidden**: Para credenciais inválidas ou expiradas
     - **Rate limiting**: Proteção contra abuso de API
-    - **Logs de auditoria**: Rastreamento completo de operações
   </Accordion>
 </AccordionGroup>
 
@@ -44,13 +46,47 @@ Inclua sua chave de API no cabeçalho `x-api-key`:
 x-api-key: SUA_CHAVE_DE_API
 ```
 
-### Exemplo de Requisição
+### Exemplos de Requisição
 
-```bash Exemplo cURL
+<CodeGroup>
+```bash cURL - Consultar Saldo
 curl -X GET "https://api-gateway.firebanking.com.br/v1/account/balance" \
   -H "x-api-key: fbk_live_1234567890abcdef..." \
   -H "Content-Type: application/json"
 ```
+
+```bash cURL - PIX (Conforme API Gateway v11)
+curl --request GET \
+  --url https://api-gateway.firebanking.com.br/pix/v2/payment/id \
+  --header 'Accept: application/json' \
+  --header 'x-api-key: sua_chave_api_aqui'
+```
+
+```bash cURL - Boleto
+curl --request GET \
+  --url https://api-gateway.firebanking.com.br/bank-slip/v1/payment/id \
+  --header 'Accept: application/json' \
+  --header 'x-api-key: sua_chave_api_aqui'
+```
+
+```bash cURL - Cartão de Crédito
+curl --request GET \
+  --url https://api-gateway.firebanking.com.br/credit-card/v1/payment/id \
+  --header 'Accept: application/json' \
+  --header 'x-api-key: sua_chave_api_aqui'
+```
+</CodeGroup>
+
+### Configuração no Postman
+
+1. **Abra sua requisição** no Postman
+2. **Vá para a aba Headers**
+3. **Adicione novo header**:
+   - **Key**: `x-api-key`
+   - **Value**: `sua_chave_api_aqui`
+4. **Adicione header de conteúdo**:
+   - **Key**: `Accept`
+   - **Value**: `application/json`
 
 ### Endpoints Aplicáveis
 
@@ -127,10 +163,26 @@ function verifyWebhookSignature(payload, signature, secret) {
 
 ### Chave de API FireBanking
 
+Sua chave de API pode ser obtida através de:
+
+<CardGroup cols={2}>
+  <Card title="Portal FireBanking" icon="globe">
+    Acesse seu painel administrativo e gere diretamente
+  </Card>
+  <Card title="Representante FireBanking" icon="user">
+    Entre em contato com seu gerente de conta
+  </Card>
+</CardGroup>
+
+**Processo de obtenção:**
 1. **Faça login** no seu painel FireBanking
 2. **Navegue para** Configurações de API ou seção de Desenvolvedor
 3. **Gere** ou copie sua Chave de API
 4. **Armazene com segurança** - trate como uma senha
+
+<Info>
+  Cada chave está **associada ao contexto específico do cliente** e pode ter **escopos e permissões definidos** conforme seu plano de negócio.
+</Info>
 
 ### Formatos de Chave
 
@@ -144,6 +196,61 @@ function verifyWebhookSignature(payload, signature, secret) {
     Apenas para transações ao vivo
   </Card>
 </CardGroup>
+
+### Ciclo de Vida da Chave API
+
+<AccordionGroup>
+  <Accordion title="Chave Única Ativa">
+    - **Apenas uma chave ativa por vez** por conta
+    - **Janela de transição de 20 minutos** ao gerar nova chave
+    - Ambas as chaves funcionam durante a transição
+    - Chave antiga é automaticamente revogada após o período
+  </Accordion>
+
+  <Accordion title="Gestão de Chaves">
+    - **Revogação imediata** possível via dashboard
+    - **Geração de nova chave** revoga a anterior (após transição)
+    - **Rotação periódica** recomendada para segurança
+    - **Backup seguro** antes de revogar chave atual
+  </Accordion>
+
+  <Accordion title="Transições Seguras">
+    - Atualize sistemas gradualmente durante a janela de 20 minutos
+    - Monitore logs para confirmação de migração
+    - Teste nova chave antes de revogar a anterior
+    - Mantenha procedimento de rollback preparado
+  </Accordion>
+</AccordionGroup>
+
+## Controles de Acesso Avançados
+
+### IP Whitelist
+
+Configure restrições de IP para maior segurança:
+
+<AccordionGroup>
+  <Accordion title="Configuração de IP Whitelist">
+    - **Acesso restrito**: Apenas IPs pré-definidos podem usar a API
+    - **Recomendado para produção**: Especialmente importante em ambiente live
+    - **Configuração via dashboard**: Adicione/remova IPs conforme necessário
+    - **Múltiplos IPs**: Suporte para ranges e endereços específicos
+  </Accordion>
+
+  <Accordion title="Benefícios de Segurança">
+    - **Proteção contra vazamentos**: Mesmo com chave exposta, acesso limitado
+    - **Controle geográfico**: Restrinja acesso por localização
+    - **Auditoria simplificada**: Logs mais limpos e rastreáveis
+    - **Compliance**: Atende requisitos de segurança corporativa
+  </Accordion>
+</AccordionGroup>
+
+### Restrições por Documento
+
+Para operações sensíveis como saques PIX:
+
+- **Validação por CPF/CNPJ**: Documentos específicos para operações de saque
+- **Lista de documentos autorizados**: Configure quais CPFs/CNPJs podem realizar saques
+- **Segurança adicional**: Previne operações não autorizadas mesmo com chave válida
 
 ## Melhores Práticas de Segurança
 
@@ -161,6 +268,15 @@ function verifyWebhookSignature(payload, signature, secret) {
   </Card>
   <Card title="Controle de Acesso" icon="shield">
     Limite acesso da chave a pessoal autorizado
+  </Card>
+  <Card title="IP Whitelist" icon="network-wired">
+    Configure lista de IPs autorizados, especialmente em produção
+  </Card>
+  <Card title="Monitoramento" icon="chart-line">
+    Monitore padrões de uso anômalos e atividade suspeita
+  </Card>
+  <Card title="Dashboard Protegido" icon="user-shield">
+    Use autenticação forte para proteção do painel administrativo
   </Card>
 </CardGroup>
 
