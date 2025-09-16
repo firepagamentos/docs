@@ -19,7 +19,7 @@ Realize transferências PIX (cash out) enviando valores da sua conta FireBanking
 </ParamField>
 
 <ParamField body="value" type="number" required>
-  Valor da transferência em reais (R$ 100,00 = 100)
+  Valor da transferência em reais (ex: 100.00, 25.50)
 </ParamField>
 
 <ParamField body="details" type="object" required>
@@ -298,7 +298,7 @@ echo 'Transferência criada: ' . print_r($result, true);
 </ResponseField>
 
 <ResponseField name="value" type="integer">
-  Valor transferido em centavos
+  Valor transferido em reais (formato decimal)
 </ResponseField>
 
 <ResponseField name="beneficiary" type="object">
@@ -330,10 +330,10 @@ echo 'Transferência criada: ' . print_r($result, true);
   Taxas aplicadas à transferência
   <Expandable title="fees">
     <ResponseField name="fees.total" type="integer">
-      Taxa total em centavos
+      Taxa total em reais (formato decimal)
     </ResponseField>
     <ResponseField name="fees.fixed" type="integer">
-      Taxa fixa em centavos
+      Taxa fixa em reais (formato decimal)
     </ResponseField>
     <ResponseField name="fees.percentage" type="number">
       Taxa percentual aplicada
