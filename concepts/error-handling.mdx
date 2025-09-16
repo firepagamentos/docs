@@ -10,11 +10,13 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
 ## Códigos de Status HTTP
 
 ### Respostas de Sucesso (2xx)
+
 - `200 OK` - Requisição processada com sucesso
-- `201 Created` - Recurso criado com sucesso  
+- `201 Created` - Recurso criado com sucesso
 - `204 No Content` - Operação bem-sucedida sem conteúdo de retorno
 
 ### Erros do Cliente (4xx)
+
 - `400 Bad Request` - Dados inválidos na requisição
 - `401 Unauthorized` - Credenciais de autenticação inválidas
 - `403 Forbidden` - Acesso negado aos recursos
@@ -23,6 +25,7 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
 - `429 Too Many Requests` - Rate limit excedido
 
 ### Erros do Servidor (5xx)
+
 - `500 Internal Server Error` - Erro interno do servidor
 - `502 Bad Gateway` - Erro de gateway
 - `503 Service Unavailable` - Serviço temporariamente indisponível
@@ -31,6 +34,7 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
 ## Estrutura Padrão de Erro
 
 ### Formato de Resposta
+
 ```json
 {
   "error": {
@@ -44,6 +48,7 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
 ```
 
 ### Campos Explicados
+
 - `code`: Código único do erro para tratamento programático
 - `message`: Mensagem em português para o usuário final
 - `details`: Informações adicionais sobre o erro (opcional)
@@ -118,6 +123,8 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
 
 ### Erros de Transação (422)
 
+#### Erros de Cartão de Crédito
+
 <AccordionGroup>
   <Accordion title="Cartão Recusado">
     ```json
@@ -129,10 +136,11 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
       }
     }
     ```
-    
+
     **Ação**: Solicite ao cliente que entre em contato com o banco
+
   </Accordion>
-  
+
   <Accordion title="Limite Insuficiente">
     ```json
     {
@@ -143,10 +151,41 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
       }
     }
     ```
-    
+
     **Ação**: Sugerir valor menor ou outro meio de pagamento
+
   </Accordion>
-  
+
+  <Accordion title="Token Expirado">
+    ```json
+    {
+      "error": {
+        "code": "TOKEN_EXPIRED",
+        "message": "Token do cartão expirado",
+        "details": "Solicite uma nova tokenização do cartão"
+      }
+    }
+    ```
+
+    **Ação**: Redirecione para nova captura de dados do cartão
+
+  </Accordion>
+
+  <Accordion title="CVV Obrigatório">
+    ```json
+    {
+      "error": {
+        "code": "CVV_REQUIRED",
+        "message": "CVV é obrigatório para pagamento com token",
+        "details": "Informe o código de segurança para continuar"
+      }
+    }
+    ```
+
+    **Ação**: Solicite o CVV ao cliente para finalizar a transação
+
+  </Accordion>
+
   <Accordion title="Transação Já Capturada">
     ```json
     {
@@ -157,8 +196,137 @@ Uma implementação robusta da API FireBanking requer **tratamento adequado de e
       }
     }
     ```
-    
+
     **Ação**: Verifique o status atual da transação
+
+  </Accordion>
+</AccordionGroup>
+
+#### Erros de PIX
+
+<AccordionGroup>
+  <Accordion title="Chave PIX Inválida">
+    ```json
+    {
+      "error": {
+        "code": "PIX_KEY_INVALID",
+        "message": "Chave PIX inválida ou não encontrada",
+        "details": "Verifique se a chave PIX está correta"
+      }
+    }
+    ```
+
+    **Ação**: Valide a chave PIX e solicite correção ao cliente
+
+  </Accordion>
+
+  <Accordion title="QR Code Expirado">
+    ```json
+    {
+      "error": {
+        "code": "QR_CODE_EXPIRED",
+        "message": "QR Code PIX expirado",
+        "details": "Gere um novo QR Code para continuar"
+      }
+    }
+    ```
+
+    **Ação**: Gere uma nova cobrança PIX
+
+  </Accordion>
+
+  <Accordion title="Valor Fora dos Limites PIX">
+    ```json
+    {
+      "error": {
+        "code": "PIX_LIMIT_EXCEEDED",
+        "message": "Valor excede limite PIX permitido",
+        "details": "Valor máximo: R$ 20.000 para pessoa física"
+      }
+    }
+    ```
+
+    **Ação**: Ajuste o valor ou divida em múltiplas transações
+
+  </Accordion>
+
+  <Accordion title="PIX Fora do Horário">
+    ```json
+    {
+      "error": {
+        "code": "PIX_OUTSIDE_HOURS",
+        "message": "PIX temporariamente indisponível",
+        "details": "Horário de manutenção do sistema PIX"
+      }
+    }
+    ```
+
+    **Ação**: Tente novamente em alguns minutos
+
+  </Accordion>
+</AccordionGroup>
+
+#### Erros de Boleto Bancário
+
+<AccordionGroup>
+  <Accordion title="Data de Vencimento Inválida">
+    ```json
+    {
+      "error": {
+        "code": "INVALID_DUE_DATE",
+        "message": "Data de vencimento inválida",
+        "details": "A data deve ser futura e até 90 dias"
+      }
+    }
+    ```
+
+    **Ação**: Ajuste a data de vencimento conforme as regras
+
+  </Accordion>
+
+  <Accordion title="Dados do Pagador Incompletos">
+    ```json
+    {
+      "error": {
+        "code": "PAYER_DATA_INCOMPLETE",
+        "message": "Dados do pagador incompletos",
+        "details": "Nome, documento e endereço são obrigatórios"
+      }
+    }
+    ```
+
+    **Ação**: Complete todos os dados obrigatórios do pagador
+
+  </Accordion>
+
+  <Accordion title="Boleto Já Pago">
+    ```json
+    {
+      "error": {
+        "code": "ALREADY_PAID",
+        "message": "Boleto já foi pago",
+        "details": "Não é possível cancelar boleto pago"
+      }
+    }
+    ```
+
+    **Ação**: Verifique o status atual do boleto
+
+  </Accordion>
+
+  <Accordion title="Valor Abaixo do Mínimo">
+    ```json
+    {
+      "error": {
+        "code": "AMOUNT_TOO_LOW",
+        "message": "Valor abaixo do mínimo para boleto",
+        "details": "Valor mínimo: R$ 2,50"
+      }
+    }
+    ```
+
+    **Ação**: Ajuste o valor ou use outro meio de pagamento
+
   </Accordion>
 </AccordionGroup>
 
@@ -174,19 +342,20 @@ import time
 import random
 
 def api_call_with_retry(func, max_retries=3):
-    for attempt in range(max_retries):
-        try:
-            return func()
-        except TemporaryError as e:
-            if attempt == max_retries - 1:
-                raise e
-            
+for attempt in range(max_retries):
+try:
+return func()
+except TemporaryError as e:
+if attempt == max_retries - 1:
+raise e
+
             # Backoff exponencial com jitter
             delay = (2 ** attempt) + random.uniform(0, 1)
             time.sleep(delay)
-    
+
     raise Exception("Max retries exceeded")
-```
+
+````
 
 ```javascript Node.js
 async function apiCallWithRetry(apiCall, maxRetries = 3) {
@@ -204,7 +373,8 @@ async function apiCallWithRetry(apiCall, maxRetries = 3) {
         }
     }
 }
-```
+````
+
 </CodeGroup>
 
 ### 2. Circuit Breaker
@@ -219,14 +389,14 @@ class CircuitBreaker:
         self.failure_count = 0
         self.last_failure_time = None
         self.state = 'CLOSED'  # CLOSED, OPEN, HALF_OPEN
-    
+
     def call(self, func):
         if self.state == 'OPEN':
             if time.time() - self.last_failure_time > self.timeout:
                 self.state = 'HALF_OPEN'
             else:
                 raise Exception("Circuit breaker is OPEN")
-        
+
         try:
             result = func()
             self.reset()
@@ -234,14 +404,14 @@ class CircuitBreaker:
         except Exception as e:
             self.record_failure()
             raise e
-    
+
     def record_failure(self):
         self.failure_count += 1
         self.last_failure_time = time.time()
-        
+
         if self.failure_count >= self.failure_threshold:
             self.state = 'OPEN'
-    
+
     def reset(self):
         self.failure_count = 0
         self.state = 'CLOSED'
@@ -251,55 +421,95 @@ class CircuitBreaker:
 
 <CodeGroup>
 ```python Python
-def handle_firebanking_error(response):
+def handle_firebanking_error(response, payment_method="credit_card"):
+    error_data = response.json().get('error', {})
+    error_code = error_data.get('code')
+
     if response.status_code == 400:
         # Erro de validação - não tentar novamente
-        error_data = response.json()['error']
         log_validation_error(error_data)
         raise ValidationError(error_data['message'])
-    
+
     elif response.status_code == 401:
         # Erro de autenticação - verificar configuração
         refresh_api_key()
         raise AuthenticationError("API key inválida")
-    
+
     elif response.status_code == 422:
-        # Erro de negócio - informar usuário
-        error_data = response.json()['error']
-        raise BusinessError(error_data['message'])
-    
+        # Erro de negócio - tratar por produto
+        if payment_method == "pix":
+            return handle_pix_business_error(error_code, error_data)
+        elif payment_method == "bank_slip":
+            return handle_boleto_business_error(error_code, error_data)
+        else:
+            return handle_card_business_error(error_code, error_data)
+
     elif response.status_code >= 500:
         # Erro do servidor - tentar novamente
         raise TemporaryError("Erro temporário do servidor")
-```
+
+def handle_pix_business_error(error_code, error_data):
+if error_code == "PIX_KEY_INVALID": # Solicitar nova chave PIX
+raise PixKeyError("Chave PIX inválida", retry_action="request_new_key")
+elif error_code == "QR_CODE_EXPIRED": # Gerar novo QR Code
+raise PixQRExpiredError("QR Code expirado", retry_action="generate_new_qr")
+elif error_code == "PIX_LIMIT_EXCEEDED": # Sugerir divisão da transação
+raise PixLimitError("Limite PIX excedido", retry_action="split_transaction")
+else:
+raise BusinessError(error_data['message'])
+
+def handle_boleto_business_error(error_code, error_data):
+if error_code == "INVALID_DUE_DATE": # Ajustar data de vencimento
+raise BoletoDateError("Data inválida", retry_action="adjust_due_date")
+elif error_code == "PAYER_DATA_INCOMPLETE": # Solicitar dados completos
+raise BoletoDataError("Dados incompletos", retry_action="complete_payer_data")
+elif error_code == "ALREADY_PAID": # Verificar status atual
+raise BoletoStatusError("Boleto já pago", retry_action="check_current_status")
+else:
+raise BusinessError(error_data['message'])
+
+def handle_card_business_error(error_code, error_data):
+if error_code == "CARD_DECLINED": # Sem retry automático
+raise CardDeclinedError("Cartão recusado", retry_action="none")
+elif error_code == "TOKEN_EXPIRED": # Solicitar nova tokenização
+raise TokenExpiredError("Token expirado", retry_action="retokenize")
+elif error_code == "CVV_REQUIRED": # Solicitar CVV
+raise CVVRequiredError("CVV obrigatório", retry_action="request_cvv")
+else:
+raise BusinessError(error_data['message'])
+
+````
 
 ```javascript Node.js
-function handleFireBankingError(response) {
+function handleFireBankingError(response, paymentMethod = 'credit_card') {
     const { status, data } = response;
     const error = data.error;
-    
+    const errorCode = error?.code;
+
     switch(status) {
         case 400:
-            // Erro de validação
             console.error('Validation error:', error.message);
             throw new ValidationError(error.message);
-        
+
         case 401:
         case 403:
-            // Erro de autenticação
             console.error('Authentication error:', error.message);
             throw new AuthenticationError(error.message);
-        
+
         case 422:
-            // Erro de negócio
-            console.warn('Business error:', error.message);
-            throw new BusinessError(error.message);
-        
+            // Tratamento específico por produto
+            if (paymentMethod === 'pix') {
+                return handlePixBusinessError(errorCode, error);
+            } else if (paymentMethod === 'bank_slip') {
+                return handleBoletoBusinessError(errorCode, error);
+            } else {
+                return handleCardBusinessError(errorCode, error);
+            }
+
         case 429:
-            // Rate limit
             const retryAfter = response.headers['retry-after'] || 60;
             throw new RateLimitError(`Rate limit exceeded. Retry after ${retryAfter}s`);
-        
+
         default:
             if (status >= 500) {
                 throw new TemporaryError('Server error');
@@ -307,8 +517,276 @@ function handleFireBankingError(response) {
             throw new UnknownError(error.message);
     }
 }
-```
+
+function handlePixBusinessError(errorCode, error) {
+    switch(errorCode) {
+        case 'PIX_KEY_INVALID':
+            throw new PixKeyError('Chave PIX inválida', { retryAction: 'requestNewKey' });
+        case 'QR_CODE_EXPIRED':
+            throw new PixQRExpiredError('QR Code expirado', { retryAction: 'generateNewQR' });
+        case 'PIX_LIMIT_EXCEEDED':
+            throw new PixLimitError('Limite PIX excedido', { retryAction: 'splitTransaction' });
+        case 'PIX_OUTSIDE_HOURS':
+            throw new PixMaintenanceError('PIX em manutenção', { retryAction: 'retryLater' });
+        default:
+            throw new BusinessError(error.message);
+    }
+}
+
+function handleBoletoBusinessError(errorCode, error) {
+    switch(errorCode) {
+        case 'INVALID_DUE_DATE':
+            throw new BoletoDateError('Data de vencimento inválida', { retryAction: 'adjustDueDate' });
+        case 'PAYER_DATA_INCOMPLETE':
+            throw new BoletoDataError('Dados do pagador incompletos', { retryAction: 'completePayerData' });
+        case 'ALREADY_PAID':
+            throw new BoletoStatusError('Boleto já pago', { retryAction: 'checkCurrentStatus' });
+        case 'AMOUNT_TOO_LOW':
+            throw new BoletoAmountError('Valor muito baixo', { retryAction: 'adjustAmount' });
+        default:
+            throw new BusinessError(error.message);
+    }
+}
+
+function handleCardBusinessError(errorCode, error) {
+    switch(errorCode) {
+        case 'CARD_DECLINED':
+            throw new CardDeclinedError('Cartão recusado', { retryAction: 'none' });
+        case 'TOKEN_EXPIRED':
+            throw new TokenExpiredError('Token expirado', { retryAction: 'retokenize' });
+        case 'CVV_REQUIRED':
+            throw new CVVRequiredError('CVV obrigatório', { retryAction: 'requestCVV' });
+        case 'INSUFFICIENT_FUNDS':
+            throw new InsufficientFundsError('Limite insuficiente', { retryAction: 'lowerAmount' });
+        default:
+            throw new BusinessError(error.message);
+    }
+}
+
+// Exemplo de uso com retry inteligente
+async function processPaymentWithSmartRetry(paymentData, paymentMethod) {
+    try {
+        return await firebanking.createPayment(paymentData);
+    } catch (error) {
+        const handledError = handleFireBankingError(error.response, paymentMethod);
+
+        // Retry automático baseado no tipo de erro
+        if (handledError.retryAction === 'generateNewQR') {
+            // Gerar novo QR Code automaticamente
+            return await generateNewQRCode(paymentData);
+        } else if (handledError.retryAction === 'retryLater') {
+            // Retry após delay para manutenção PIX
+            await delay(300000); // 5 minutos
+            return await processPaymentWithSmartRetry(paymentData, paymentMethod);
+        }
+
+        throw handledError;
+    }
+}
+````
+
 </CodeGroup>
+
+## Tratamento de Webhooks com Falha
+
+### Retry Automático de Webhooks
+
+A FireBanking implementa retry automático para webhooks falhados com backoff exponencial:
+
+- **1ª tentativa**: Imediata
+- **2ª tentativa**: Após 30 segundos
+- **3ª tentativa**: Após 5 minutos
+- **4ª tentativa**: Após 30 minutos
+- **5ª tentativa**: Após 2 horas
+
+### Webhook de Falha Final
+
+Quando todas as tentativas falharem, você receberá um webhook especial:
+
+```json
+{
+  "event": "webhook.failed",
+  "data": {
+    "original_event": "payment.completed",
+    "transaction_id": "fb_trans_123456789",
+    "failed_attempts": 5,
+    "last_error": "Connection timeout",
+    "last_attempt": "2024-01-15T12:30:00Z",
+    "webhook_url": "https://meusite.com/webhook/failed"
+  }
+}
+```
+
+### Estratégias de Recuperação por Produto
+
+#### PIX - Consulta de Status
+
+```python
+def recover_pix_transaction(transaction_id):
+    try:
+        # Consulta diretamente a transação PIX
+        status = firebanking_client.get_pix_transaction(transaction_id)
+
+        if status.status == 'PAID':
+            # Processa pagamento que não foi notificado
+            process_pix_payment_confirmation(status)
+        elif status.status == 'EXPIRED':
+            # Notifica expiração para o usuário
+            notify_pix_expiration(status)
+
+    except Exception as e:
+        log_error(f"Failed to recover PIX transaction {transaction_id}: {e}")
+
+# Consulta periódica para PIX pendentes
+def check_pending_pix_transactions():
+    pending_pix = get_pending_pix_transactions()
+
+    for pix in pending_pix:
+        if datetime.now() - pix.created_at > timedelta(hours=1):
+            recover_pix_transaction(pix.transaction_id)
+```
+
+#### Boleto - Verificação de Status
+
+```python
+def recover_boleto_transaction(boleto_id):
+    try:
+        # Consulta status atual do boleto
+        boleto = firebanking_client.get_boleto(boleto_id)
+
+        if boleto.status == 'PAID':
+            # Processa pagamento confirmado
+            process_boleto_payment(boleto)
+        elif boleto.status == 'CANCELLED':
+            # Notifica cancelamento
+            notify_boleto_cancellation(boleto)
+        elif boleto.status == 'OVERDUE':
+            # Notifica vencimento
+            notify_boleto_overdue(boleto)
+
+    except Exception as e:
+        log_error(f"Failed to recover boleto {boleto_id}: {e}")
+
+# Verificação diária de boletos
+def daily_boleto_check():
+    active_boletos = get_active_boletos()
+
+    for boleto in active_boletos:
+        if datetime.now().date() > boleto.due_date:
+            recover_boleto_transaction(boleto.boleto_id)
+```
+
+#### Cartão - Verificação de Autorizações
+
+```python
+def recover_card_transaction(transaction_id):
+    try:
+        # Consulta status da transação de cartão
+        transaction = firebanking_client.get_card_transaction(transaction_id)
+
+        if transaction.status == 'AUTHORIZED':
+            # Captura se necessário
+            if transaction.auto_capture:
+                capture_card_payment(transaction_id)
+        elif transaction.status == 'CAPTURED':
+            # Confirma captura
+            confirm_card_payment(transaction)
+        elif transaction.status == 'DECLINED':
+            # Notifica recusa
+            notify_card_declined(transaction)
+
+    except Exception as e:
+        log_error(f"Failed to recover card transaction {transaction_id}: {e}")
+```
+
+### Implementação de Fallback
+
+```python
+@app.route('/webhook/fallback', methods=['POST'])
+def webhook_fallback():
+    """
+    Endpoint alternativo para webhooks críticos
+    """
+    data = request.get_json()
+
+    try:
+        # Log entrada do fallback
+        log_webhook_fallback(data)
+
+        # Processa baseado no tipo
+        event_type = data.get('event')
+        payment_method = data.get('payment_method')
+
+        if payment_method == 'pix':
+            handle_pix_fallback(data)
+        elif payment_method == 'bank_slip':
+            handle_boleto_fallback(data)
+        elif payment_method == 'credit_card':
+            handle_card_fallback(data)
+
+        return '', 200
+
+    except Exception as e:
+        log_error(f"Webhook fallback failed: {e}")
+        return '', 500
+
+def handle_pix_fallback(data):
+    """Recuperação específica para PIX"""
+    transaction_id = data['data']['transaction_id']
+
+    # Força consulta de status
+    recover_pix_transaction(transaction_id)
+
+    # Notifica sistemas internos
+    notify_internal_systems('pix_recovered', data)
+
+def handle_boleto_fallback(data):
+    """Recuperação específica para Boleto"""
+    boleto_id = data['data']['boleto_id']
+
+    # Força consulta de status
+    recover_boleto_transaction(boleto_id)
+
+    # Atualiza cache local
+    invalidate_boleto_cache(boleto_id)
+
+def handle_card_fallback(data):
+    """Recuperação específica para Cartão"""
+    transaction_id = data['data']['transaction_id']
+
+    # Força consulta de status
+    recover_card_transaction(transaction_id)
+
+    # Verifica necessidade de captura
+    check_pending_captures()
+```
+
+### Monitoramento de Webhooks
+
+#### Dashboard de Webhooks
+
+- **Taxa de entrega** por produto
+- **Tempo médio de entrega**
+- **Webhooks falhados** por período
+- **URLs com maior taxa de falha**
+
+#### Alertas Automáticos
+
+```python
+def setup_webhook_alerts():
+    # Alerta se taxa de falha > 5%
+    if get_webhook_failure_rate() > 0.05:
+        alert_webhook_high_failure()
+
+    # Alerta se não recebeu webhook em 1 hora
+    if get_last_webhook_time() > timedelta(hours=1):
+        alert_webhook_silence()
+
+    # Alerta para URLs específicas com falha
+    failed_urls = get_failed_webhook_urls()
+    if failed_urls:
+        alert_specific_webhook_failures(failed_urls)
+```
 
 ## Logging e Monitoramento
 
@@ -335,55 +813,297 @@ function handleFireBankingError(response) {
 
 ### Métricas de Monitoramento
 
+#### Métricas Gerais
+
 - **Taxa de erro por tipo** (4xx vs 5xx)
 - **Tempo de resposta** por endpoint
 - **Rate limit** atingido
 - **Tentativas de retry** por transação
 - **Transações com falha** por motivo
 
-## Recuperação de Transações
+#### Métricas por Produto
 
-### Consulta de Status
-Implemente verificação periódica para transações pendentes:
+**PIX:**
+
+- **Taxa de QR Code expirado** por período
+- **Chaves PIX inválidas** por tentativa
+- **Tempo médio de confirmação** de pagamento
+- **PIX fora de horário** (manutenções)
+- **Taxa de abandono** em QR Code
+
+**Boleto:**
+
+- **Taxa de boletos cancelados** vs emitidos
+- **Boletos vencidos não pagos** por período
+- **Tempo médio entre emissão e pagamento**
+- **Erros de dados do pagador** por tipo
+- **Taxa de rejeição** por valor mínimo
+
+**Cartão de Crédito:**
+
+- **Taxa de aprovação** por bandeira
+- **Tokens expirados** por tentativa
+- **Falhas de CVV** por transação
+- **Tempo médio de autorização**
+- **Taxa de chargeback** por período
+
+#### Dashboard Segregado
 
 ```python
-def check_pending_transactions():
-    pending = get_pending_transactions()
-    
-    for transaction in pending:
+def get_payment_metrics_by_method():
+    return {
+        'pix': {
+            'success_rate': calculate_pix_success_rate(),
+            'avg_confirmation_time': get_pix_avg_time(),
+            'expired_qr_rate': get_expired_qr_rate(),
+            'invalid_key_rate': get_invalid_key_rate()
+        },
+        'bank_slip': {
+            'emission_rate': calculate_boleto_emission_rate(),
+            'payment_rate': get_boleto_payment_rate(),
+            'cancellation_rate': get_boleto_cancellation_rate(),
+            'overdue_rate': get_boleto_overdue_rate()
+        },
+        'credit_card': {
+            'approval_rate': calculate_card_approval_rate(),
+            'token_success_rate': get_token_success_rate(),
+            'cvv_failure_rate': get_cvv_failure_rate(),
+            'chargeback_rate': get_chargeback_rate()
+        }
+    }
+
+def setup_alerting_by_method():
+    # Alertas PIX
+    if get_pix_success_rate() < 0.95:
+        alert_pix_low_success_rate()
+
+    if get_expired_qr_rate() > 0.20:
+        alert_high_qr_expiration()
+
+    # Alertas Boleto
+    if get_boleto_payment_rate() < 0.80:
+        alert_low_boleto_payment_rate()
+
+    if get_boleto_cancellation_rate() > 0.15:
+        alert_high_boleto_cancellation()
+
+    # Alertas Cartão
+    if get_card_approval_rate() < 0.85:
+        alert_low_card_approval()
+
+    if get_cvv_failure_rate() > 0.10:
+        alert_high_cvv_failures()
+```
+
+## Recuperação de Transações
+
+### Estratégias de Recuperação por Produto
+
+#### PIX - Recuperação Rápida
+
+Para PIX, implemente consulta frequente devido à natureza instantânea:
+
+```python
+def check_pending_pix_transactions():
+    """Consulta PIX pendentes a cada 30 segundos"""
+    pending_pix = get_pending_pix_transactions()
+
+    for pix in pending_pix:
         try:
-            # Consulta status atual na API
-            status = firebanking_client.get_transaction(transaction.id)
-            
-            if status.status != transaction.local_status:
-                # Sincroniza status local
-                update_transaction_status(transaction.id, status.status)
-                
+            # PIX tem tempo de vida limitado
+            if datetime.now() - pix.created_at > timedelta(minutes=30):
+                status = firebanking_client.get_pix_status(pix.transaction_id)
+
+                if status.status == 'PAID':
+                    process_pix_payment(pix, status)
+                elif status.status == 'EXPIRED':
+                    mark_pix_expired(pix)
+                    notify_customer_pix_expired(pix)
+
         except Exception as e:
-            log_error(f"Failed to check transaction {transaction.id}: {e}")
+            log_error(f"Failed to check PIX {pix.transaction_id}: {e}")
+
+def handle_pix_timeout():
+    """Lida com PIX que não foram confirmados"""
+    expired_pix = get_expired_pix_transactions()
+
+    for pix in expired_pix:
+        # Gera novo PIX automaticamente
+        new_pix = generate_new_pix_charge(pix.original_data)
+        notify_customer_new_pix(pix.customer_email, new_pix)
+```
+
+#### Boleto - Verificação Diária
+
+Para boletos, implemente verificação diária e gestão de vencimentos:
+
+```python
+def daily_boleto_reconciliation():
+    """Verificação diária de boletos"""
+    active_boletos = get_active_boletos()
+
+    for boleto in active_boletos:
+        try:
+            status = firebanking_client.get_boleto_status(boleto.boleto_id)
+
+            if status.status == 'PAID' and boleto.local_status != 'PAID':
+                process_boleto_payment(boleto, status)
+            elif status.status == 'CANCELLED':
+                handle_boleto_cancellation(boleto, status)
+            elif status.due_date < datetime.now().date():
+                handle_boleto_overdue(boleto)
+
+        except Exception as e:
+            log_error(f"Failed to check boleto {boleto.boleto_id}: {e}")
+
+def handle_boleto_overdue(boleto):
+    """Gestão de boletos vencidos"""
+    # Notifica cliente sobre vencimento
+    notify_customer_boleto_overdue(boleto)
+
+    # Oferece renovação automática
+    if boleto.auto_renew:
+        new_due_date = datetime.now().date() + timedelta(days=7)
+        renewed_boleto = renew_boleto(boleto, new_due_date)
+        notify_customer_boleto_renewed(boleto.customer_email, renewed_boleto)
+
+def reissue_problematic_boletos():
+    """Reemite boletos com problemas"""
+    problematic = get_problematic_boletos()
+
+    for boleto in problematic:
+        try:
+            # Cancela boleto problemático
+            firebanking_client.cancel_boleto(boleto.boleto_id)
+
+            # Emite novo boleto
+            new_boleto = create_replacement_boleto(boleto)
+            notify_customer_boleto_reissued(boleto.customer_email, new_boleto)
+
+        except Exception as e:
+            log_error(f"Failed to reissue boleto {boleto.boleto_id}: {e}")
+```
+
+#### Cartão - Gestão de Autorizações
+
+Para cartão, foque em autorizações pendentes e capturas:
+
+```python
+def check_pending_card_authorizations():
+    """Verifica autorizações pendentes de cartão"""
+    pending_auths = get_pending_card_authorizations()
+
+    for auth in pending_auths:
+        try:
+            # Autorização válida por 7 dias
+            if datetime.now() - auth.created_at > timedelta(days=6):
+                status = firebanking_client.get_card_status(auth.transaction_id)
+
+                if status.status == 'AUTHORIZED' and auth.auto_capture:
+                    # Captura antes de expirar
+                    capture_result = firebanking_client.capture_payment(auth.transaction_id)
+                    process_card_capture(auth, capture_result)
+                elif status.status == 'EXPIRED':
+                    handle_authorization_expired(auth)
+
+        except Exception as e:
+            log_error(f"Failed to check card auth {auth.transaction_id}: {e}")
+
+def handle_failed_card_captures():
+    """Lida com capturas que falharam"""
+    failed_captures = get_failed_card_captures()
+
+    for capture in failed_captures:
+        # Tenta captura novamente se dentro do prazo
+        if datetime.now() - capture.auth_date < timedelta(days=6):
+            try:
+                retry_result = firebanking_client.capture_payment(capture.transaction_id)
+                process_capture_retry(capture, retry_result)
+            except Exception as e:
+                log_error(f"Capture retry failed for {capture.transaction_id}: {e}")
+                # Notifica falha definitiva
+                notify_capture_failed(capture)
+
+def cleanup_expired_tokens():
+    """Remove tokens de cartão expirados"""
+    expired_tokens = get_expired_card_tokens()
+
+    for token in expired_tokens:
+        # Remove token do banco de dados
+        remove_card_token(token.token_id)
+
+        # Notifica cliente para atualizar cartão
+        if token.auto_renew:
+            notify_customer_token_expired(token.customer_email)
+```
+
+### Recuperação Unificada
+
+Implemente um sistema unificado de recuperação:
+
+```python
+def unified_transaction_recovery():
+    """Sistema unificado de recuperação"""
+
+    # Recuperação rápida para PIX (a cada 30s)
+    if should_check_pix():
+        check_pending_pix_transactions()
+
+    # Recuperação de cartão (a cada 5 min)
+    if should_check_cards():
+        check_pending_card_authorizations()
+        handle_failed_card_captures()
+
+    # Recuperação de boleto (diária)
+    if should_check_boletos():
+        daily_boleto_reconciliation()
+        reissue_problematic_boletos()
+
+    # Limpeza geral (semanal)
+    if should_cleanup():
+        cleanup_expired_tokens()
+        archive_old_transactions()
+
+# Agendar tarefas
+schedule.every(30).seconds.do(check_pending_pix_transactions)
+schedule.every(5).minutes.do(check_pending_card_authorizations)
+schedule.every().day.at("02:00").do(daily_boleto_reconciliation)
+schedule.every().week.do(cleanup_expired_tokens)
 ```
 
 ### Webhook de Recuperação
+
 Configure webhook para receber atualizações perdidas:
 
 ```python
 @app.route('/webhook/recovery', methods=['POST'])
 def recovery_webhook():
     data = request.get_json()
-    
-    # Processa eventos que podem ter sido perdidos
-    transaction_id = data['transaction_id']
-    current_status = data['status']
-    
-    # Atualiza status local se necessário
-    sync_transaction_status(transaction_id, current_status)
-    
-    return '', 200
+
+    # Identifica tipo de transação
+    payment_method = data.get('payment_method')
+    transaction_id = data.get('transaction_id')
+    current_status = data.get('status')
+
+    try:
+        if payment_method == 'pix':
+            sync_pix_transaction(transaction_id, current_status, data)
+        elif payment_method == 'bank_slip':
+            sync_boleto_transaction(transaction_id, current_status, data)
+        elif payment_method == 'credit_card':
+            sync_card_transaction(transaction_id, current_status, data)
+
+        return '', 200
+
+    except Exception as e:
+        log_error(f"Recovery webhook failed: {e}")
+        return '', 500
 ```
 
 ## Dashboard de Erros
 
-Monitore erros em tempo real através do [Dashboard FireBanking](https://dashboard.firebanking.com):
+Monitore erros em tempo real através do [Dashboard FireBanking](https://app.firebanking.io):
+
 - **Volume de erros** por período
 - **Tipos de erro** mais frequentes
 - **Transações com falha** detalhadas
@@ -391,7 +1111,59 @@ Monitore erros em tempo real através do [Dashboard FireBanking](https://dashboa
 
 ## Próximos Passos
 
-- Implemente as estratégias de retry em sua aplicação
-- Configure monitoramento e alertas para erros críticos
-- Teste cenários de falha no [ambiente de desenvolvimento](/testing)
-- Explore as [APIs específicas](/api-reference/introduction) para implementação detalhada
+<CardGroup cols={2}>
+  <Card title="Implementar Retry" icon="refresh">
+    Implemente as estratégias de retry por produto em sua aplicação
+  </Card>
+  <Card title="Configurar Monitoramento" icon="chart-line">
+    Configure alertas e dashboards para erros críticos
+  </Card>
+  <Card title="Testar Cenários" icon="flask" href="/testing">
+    Teste cenários de falha no ambiente de desenvolvimento
+  </Card>
+  <Card title="Configurar Webhooks" icon="webhook" href="/concepts/webhooks">
+    Configure webhooks e estratégias de recuperação
+  </Card>
+</CardGroup>
+
+## Guias por Método de Pagamento
+
+Explore implementações específicas para cada método:
+
+<CardGroup cols={3}>
+  <Card title="🚀 PIX" href="/guides/integration/pix">
+    **Instantâneo • 24/7 • Taxa baixa**
+
+    Tratamento de QR Code expirado, chaves inválidas
+
+  </Card>
+  <Card title="💳 Cartão de Crédito" href="/guides/integration/credit-card">
+    **Parcelamento • Tokens • 3DS**
+
+    Gestão de autorizações, capturas, CVV
+
+  </Card>
+  <Card title="🏦 Boleto Bancário" href="/guides/integration/bank-slip">
+    **Vencimentos • Multas • Renovação**
+
+    Reconciliação diária, boletos vencidos
+
+  </Card>
+</CardGroup>
+
+## Recursos Avançados
+
+<CardGroup cols={2}>
+  <Card title="APIs de Consulta" href="/api-reference/introduction">
+    Consulte status específicos por método de pagamento
+  </Card>
+  <Card title="Dashboard Avançado" href="https://app.firebanking.io">
+    Monitore erros em tempo real com métricas por produto
+  </Card>
+  <Card title="Ambiente de Testes" href="/testing">
+    Teste todos os cenários de erro por método
+  </Card>
+  <Card title="Melhores Práticas" href="/guides/best-practices">
+    Implementações recomendadas para produção
+  </Card>
+</CardGroup>

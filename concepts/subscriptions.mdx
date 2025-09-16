@@ -15,17 +15,14 @@ A pré-autorização reserva o valor no limite do cartão sem efetuar a cobranç
 
 <AccordionGroup>
   <Accordion title="Como Funciona">
-    - O sistema reserva o valor no limite do cliente
-    - O valor fica "bloqueado" mas não é debitado
-    - A cobrança deve ser confirmada posteriormente via captura
-    - Ideal para cenários que precisam de confirmação adicional
+    - O sistema reserva o valor no limite do cliente - O valor fica "bloqueado"
+    mas não é debitado - A cobrança deve ser confirmada posteriormente via
+    captura - Ideal para cenários que precisam de confirmação adicional
   </Accordion>
-  
+
   <Accordion title="Casos de Uso">
-    - Reservas de produtos ou serviços
-    - Vendas que dependem de confirmação de estoque
-    - Processos que requerem validação manual
-    - Cobranças condicionais
+    - Reservas de produtos ou serviços - Vendas que dependem de confirmação de
+    estoque - Processos que requerem validação manual - Cobranças condicionais
   </Accordion>
 </AccordionGroup>
 
@@ -37,17 +34,14 @@ A captura imediata processa a cobrança no momento da autorização.
 
 <AccordionGroup>
   <Accordion title="Como Funciona">
-    - O valor é imediatamente debitado do cartão
-    - A transação é finalizada em uma única etapa
-    - Não requer ação adicional para efetivação
-    - Mais adequado para vendas diretas
+    - O valor é imediatamente debitado do cartão - A transação é finalizada em
+    uma única etapa - Não requer ação adicional para efetivação - Mais adequado
+    para vendas diretas
   </Accordion>
-  
+
   <Accordion title="Casos de Uso">
-    - E-commerce tradicional
-    - Vendas imediatas
-    - Serviços digitais
-    - Produtos com entrega garantida
+    - E-commerce tradicional - Vendas imediatas - Serviços digitais - Produtos
+    com entrega garantida
   </Accordion>
 </AccordionGroup>
 
@@ -79,15 +73,18 @@ graph LR
 ## Operações de Gestão
 
 ### Captura Manual
+
 - Converte uma pré-autorização em cobrança efetiva
 - Pode capturar valor parcial ou total
 - Deve ser executada antes do vencimento (7 dias)
 
 ### Cancelamento
+
 - **Pré-autorização**: Libera o limite reservado
 - **Cobrança efetivada**: Inicia processo de estorno
 
 ### Estorno (Refund)
+
 - Devolve valores já cobrados
 - Pode ser parcial ou total
 - Processado conforme regras do adquirente
@@ -95,23 +92,28 @@ graph LR
 ## Considerações Importantes
 
 <Warning>
-  **Expiração de Pré-Autorizações**: Transações pré-autorizadas não capturadas em 7 dias são automaticamente canceladas pelo sistema, liberando o limite do cliente.
+  **Expiração de Pré-Autorizações**: Transações pré-autorizadas não capturadas
+  em 7 dias são automaticamente canceladas pelo sistema, liberando o limite do
+  cliente.
 </Warning>
 
 <Tip>
-  **Escolha da Estratégia**: Use pré-autorização quando precisar de confirmações adicionais, e captura imediata para vendas diretas e confirmadas.
+  **Escolha da Estratégia**: Use pré-autorização quando precisar de confirmações
+  adicionais, e captura imediata para vendas diretas e confirmadas.
 </Tip>
 
 ## Monitoramento e Controle
 
 ### Webhooks Relacionados
+
 - `payment.authorized` - Autorização bem-sucedida
-- `payment.captured` - Captura confirmada  
+- `payment.captured` - Captura confirmada
 - `payment.expired` - Pré-autorização expirada
 - `payment.failed` - Falha na autorização
 
 ### Dashboard
-Acompanhe suas transações em tempo real através do [Dashboard FireBanking](https://dashboard.firebanking.com).
+
+Acompanhe suas transações em tempo real através do [Dashboard FireBanking](https://app.firebanking.io).
 
 ## Próximos Passos
 

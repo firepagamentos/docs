@@ -1,6 +1,6 @@
 ---
-title: 'Início Rápido'
-description: 'Escolha seu método de pagamento e comece a integrar em menos de 10 minutos'
+title: "Início Rápido"
+description: "Escolha seu método de pagamento e comece a integrar em menos de 10 minutos"
 ---
 
 ## Bem-vindo à API FireBanking
@@ -12,28 +12,32 @@ A FireBanking oferece **múltiplos métodos de pagamento** para atender diferent
     **⚡ Instantâneo** • **💰 Taxa baixa** • **🕐 24/7**
 
     Ideal para pagamentos rápidos e custo baixo
+
   </Card>
   <Card title="Cartão de Crédito" icon="credit-card" href="/guides/integration/credit-card">
     **⚡ Instantâneo** • **📅 Parcelamento** • **🔄 Recorrente**
 
     Ideal para e-commerce e parcelamento
+
   </Card>
   <Card title="Boleto Bancário" icon="file-invoice" href="/guides/integration/bank-slip">
     **🏦 Universal** • **💰 Taxa fixa** • **📄 Comprovante**
 
     Ideal para valores altos e B2B
+
   </Card>
 </CardGroup>
 
 <Note>
-  **Não sabe qual escolher?** Acesse nossa [comparação detalhada](/guides/integration/overview) dos métodos de pagamento.
+  **Não sabe qual escolher?** Acesse nossa [comparação
+  detalhada](/guides/integration/overview) dos métodos de pagamento.
 </Note>
 
 ## Configuração Inicial
 
 ### 1. Obtenha suas Credenciais
 
-1. Acesse o [Dashboard FireBanking](https://dashboard.firebanking.com)
+1. Acesse o [Dashboard FireBanking](https://app.firebanking.io)
 2. Vá em **API & Webhooks** → **Chaves de API**
 3. Copie sua chave de **Sandbox** (formato: `fbk_test_...`)
 
@@ -48,11 +52,13 @@ fbk_test_1234567890abcdef1234567890abcdef
     **Base URL**: `https://api-gateway.firebanking.dev`
 
     Use para desenvolvimento e testes
+
   </Card>
   <Card title="Produção" icon="globe">
     **Base URL**: `https://api-gateway.firebanking.com.br`
 
     Use apenas com dados reais validados
+
   </Card>
 </CardGroup>
 
@@ -88,15 +94,18 @@ curl -X GET "https://api-gateway.firebanking.dev/v1/account/balance" \
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api-gateway.firebanking.dev/v1/account/balance', {
-  headers: {
-    'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
-    'Content-Type': 'application/json'
+const response = await fetch(
+  "https://api-gateway.firebanking.dev/v1/account/balance",
+  {
+    headers: {
+      "x-api-key": "fbk_test_SUA_CHAVE_AQUI",
+      "Content-Type": "application/json",
+    },
   }
-});
+);
 
 const balance = await response.json();
-console.log('Conta ativa:', balance.account_status === 'active');
+console.log("Conta ativa:", balance.account_status === "active");
 ```
 
 ```python Python
@@ -113,9 +122,11 @@ response = requests.get(
 balance = response.json()
 print('Conta ativa:', balance['account_status'] == 'active')
 ```
+
 </CodeGroup>
 
 **Resposta esperada:**
+
 ```json
 {
   "balance": 0,
@@ -137,7 +148,8 @@ Agora que você tem suas credenciais configuradas, escolha seu método preferido
   - ✅ Confirmação instantânea
   - ✅ Funciona 24h/7 dias
 
-  **Tempo estimado**: 15-20 minutos
+**Tempo estimado**: 15-20 minutos
+
 </Card>
 
 ### 💳 Para E-commerce: Cartão de Crédito
@@ -149,7 +161,8 @@ Agora que você tem suas credenciais configuradas, escolha seu método preferido
   - ✅ Tokenização de cartões
   - ✅ Pré-autorização
 
-  **Tempo estimado**: 25-30 minutos
+**Tempo estimado**: 25-30 minutos
+
 </Card>
 
 ### 🏦 Para Valores Altos: Boleto Bancário
@@ -161,13 +174,18 @@ Agora que você tem suas credenciais configuradas, escolha seu método preferido
   - ✅ Necessidade de comprovante físico
   - ✅ Flexibilidade de prazo
 
-  **Tempo estimado**: 20-25 minutos
+**Tempo estimado**: 20-25 minutos
+
 </Card>
 
 ## Recursos Adicionais
 
 <CardGroup cols={2}>
-  <Card title="Comparação de Métodos" icon="chart-bar" href="/guides/integration/overview">
+  <Card
+    title="Comparação de Métodos"
+    icon="chart-bar"
+    href="/guides/integration/overview"
+  >
     Entenda qual método escolher para cada cenário
   </Card>
   <Card title="Conceitos de Pagamentos" icon="book" href="/concepts/payments">
@@ -186,15 +204,9 @@ Agora que você tem suas credenciais configuradas, escolha seu método preferido
 Muitas empresas implementam **vários métodos** para maximizar a conversão:
 
 <Steps>
-  <Step title="Comece com PIX">
-    Implementação mais rápida e menor custo
-  </Step>
-  <Step title="Adicione Cartão">
-    Para parcelamento e assinaturas
-  </Step>
-  <Step title="Inclua Boleto">
-    Para clientes sem cartão e valores altos
-  </Step>
+  <Step title="Comece com PIX">Implementação mais rápida e menor custo</Step>
+  <Step title="Adicione Cartão">Para parcelamento e assinaturas</Step>
+  <Step title="Inclua Boleto">Para clientes sem cartão e valores altos</Step>
   <Step title="Configure Webhooks">
     Monitore todos os métodos em tempo real
   </Step>
@@ -205,5 +217,6 @@ Muitas empresas implementam **vários métodos** para maximizar a conversão:
 **🎯 Próximo Passo**: Escolha um dos guias de integração acima e comece a processar pagamentos em menos de 20 minutos!
 
 <Note>
-  **Dúvidas?** Nossa [documentação completa](/concepts/overview) tem exemplos detalhados para todos os cenários.
+  **Dúvidas?** Nossa [documentação completa](/concepts/overview) tem exemplos
+  detalhados para todos os cenários.
 </Note>
