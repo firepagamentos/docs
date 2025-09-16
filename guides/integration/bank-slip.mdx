@@ -64,12 +64,12 @@ O **Boleto Bancário** é um dos métodos de pagamento mais tradicionais e ampla
 
 <CardGroup cols={2}>
   <Card title="Sandbox Boleto" icon="flask">
-    **Base URL**: `https://api-gateway.firebanking.dev/v1/bank-slip/v1`
+    **Base URL**: `https://api-gateway.firebanking.dev/bank-slip/v1`
 
     Use para testes e desenvolvimento
   </Card>
   <Card title="Produção Boleto" icon="globe">
-    **Base URL**: `https://api-gateway.firebanking.com.br/v1/bank-slip/v1`
+    **Base URL**: `https://api-gateway.firebanking.com.br/bank-slip/v1`
 
     Use apenas após validação completa
   </Card>
@@ -90,7 +90,7 @@ Content-Type: application/json
 
 <CodeGroup>
 ```bash cURL - Emitir Boleto
-curl -X POST "https://api-gateway.firebanking.dev/v1/bank-slip/v1/payment" \\
+curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \\
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -157,7 +157,7 @@ const boletoData = {
   }
 };
 
-const response = await fetch('https://api-gateway.firebanking.dev/v1/bank-slip/v1/payment', {
+const response = await fetch('https://api-gateway.firebanking.dev/bank-slip/v1/payment', {
   method: 'POST',
   headers: {
     'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
@@ -209,7 +209,7 @@ boleto_data = {
 }
 
 response = requests.post(
-    'https://api-gateway.firebanking.dev/v1/bank-slip/v1/payment',
+    'https://api-gateway.firebanking.dev/bank-slip/v1/payment',
     json=boleto_data,
     headers={
         'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
@@ -298,13 +298,13 @@ Por padrão, todo boleto gera automaticamente um PDF:
 
 <CodeGroup>
 ```bash cURL - Baixar PDF
-curl -X GET "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456/pdf" \\
+curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456/pdf" \\
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
   --output boleto.pdf
 ```
 
 ```javascript JavaScript - PDF Base64
-const response = await fetch('https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456/pdf?format=base64', {
+const response = await fetch('https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456/pdf?format=base64', {
   headers: {
     'x-api-key': 'fbk_test_SUA_CHAVE_AQUI'
   }
@@ -341,12 +341,12 @@ Configure layout e informações personalizadas:
 
 <CodeGroup>
 ```bash cURL - Consulta por ID
-curl -X GET "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456" \\
+curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456" \\
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
 ```
 
 ```bash cURL - Consulta por External ID
-curl -X GET "https://api-gateway.firebanking.dev/v1/bank-slip/v1/payment?externalId=boleto-001" \\
+curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/payment?externalId=boleto-001" \\
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
 ```
 </CodeGroup>
@@ -446,7 +446,7 @@ app.post('/webhooks/boleto', (req, res) => {
 
 <CodeGroup>
 ```bash cURL - Cancelar Boleto
-curl -X DELETE "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456" \\
+curl -X DELETE "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456" \\
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -468,7 +468,7 @@ curl -X DELETE "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc12
 
 <CodeGroup>
 ```bash cURL - Prorrogar Vencimento
-curl -X PATCH "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456" \\
+curl -X PATCH "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456" \\
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -514,7 +514,7 @@ curl -X PATCH "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123
 
 <CodeGroup>
 ```bash cURL - Simular Pagamento
-curl -X POST "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456/simulate-payment" \\
+curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456/simulate-payment" \\
   -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
   -H "Content-Type: application/json" \\
   -d '{

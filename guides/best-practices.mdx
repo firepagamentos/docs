@@ -117,7 +117,7 @@ class FireBankingClient:
     @retry_on_failure(max_retries=3, base_delay=1)
     def create_payment(self, payment_data):
         response = requests.post(
-            'https://api-gateway.firebanking.com.br/v1/credit-card/v1/payment',
+            'https://api-gateway.firebanking.com.br/credit-card/v1/payment',
             json=payment_data,
             headers={'x-api-key': self.api_key}
         )
@@ -166,7 +166,7 @@ class FireBankingClient {
 
         $this->client = new Client([
             'handler' => $stack,
-            'base_uri' => 'https://api-gateway.firebanking.com.br/v1/',
+            'base_uri' => 'https://api-gateway.firebanking.com.br/',
             'headers' => [
                 'x-api-key' => $apiKey,
                 'Content-Type' => 'application/json'
