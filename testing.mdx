@@ -44,11 +44,11 @@ Use credenciais específicas de webhook para testes:
   produção.
 </Warning>
 
-## Cartões para Testes
+## Dados de Teste por Produto
 
-Como testar cobranças de cartão em sandbox
+### Cartão de Crédito
 
-Os cartões a serem utilizados no teste, devem ter números válidos e podem ser gerados a partir de qualquer site gerador de cartões, devendo o comportamento seguir as seguintes regra para diferentes validação de diferentes cenários:
+Como testar cobranças de cartão em sandbox:
 
 | Cartão          | Autorizado?       | Status             | Exemplo             |
 | --------------- | ----------------- | ------------------ | ------------------- |
@@ -62,7 +62,7 @@ Os cartões a serem utilizados no teste, devem ter números válidos e podem ser
 
 Em sandbox, para testar os cenários acima, o CVV sempre deve ser um número de 3 dígitos terminado em zero (Ex: 220). Um número de CVV diferente de zero, irá resultar em falha na geração da transação.
 
-### Exemplo de Cartão Completo para Teste
+#### Exemplo de Cartão Completo para Teste
 
 ```json Cartão de Teste
 {
@@ -70,6 +70,61 @@ Em sandbox, para testar os cenários acima, o CVV sempre deve ser um número de 
   "number": "5383638854408981",
   "cvv": 220,
   "expiration": "12/2024"
+}
+```
+
+### PIX
+
+Para testar o PIX em sandbox:
+
+**Chaves PIX de Teste:**
+- **CPF**: Use qualquer CPF válido (ex: `11144477735`)
+- **Email**: Use emails fictícios (ex: `teste@firebanking.com`)
+- **Telefone**: Use números fictícios (ex: `+5511999999999`)
+- **Chave Aleatória**: Use UUIDs fictícios (ex: `123e4567-e89b-12d3-a456-426614174000`)
+
+**Comportamento de Pagamento:**
+- Todos os QR Codes gerados são válidos para teste
+- O pagamento é simulado automaticamente após 5-30 segundos
+- Use valores pequenos para teste (ex: R$ 1,00 a R$ 100,00)
+
+#### Exemplo de Dados PIX de Teste
+
+```json PIX de Teste
+{
+  "pixKey": "11144477735",
+  "pixKeyType": "CPF",
+  "amount": 1000, // R$ 10,00
+  "description": "Cobrança de teste PIX"
+}
+```
+
+### Boleto Bancário
+
+Para testar boletos em sandbox:
+
+**Dados do Pagador:**
+- Use CPFs/CNPJs válidos mas fictícios
+- Use endereços realistas mas não reais
+- CEPs válidos do Brasil (ex: `01000-000`, `04038-001`)
+
+**Comportamento de Pagamento:**
+- Boletos são gerados mas não são registrados no sistema bancário
+- O pagamento é simulado automaticamente após 1-24 horas
+- Use valores entre R$ 10,00 e R$ 5.000,00 para teste
+
+#### Exemplo de Dados Boleto de Teste
+
+```json Boleto de Teste
+{
+  "amount": 5000, // R$ 50,00
+  "dueDate": "2024-12-31",
+  "description": "Cobrança de teste boleto",
+  "payer": {
+    "name": "João da Silva Teste",
+    "document": "11144477735",
+    "email": "joao.teste@example.com"
+  }
 }
 ```
 
@@ -110,12 +165,14 @@ Use dados de comprador realistas mas fictícios para testes:
 }
 ```
 
-## Cenários de Teste
+## Cenários de Teste por Produto
 
-### Fluxo Básico de Pagamento
+### Cartão de Crédito
+
+#### Fluxo Básico de Pagamento
 
 ```bash Pagamento Teste
-curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
+curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -152,10 +209,10 @@ curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
   }'
 ```
 
-### Testando Tokenização de Cartão
+#### Testando Tokenização de Cartão
 
 ```bash Criação de Token Teste
-curl -X POST "https://api-gateway.firebanking.dev/v1/payment/token" \
+curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment/token" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -185,10 +242,10 @@ curl -X POST "https://api-gateway.firebanking.dev/v1/payment/token" \
   }'
 ```
 
-### Testando Criação de Assinatura
+#### Testando Criação de Assinatura
 
 ```bash Assinatura Teste
-curl -X POST "https://api-gateway.firebanking.dev/v1/subscription" \
+curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/subscription" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -218,12 +275,12 @@ curl -X POST "https://api-gateway.firebanking.dev/v1/subscription" \
   }'
 ```
 
-## Teste de Erros
+#### Teste de Erros
 
-### Testar Requisições Inválidas
+**Testar Requisições Inválidas:**
 
 ```bash Valor Inválido
-curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
+curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -232,13 +289,140 @@ curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
   }'
 ```
 
-### Testar Erros de Autenticação
+**Testar Erros de Autenticação:**
 
 ```bash Token Inválido
-curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
+curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \
   -H "x-api-key: token_invalido" \
   -H "Content-Type: application/json" \
   -d '{...}'
+```
+
+### PIX
+
+#### Fluxo Básico de Cobrança PIX
+
+```bash Cobrança PIX Teste
+curl -X POST "https://api-gateway.firebanking.dev/pix/v2/charge/qrcode" \
+  -H "x-api-key: fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 1000,
+    "description": "Cobrança PIX de teste",
+    "externalId": "test-pix-001",
+    "customer": {
+      "name": "João da Silva Teste",
+      "document": "11144477735",
+      "email": "joao.teste@example.com",
+      "phone": "11999999999"
+    },
+    "pixKey": "11144477735",
+    "pixKeyType": "CPF"
+  }'
+```
+
+#### Testando QR Code Dinâmico
+
+```bash QR Code Dinâmico
+curl -X POST "https://api-gateway.firebanking.dev/pix/v2/charge/dynamic" \
+  -H "x-api-key: fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 2500,
+    "description": "QR Code dinâmico teste",
+    "expiresIn": 3600,
+    "customer": {
+      "name": "Maria Silva Teste",
+      "document": "22255588844",
+      "email": "maria.teste@example.com"
+    }
+  }'
+```
+
+#### Teste de Erros PIX
+
+**Valor Inválido:**
+
+```bash Valor PIX Inválido
+curl -X POST "https://api-gateway.firebanking.dev/pix/v2/charge/qrcode" \
+  -H "x-api-key: fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": -100,
+    "description": "Teste valor negativo"
+  }'
+```
+
+### Boleto Bancário
+
+#### Fluxo Básico de Emissão
+
+```bash Boleto Teste
+curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
+  -H "x-api-key: fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 5000,
+    "dueDate": "2024-12-31",
+    "description": "Cobrança boleto de teste",
+    "externalId": "test-boleto-001",
+    "payer": {
+      "name": "João da Silva Teste",
+      "document": "11144477735",
+      "email": "joao.teste@example.com",
+      "phone": "11999999999",
+      "address": {
+        "zipCode": "01000000",
+        "street": "Rua das Flores",
+        "number": "123",
+        "district": "Centro",
+        "city": "São Paulo",
+        "state": "SP",
+        "country": "BR"
+      }
+    }
+  }'
+```
+
+#### Testando Boleto com Multa e Juros
+
+```bash Boleto com Acréscimos
+curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
+  -H "x-api-key: fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 10000,
+    "dueDate": "2024-01-15",
+    "description": "Boleto com multa e juros",
+    "fine": {
+      "amount": 200,
+      "type": "FIXED"
+    },
+    "interest": {
+      "amount": 100,
+      "type": "MONTHLY_PERCENTAGE"
+    },
+    "payer": {
+      "name": "Empresa Teste LTDA",
+      "document": "11222333000181",
+      "email": "contato@empresateste.com"
+    }
+  }'
+```
+
+#### Teste de Erros Boleto
+
+**Data de Vencimento Inválida:**
+
+```bash Vencimento Inválido
+curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
+  -H "x-api-key: fbk_test_seu_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 5000,
+    "dueDate": "2023-01-01",
+    "description": "Data no passado"
+  }'
 ```
 
 ## Teste de Webhooks
@@ -320,7 +504,7 @@ Você pode disparar webhooks de teste manualmente usando ferramentas online:
   </Card>
 </CardGroup>
 
-### Teste de Pagamentos
+### Teste de Cartão de Crédito
 
 - [ ] **Pagamento bem-sucedido** com cartão de teste aprovado
 - [ ] **Pagamento falhado** com cartão de teste recusado
@@ -331,17 +515,12 @@ Você pode disparar webhooks de teste manualmente usando ferramentas online:
 - [ ] Fluxo de **pré-autorização** e captura
 - [ ] Processamento de **estorno**
 - [ ] Teste de **parcelamento múltiplo**
-
-### Teste de Token de Cartão
-
 - [ ] **Criação de token** com cartão válido
 - [ ] **Criação de token** com cartão inválido
 - [ ] **Recuperação de token** por UUID do comprador
 - [ ] **Pagamento com token** (CVV válido)
 - [ ] **Pagamento com token** (CVV inválido)
 - [ ] Teste de **verificação zero dollar**
-
-### Teste de Assinatura
 
 - [ ] Criação de **assinatura mensal**
 - [ ] Criação de **assinatura trimestral**
@@ -350,6 +529,34 @@ Você pode disparar webhooks de teste manualmente usando ferramentas online:
 - [ ] **Cancelamento de assinatura**
 - [ ] Tratamento de **pagamento falhado**
 - [ ] **Notificações webhook** para eventos de assinatura
+
+### Teste de PIX
+
+- [ ] **Cobrança PIX** com QR code estático
+- [ ] **Cobrança PIX** com QR code dinâmico
+- [ ] **Pagamento instantâneo** bem-sucedido
+- [ ] Tratamento de **chave PIX inválida**
+- [ ] Validação de **valor mínimo/máximo**
+- [ ] Teste de **expiração de QR code**
+- [ ] **Webhook de confirmação** de pagamento
+- [ ] **Webhook de expiração** de cobrança
+- [ ] Validação de **dados do pagador**
+- [ ] Teste de **conciliação automática**
+
+### Teste de Boleto Bancário
+
+- [ ] **Emissão de boleto** com dados válidos
+- [ ] **Emissão de boleto** com multa e juros
+- [ ] **Pagamento antes do vencimento**
+- [ ] **Pagamento após vencimento** com acréscimos
+- [ ] **Cancelamento de boleto** não pago
+- [ ] Validação de **data de vencimento**
+- [ ] Validação de **dados do pagador**
+- [ ] **Download de PDF** do boleto
+- [ ] **Webhook de pagamento** confirmado
+- [ ] **Webhook de cancelamento**
+- [ ] Teste de **código de barras**
+- [ ] Validação de **valor mínimo/máximo**
 
 ### Teste de Tratamento de Erros
 
@@ -395,7 +602,7 @@ const request = require("supertest");
 
 describe("API FireBanking", () => {
   const apiToken = process.env.FIREBANKING_TEST_TOKEN;
-  const baseURL = "https://api-gateway.firebanking.dev/v1";
+  const baseURL = "https://api-gateway.firebanking.dev";
 
   test("deve criar pagamento com sucesso", async () => {
     const paymentData = {
@@ -430,7 +637,7 @@ describe("API FireBanking", () => {
       },
     };
 
-    const response = await request(baseURL)
+    const response = await request(`${baseURL}/credit-card/v1`)
       .post("/payment")
       .set("x-api-key", ` ${apiToken}`)
       .send(paymentData)
@@ -457,7 +664,7 @@ describe("API FireBanking", () => {
       // ... resto dos dados de pagamento
     };
 
-    const response = await request(baseURL)
+    const response = await request(`${baseURL}/credit-card/v1`)
       .post("/payment")
       .set("x-api-key", ` ${apiToken}`)
       .send(paymentData)
