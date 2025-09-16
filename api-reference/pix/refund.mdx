@@ -1,0 +1,124 @@
+---
+title: 'Estornar Transação'
+openapi: 'POST /pix/v2/payment/refund/{id}'
+description: 'Solicite o estorno de uma transação PIX paga'
+---
+
+## Visão Geral
+
+Solicite o estorno (refund) de uma transação PIX que foi paga com sucesso. O estorno pode ser total ou parcial e deve ser solicitado em até 90 dias após o pagamento original.
+
+<Warning>
+  Apenas transações com status `PAID` podem ser estornadas. Certifique-se de ter saldo suficiente para o estorno.
+</Warning>
+
+## Parâmetros da URL
+
+<ParamField path="id" type="string" required>
+  ID da transação PIX a ser estornada
+</ParamField>
+
+## Parâmetros do Body
+
+<ParamField body="value" type="number">
+  Valor do estorno em reais. Se não informado, será estorno total
+</ParamField>
+
+<ParamField body="description" type="string">
+  Descrição do motivo do estorno
+</ParamField>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL - Estorno Total
+curl -X POST "https://api-gateway.firebanking.com.br/v2/payment/refund/pix_12345678901234567890" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Produto não entregue"
+  }'
+```
+
+```bash cURL - Estorno Parcial
+curl -X POST "https://api-gateway.firebanking.com.br/v2/payment/refund/pix_12345678901234567890" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "value": 50.20,
+    "description": "Estorno parcial por desconto"
+  }'
+```
+</CodeGroup>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK
+{
+  "transactionId": "refund_123456789012345",
+  "originalTransactionId": "pix_12345678901234567890",
+  "status": "REFUND_PROCESSING",
+  "refundValue": 15000,
+  "originalValue": 15000,
+  "description": "Produto não entregue",
+  "created_at": "2024-01-15T17:00:00Z"
+}
+```
+
+```json 400 Bad Request - Transação Não Elegivel
+{
+  "error": {
+    "code": "TRANSACTION_NOT_REFUNDABLE",
+    "message": "Transação não pode ser estornada",
+    "details": "Apenas transações com status PAID podem ser estornadas",
+    "request_id": "req_refund_123"
+  }
+}
+```
+</ResponseExample>
+
+## Limitações do Estorno
+
+### Critérios de Elegibilidade
+- **Status**: Transação deve estar `PAID`
+- **Prazo**: Até 90 dias após o pagamento
+- **Saldo**: Conta deve ter saldo suficiente
+- **Valor**: Não pode exceder valor original
+
+### Tipos de Estorno
+
+<AccordionGroup>
+  <Accordion title="Estorno Total">
+    - **Valor**: 100% do valor original
+    - **Uso**: Cancelamento completo da compra
+    - **Requisição**: Sem campo `value` ou `value` igual ao original
+  </Accordion>
+
+  <Accordion title="Estorno Parcial">
+    - **Valor**: Parte do valor original
+    - **Uso**: Desconto, devolução parcial
+    - **Limitação**: Soma dos estornos ≤ valor original
+  </Accordion>
+</AccordionGroup>
+
+## Códigos de Erro
+
+| Código | Descrição |
+|--------|-----------|
+| `TRANSACTION_NOT_FOUND` | Transação não encontrada |
+| `TRANSACTION_NOT_REFUNDABLE` | Transação não pode ser estornada |
+| `REFUND_PERIOD_EXPIRED` | Prazo de estorno expirado (90 dias) |
+| `INSUFFICIENT_BALANCE` | Saldo insuficiente para estorno |
+| `REFUND_VALUE_EXCEEDS_ORIGINAL` | Valor do estorno excede original |
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Consultar Transação" href="/api-reference/pix/charge/get">
+    Verifique se transação é elegível para estorno
+  </Card>
+  <Card title="Webhooks" href="/api-reference/pix/webhooks-cashin">
+    Monitore status dos estornos
+  </Card>
+</CardGroup>

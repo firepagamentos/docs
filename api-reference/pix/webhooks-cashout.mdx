@@ -1,0 +1,516 @@
+---
+title: 'Webhooks de Transferência'
+description: 'Configure notificações em tempo real para transferências PIX (cash out)'
+---
+
+## Visão Geral
+
+Os webhooks de PIX Cash Out notificam seu sistema em tempo real sobre o status das transferências PIX realizadas, permitindo que você acompanhe e processe as operações de saque com eficiência.
+
+<Info>
+  Os webhooks de cash out seguem o mesmo padrão de segurança dos webhooks de cash in.
+</Info>
+
+## Eventos Disponíveis
+
+### pix.withdraw_completed
+Dispara quando uma transferência PIX é processada com sucesso.
+
+### pix.withdraw_failed
+Dispara quando uma transferência PIX falha durante o processamento.
+
+### pix.withdraw_cancelled
+Dispara quando uma transferência PIX é cancelada.
+
+## Payload dos Webhooks
+
+### Transferência Concluída
+
+```json
+{
+  "event": "pix.withdraw_completed",
+  "transaction_id": "withdraw_987654321012345",
+  "external_id": "transfer-789012",
+  "timestamp": "2024-01-15T15:30:15Z",
+  "data": {
+    "transaction": {
+      "id": "withdraw_987654321012345",
+      "external_id": "transfer-789012",
+      "status": "WITHDRAW_PAID",
+      "type": "cash_out",
+      "amount": 25050,
+      "currency": "BRL",
+      "description": "Pagamento de fornecedor",
+      "created_at": "2024-01-15T15:30:00Z",
+      "processed_at": "2024-01-15T15:30:15Z"
+    },
+    "beneficiary": {
+      "name": "Ana Silva Santos",
+      "document": "***.***.***-01",
+      "key": "usuario@email.com",
+      "keyType": "EMAIL",
+      "bank": {
+        "name": "Banco Inter",
+        "ispb": "00416968",
+        "branch": "0001",
+        "account": "123456-7"
+      }
+    },
+    "pix_info": {
+      "end_to_end_id": "E00416968202401151530150123456789",
+      "return_identification": "D00000000202401151530150987654321"
+    },
+    "fees": {
+      "total": 0,
+      "fixed": 0,
+      "percentage": 0
+    },
+    "metadata": {
+      "fornecedor_id": "F123",
+      "tipo_pagamento": "servico"
+    }
+  },
+  "webhook": {
+    "id": "webhook_cashout_001",
+    "attempt": 1,
+    "max_attempts": 5
+  }
+}
+```
+
+### Transferência Falhada
+
+```json
+{
+  "event": "pix.withdraw_failed",
+  "transaction_id": "withdraw_987654321012345",
+  "external_id": "transfer-789012",
+  "timestamp": "2024-01-15T15:30:15Z",
+  "data": {
+    "transaction": {
+      "id": "withdraw_987654321012345",
+      "external_id": "transfer-789012",
+      "status": "ERROR",
+      "type": "cash_out",
+      "amount": 25050,
+      "currency": "BRL",
+      "description": "Pagamento de fornecedor",
+      "created_at": "2024-01-15T15:30:00Z",
+      "failed_at": "2024-01-15T15:30:15Z"
+    },
+    "error": {
+      "code": "INVALID_PIX_KEY",
+      "message": "Chave PIX inválida ou não encontrada",
+      "details": "Email fornecido não está registrado como chave PIX",
+      "category": "VALIDATION_ERROR"
+    },
+    "beneficiary": {
+      "name": "Ana Silva Santos",
+      "key": "usuario@email.com",
+      "keyType": "EMAIL"
+    },
+    "amount_returned": true,
+    "metadata": {
+      "fornecedor_id": "F123",
+      "tipo_pagamento": "servico"
+    }
+  },
+  "webhook": {
+    "id": "webhook_cashout_002",
+    "attempt": 1,
+    "max_attempts": 5
+  }
+}
+```
+
+### Transferência por QR Code
+
+```json
+{
+  "event": "pix.withdraw_completed",
+  "transaction_id": "qr_withdraw_123456789",
+  "external_id": "qr-transfer-001",
+  "timestamp": "2024-01-15T16:45:20Z",
+  "data": {
+    "transaction": {
+      "id": "qr_withdraw_123456789",
+      "external_id": "qr-transfer-001",
+      "status": "WITHDRAW_PAID",
+      "type": "cash_out",
+      "amount": 15000,
+      "currency": "BRL",
+      "description": "Pagamento via QR Code",
+      "method": "qr_code",
+      "created_at": "2024-01-15T16:45:00Z",
+      "processed_at": "2024-01-15T16:45:20Z"
+    },
+    "beneficiary": {
+      "name": "MARIA SANTOS",
+      "city": "BRASILIA",
+      "bank": {
+        "name": "Banco do Brasil",
+        "ispb": "00000000"
+      },
+      "qr_code_info": {
+        "merchant_name": "MARIA SANTOS",
+        "merchant_city": "BRASILIA",
+        "merchant_category_code": "5200"
+      }
+    },
+    "pix_info": {
+      "end_to_end_id": "E00000000202401151645200123456789",
+      "qr_code_data": "00020101021226830014br.gov.bcb.pix..."
+    },
+    "metadata": {
+      "origem": "qr_scanner",
+      "tipo": "pagamento_presencial"
+    }
+  },
+  "webhook": {
+    "id": "webhook_qr_001",
+    "attempt": 1,
+    "max_attempts": 5
+  }
+}
+```
+
+## Implementação do Webhook
+
+<CodeGroup>
+```javascript Node.js - Processamento de Cash Out
+app.post('/webhooks/pix-cashout', (req, res) => {
+  const signature = req.headers['x-firebanking-signature'];
+  const payload = req.body;
+  
+  if (!verifySignature(payload, signature)) {
+    return res.status(401).send('Unauthorized');
+  }
+  
+  const webhook = JSON.parse(payload);
+  
+  switch (webhook.event) {
+    case 'pix.withdraw_completed':
+      handleWithdrawCompleted(webhook.data);
+      break;
+      
+    case 'pix.withdraw_failed':
+      handleWithdrawFailed(webhook.data);
+      break;
+      
+    case 'pix.withdraw_cancelled':
+      handleWithdrawCancelled(webhook.data);
+      break;
+  }
+  
+  res.status(200).send('OK');
+});
+
+function handleWithdrawCompleted(data) {
+  const transaction = data.transaction;
+  const beneficiary = data.beneficiary;
+  
+  console.log(`Transferência concluída: ${transaction.external_id}`);
+  console.log(`Beneficiário: ${beneficiary.name}`);
+  console.log(`Valor: R$ ${transaction.amount / 100}`);
+  console.log(`End-to-End ID: ${data.pix_info.end_to_end_id}`);
+  
+  // Atualizar sistema interno
+  updateTransferStatus(transaction.external_id, 'completed');
+  
+  // Notificar usuário
+  sendNotification({
+    type: 'transfer_success',
+    message: `Transferência de R$ ${transaction.amount / 100} realizada com sucesso`,
+    transaction_id: transaction.external_id
+  });
+}
+
+function handleWithdrawFailed(data) {
+  const transaction = data.transaction;
+  const error = data.error;
+  
+  console.log(`Transferência falhou: ${transaction.external_id}`);
+  console.log(`Erro: ${error.message}`);
+  
+  // Atualizar sistema interno
+  updateTransferStatus(transaction.external_id, 'failed', error);
+  
+  // Notificar usuário do erro
+  sendNotification({
+    type: 'transfer_error',
+    message: `Erro na transferência: ${error.message}`,
+    transaction_id: transaction.external_id,
+    amount_returned: data.amount_returned
+  });
+  
+  // Se necessário, tentar transferência novamente
+  if (error.category === 'TEMPORARY_ERROR') {
+    scheduleRetry(transaction.external_id);
+  }
+}
+```
+
+```python Python - Análise de Transferências
+@app.route('/webhooks/pix-cashout', methods=['POST'])
+def webhook_pix_cashout():
+    signature = request.headers.get('X-Firebanking-Signature')
+    payload = request.get_data()
+    
+    if not verify_signature(payload, signature):
+        abort(401)
+    
+    webhook = json.loads(payload)
+    
+    if webhook['event'] == 'pix.withdraw_completed':
+        handle_withdraw_completed(webhook['data'])
+    elif webhook['event'] == 'pix.withdraw_failed':
+        handle_withdraw_failed(webhook['data'])
+    
+    return 'OK', 200
+
+def handle_withdraw_completed(data):
+    transaction = data['transaction']
+    beneficiary = data['beneficiary']
+    
+    # Registrar métricas
+    record_metrics({
+        'event': 'withdraw_success',
+        'amount': transaction['amount'],
+        'processing_time': calculate_processing_time(transaction),
+        'beneficiary_bank': beneficiary['bank']['name']
+    })
+    
+    # Atualizar contaábil
+    update_accounting({
+        'transaction_id': transaction['id'],
+        'type': 'debit',
+        'amount': transaction['amount'],
+        'description': f"Transferência PIX - {transaction['description']}"
+    })
+    
+    # Gerar comprovante
+    generate_receipt({
+        'transaction_id': transaction['id'],
+        'beneficiary_name': beneficiary['name'],
+        'amount': transaction['amount'],
+        'end_to_end_id': data['pix_info']['end_to_end_id']
+    })
+
+def handle_withdraw_failed(data):
+    transaction = data['transaction']
+    error = data['error']
+    
+    # Registrar falha para análise
+    log_failure({
+        'transaction_id': transaction['id'],
+        'error_code': error['code'],
+        'error_message': error['message'],
+        'error_category': error['category']
+    })
+    
+    # Se o valor foi retornado, atualizar saldo
+    if data['amount_returned']:
+        restore_balance(transaction['amount'])
+    
+    # Alertar equipe para erros críticos
+    if error['category'] == 'CRITICAL_ERROR':
+        send_alert(f"Transferência crítica falhou: {error['message']}")
+```
+</CodeGroup>
+
+## Categorias de Erro
+
+### VALIDATION_ERROR
+- **Descrição**: Erro de validação (chave PIX inválida, dados incorretos)
+- **Ação**: Corrigir dados e tentar novamente
+- **Valor retornado**: Sim
+
+### INSUFFICIENT_BALANCE
+- **Descrição**: Saldo insuficiente na conta
+- **Ação**: Adicionar saldo e tentar novamente
+- **Valor retornado**: Sim
+
+### LIMIT_EXCEEDED
+- **Descrição**: Limite de transferência excedido
+- **Ação**: Aguardar próximo período ou ajustar limites
+- **Valor retornado**: Sim
+
+### TEMPORARY_ERROR
+- **Descrição**: Erro temporário do sistema PIX
+- **Ação**: Tentar novamente em alguns minutos
+- **Valor retornado**: Sim
+
+### CRITICAL_ERROR
+- **Descrição**: Erro crítico que requer intervenção manual
+- **Ação**: Contatar suporte
+- **Valor retornado**: Varia
+
+## Monitoramento de Transferências
+
+### Métricas Importantes
+```javascript
+// Acompanhar performance das transferências
+function trackWithdrawMetrics(data) {
+  const metrics = {
+    // Taxa de sucesso
+    success_rate: calculateSuccessRate(),
+    
+    // Tempo médio de processamento
+    avg_processing_time: calculateAvgProcessingTime(data),
+    
+    // Bancos mais utilizados
+    top_banks: getTopBanks(data.beneficiary.bank),
+    
+    // Valores médios
+    avg_amount: calculateAvgAmount(data.transaction.amount),
+    
+    // Tipos de erro mais comuns
+    common_errors: getCommonErrors()
+  };
+  
+  sendMetrics(metrics);
+}
+```
+
+### Dashboard de Transferências
+- **Volume diário**: Total de transferências por dia
+- **Taxa de sucesso**: % de transferências bem-sucedidas
+- **Tempo médio**: Tempo de processamento
+- **Principais erros**: Tipos de erro mais frequentes
+- **Distribuição por banco**: Transferências por instituição
+
+## Casos de Uso
+
+### Marketplace - Pagamento de Vendedores
+```javascript
+function handleWithdrawCompleted(data) {
+  const vendorId = extractVendorId(data.metadata);
+  const amount = data.transaction.amount;
+  
+  // Atualizar saldo do vendedor
+  updateVendorBalance(vendorId, amount);
+  
+  // Notificar vendedor
+  notifyVendor(vendorId, {
+    type: 'payment_received',
+    amount: amount,
+    transaction_id: data.transaction.id
+  });
+  
+  // Registrar para relatórios
+  recordVendorPayment(vendorId, amount, data.transaction.processed_at);
+}
+```
+
+### Sistema de Folha de Pagamento
+```javascript
+function handleWithdrawCompleted(data) {
+  const employeeId = data.metadata.employee_id;
+  const salaryAmount = data.transaction.amount;
+  
+  // Marcar salário como pago
+  markSalaryAsPaid(employeeId, data.transaction.external_id);
+  
+  // Gerar comprovante de pagamento
+  generateSalaryReceipt(employeeId, {
+    amount: salaryAmount,
+    date: data.transaction.processed_at,
+    reference: data.transaction.external_id
+  });
+  
+  // Enviar por email
+  emailSalaryReceipt(employeeId);
+}
+```
+
+### Plataforma de Serviços
+```javascript
+function handleWithdrawCompleted(data) {
+  const serviceId = data.metadata.service_id;
+  const providerId = data.metadata.provider_id;
+  
+  // Marcar serviço como pago
+  updateServiceStatus(serviceId, 'paid');
+  
+  // Notificar prestador de serviço
+  notifyServiceProvider(providerId, {
+    service_id: serviceId,
+    payment_amount: data.transaction.amount,
+    payment_date: data.transaction.processed_at
+  });
+  
+  // Atualizar rating/reputação
+  updateProviderRating(providerId, serviceId);
+}
+```
+
+## Recuperação de Falhas
+
+### Retry Automático
+```javascript
+function handleWithdrawFailed(data) {
+  const error = data.error;
+  const transactionId = data.transaction.external_id;
+  
+  // Determinar se deve tentar novamente
+  if (shouldRetry(error.category)) {
+    const retryDelay = calculateRetryDelay(error.category);
+    
+    setTimeout(() => {
+      retryTransfer(transactionId, {
+        reason: error.message,
+        attempt: getAttemptCount(transactionId) + 1
+      });
+    }, retryDelay);
+  } else {
+    // Erro permanente - notificar usuário
+    notifyPermanentFailure(transactionId, error);
+  }
+}
+
+function shouldRetry(errorCategory) {
+  const retryableErrors = [
+    'TEMPORARY_ERROR',
+    'SYSTEM_UNAVAILABLE',
+    'TIMEOUT_ERROR'
+  ];
+  return retryableErrors.includes(errorCategory);
+}
+```
+
+## Boas Práticas
+
+### Tratamento de Erros
+- **Classifique erros**: Separe erros temporários de permanentes
+- **Retry inteligente**: Apenas para erros recuperáveis
+- **Alerta proativo**: Monitore taxa de erro
+- **Backup manual**: Tenha processo manual para casos críticos
+
+### Auditoria e Compliance
+- **Log completo**: Registre todas as transferências
+- **Rastrebilidade**: Mantenha End-to-End ID
+- **Relatórios**: Gere relatórios regulares
+- **Conciliação**: Compare com extratos bancários
+
+### Performance
+- **Processamento assíncrono**: Não bloqueie o webhook
+- **Filas de trabalho**: Use filas para tarefas pesadas
+- **Cache de dados**: Cache informações frequentes
+- **Monitoramento**: Acompanhe tempo de resposta
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhooks Cash In" href="/api-reference/pix/webhooks-cashin">
+    Configure webhooks para cobranças PIX
+  </Card>
+  <Card title="Criar Transferência" href="/api-reference/pix/withdraw/create">
+    Aprenda a criar transferências PIX
+  </Card>
+  <Card title="Consultar Transferência" href="/api-reference/pix/withdraw/get">
+    Consulte o status das transferências
+  </Card>
+  <Card title="Dashboard" href="/dashboard/pix">
+    Monitore suas transferências
+  </Card>
+</CardGroup>

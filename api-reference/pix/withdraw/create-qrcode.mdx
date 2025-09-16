@@ -1,0 +1,506 @@
+---
+title: 'Transferir por QR Code'
+openapi: 'POST /pix/v2/payment/withdraw'
+description: 'Realize transferências PIX lendo QR Code estático do beneficiário'
+---
+
+## Visão Geral
+
+Realize transferências PIX (cash out) utilizando QR Code estático do beneficiário. Este método permite que você processe pagamentos através da leitura de QR Codes gerados por outras instituições ou usuários PIX.
+
+<Info>
+  QR Codes estáticos são diferentes dos dinâmicos - eles podem ser reutilizados e geralmente não têm valor pré-definido.
+</Info>
+
+## Parâmetros da Requisição
+
+<ParamField body="type" type="string" required>
+  Tipo da operação: sempre `"PIX"`
+</ParamField>
+
+<ParamField body="value" type="number" required>
+  Valor da transferência em reais (R$ 100,00 = 100)
+</ParamField>
+
+<ParamField body="qrCodeData" type="string" required>
+  Dados do QR Code PIX (string decodificada do QR Code)
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Identificador único da transferência em seu sistema
+</ParamField>
+
+<ParamField body="description" type="string">
+  Descrição da transferência (máximo 140 caracteres)
+</ParamField>
+
+<ParamField body="callback_url" type="string">
+  URL para receber webhooks específicos desta transferência
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Dados adicionais da transferência (chave-valor)
+</ParamField>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api-gateway.firebanking.com.br/v2/payment/withdraw" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "PIX",
+    "value": 150.00,
+    "qrCodeData": "00020101021226830014br.gov.bcb.pix2561qr.pix.com.br/q/v2/cobv/12345678901234567890520400005303986540415.005802BR5913MARIA SANTOS6008BRASILIA61058400000062070503***6304ABCD",
+    "externalId": "qr-transfer-001",
+    "description": "Pagamento via QR Code",
+    "callback_url": "https://meusite.com/webhooks/pix-qr",
+    "metadata": {
+      "origem": "qr_scanner",
+      "tipo": "pagamento_presencial"
+    }
+  }'
+```
+
+```javascript JavaScript
+const pixQrTransfer = await fetch('https://api-gateway.firebanking.com.br/v2/payment/withdraw', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'fbk_live_sua_chave_aqui',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    type: 'PIX',
+    value: 150.00,
+    qrCodeData: '00020101021226830014br.gov.bcb.pix2561qr.pix.com.br/q/v2/cobv/12345678901234567890520400005303986540415.005802BR5913MARIA SANTOS6008BRASILIA61058400000062070503***6304ABCD',
+    externalId: 'qr-transfer-001',
+    description: 'Pagamento via QR Code',
+    callback_url: 'https://meusite.com/webhooks/pix-qr',
+    metadata: {
+      origem: 'qr_scanner',
+      tipo: 'pagamento_presencial'
+    }
+  })
+});
+
+const result = await pixQrTransfer.json();
+console.log('Transferência QR criada:', result);
+```
+
+```python Python
+import requests
+
+qr_transfer_data = {
+    "type": "PIX",
+    "value": 150.00,
+    "qrCodeData": "00020101021226830014br.gov.bcb.pix2561qr.pix.com.br/q/v2/cobv/12345678901234567890520400005303986540415.005802BR5913MARIA SANTOS6008BRASILIA61058400000062070503***6304ABCD",
+    "externalId": "qr-transfer-001",
+    "description": "Pagamento via QR Code",
+    "callback_url": "https://meusite.com/webhooks/pix-qr",
+    "metadata": {
+        "origem": "qr_scanner",
+        "tipo": "pagamento_presencial"
+    }
+}
+
+response = requests.post(
+    'https://api-gateway.firebanking.com.br/v2/payment/withdraw',
+    json=qr_transfer_data,
+    headers={
+        'x-api-key': 'fbk_live_sua_chave_aqui',
+        'Content-Type': 'application/json'
+    }
+)
+
+result = response.json()
+print('Transferência QR criada:', result)
+```
+</CodeGroup>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK - QR Code Processado
+{
+  "transactionId": "qr_withdraw_123456789",
+  "externalId": "qr-transfer-001",
+  "status": "WAITING_CONFIRMATION",
+  "type": "cash_out",
+  "value": 15000,
+  "currency": "BRL",
+  "description": "Pagamento via QR Code",
+  "beneficiary": {
+    "name": "MARIA SANTOS",
+    "city": "BRASILIA",
+    "qrCodeInfo": {
+      "merchantCategoryCode": "5200",
+      "merchantName": "MARIA SANTOS",
+      "merchantCity": "BRASILIA"
+    }
+  },
+  "qrCodeData": "00020101021226830014br.gov.bcb.pix...",
+  "created_at": "2024-01-15T16:45:00Z",
+  "metadata": {
+    "origem": "qr_scanner",
+    "tipo": "pagamento_presencial"
+  },
+  "fees": {
+    "total": 0,
+    "fixed": 0,
+    "percentage": 0
+  }
+}
+```
+
+```json 200 OK - Transferência Concluída
+{
+  "transactionId": "qr_withdraw_123456789",
+  "externalId": "qr-transfer-001",
+  "status": "WITHDRAW_PAID",
+  "type": "cash_out",
+  "value": 15000,
+  "currency": "BRL",
+  "description": "Pagamento via QR Code",
+  "beneficiary": {
+    "name": "MARIA SANTOS",
+    "city": "BRASILIA",
+    "bank": {
+      "name": "Banco do Brasil",
+      "ispb": "00000000"
+    },
+    "qrCodeInfo": {
+      "merchantCategoryCode": "5200",
+      "merchantName": "MARIA SANTOS",
+      "merchantCity": "BRASILIA"
+    }
+  },
+  "processed_at": "2024-01-15T16:45:20Z",
+  "created_at": "2024-01-15T16:45:00Z",
+  "metadata": {
+    "origem": "qr_scanner",
+    "tipo": "pagamento_presencial"
+  },
+  "fees": {
+    "total": 0,
+    "fixed": 0,
+    "percentage": 0
+  }
+}
+```
+
+```json 400 Bad Request - QR Code Inválido
+{
+  "error": {
+    "code": "INVALID_QR_CODE",
+    "message": "QR Code PIX inválido ou malformado",
+    "details": "Dados do QR Code não seguem o padrão PIX ou estão corrompidos",
+    "request_id": "req_qr_789123"
+  }
+}
+```
+
+```json 400 Bad Request - QR Code Expirado
+{
+  "error": {
+    "code": "QR_CODE_EXPIRED",
+    "message": "QR Code PIX expirado",
+    "details": "Este QR Code dinâmico não pode mais ser usado",
+    "request_id": "req_qr_789123"
+  }
+}
+```
+</ResponseExample>
+
+## Campos de Resposta
+
+<ResponseField name="transactionId" type="string">
+  ID único da transferência no FireBanking
+</ResponseField>
+
+<ResponseField name="beneficiary" type="object">
+  Dados extraídos do QR Code
+  <Expandable title="beneficiary">
+    <ResponseField name="beneficiary.name" type="string">
+      Nome do beneficiário (do QR Code)
+    </ResponseField>
+    <ResponseField name="beneficiary.city" type="string">
+      Cidade do beneficiário
+    </ResponseField>
+    <ResponseField name="beneficiary.qrCodeInfo" type="object">
+      Informações específicas do QR Code
+    </ResponseField>
+    <ResponseField name="beneficiary.bank" type="object">
+      Dados do banco (após processamento)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="qrCodeData" type="string">
+  Dados originais do QR Code processado
+</ResponseField>
+
+## Tipos de QR Code PIX
+
+### QR Code Estático
+- **Reutilizável**: Pode ser usado múltiplas vezes
+- **Sem valor fixo**: Você define o valor na transferência
+- **Identificador único**: Cada QR Code tem chave PIX específica
+- **Uso típico**: Vendedores ambulantes, pequenos comércios
+
+### QR Code Dinâmico
+- **Uso único**: Válido apenas para uma transação
+- **Valor pré-definido**: Montante já especificado no QR Code
+- **Expirável**: Tem data/hora de validade
+- **Uso típico**: E-commerce, cobranças específicas
+
+### Diferenças de Processamento
+
+<AccordionGroup>
+  <Accordion title="QR Code Estático">
+    - **Valor**: Definido por você na requisição
+    - **Validade**: Permanente (até ser desativado)
+    - **Identificação**: Baseada na chave PIX do recebedor
+    - **Flexibilidade**: Total controle sobre valor e descrição
+  </Accordion>
+
+  <Accordion title="QR Code Dinâmico">
+    - **Valor**: Pré-definido no QR Code (opcional sobrescrever)
+    - **Validade**: Tempo limitado (geralmente horas/dias)
+    - **Identificação**: ID único da cobrança
+    - **Restrições**: Valor e dados podem estar fixos
+  </Accordion>
+</AccordionGroup>
+
+## Decodificação de QR Code
+
+### Formato Padrão PIX
+O QR Code PIX segue o padrão EMV QR Code:
+
+```
+00020101021226830014br.gov.bcb.pix2561...
+│   │   │   │       │
+│   │   │   │       └─ URL do provedor PIX
+│   │   │   └─ Tag indicador PIX
+│   │   └─ Tag de versão do método de pagamento
+│   └─ Indicador de formatação
+└─ Tag de versão do payload
+```
+
+### Bibliotecas para Decodificação
+
+<CodeGroup>
+```javascript JavaScript - QR Code Scanner
+import jsQR from 'jsqr';
+
+function scanQRCode(imageData) {
+  const code = jsQR(imageData.data, imageData.width, imageData.height);
+  if (code) {
+    // Validar se é QR Code PIX
+    if (code.data.includes('br.gov.bcb.pix')) {
+      return code.data;
+    } else {
+      throw new Error('QR Code não é PIX');
+    }
+  }
+  throw new Error('QR Code não encontrado');
+}
+
+// Usar com webcam ou upload de imagem
+const qrData = scanQRCode(imageData);
+```
+
+```python Python - QR Code Scanner
+import cv2
+from pyzbar import pyzbar
+
+def scan_qr_code(image_path):
+    # Carregar imagem
+    image = cv2.imread(image_path)
+
+    # Decodificar QR Code
+    barcodes = pyzbar.decode(image)
+
+    for barcode in barcodes:
+        qr_data = barcode.data.decode('utf-8')
+
+        # Verificar se é PIX
+        if 'br.gov.bcb.pix' in qr_data:
+            return qr_data
+
+    raise ValueError('QR Code PIX não encontrado')
+
+# Usar com arquivo de imagem
+qr_data = scan_qr_code('qrcode.png')
+```
+
+```php PHP - QR Code Scanner
+<?php
+use Zxing\QrReader;
+
+function scanPixQrCode($imagePath) {
+    $qrcode = new QrReader($imagePath);
+    $text = $qrcode->text();
+
+    if (strpos($text, 'br.gov.bcb.pix') !== false) {
+        return $text;
+    } else {
+        throw new Exception('QR Code não é PIX');
+    }
+}
+
+// Usar com arquivo de imagem
+$qrData = scanPixQrCode('qrcode.png');
+?>
+```
+</CodeGroup>
+
+## Integração com Camera
+
+### Captura via Webcam
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+    <video id="video" width="300" height="200" autoplay></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <div id="result"></div>
+
+    <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Acessar câmera
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                scanQR();
+            };
+        });
+
+    function scanQR() {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code && code.data.includes('br.gov.bcb.pix')) {
+            document.getElementById('result').textContent = 'QR Code PIX encontrado!';
+            // Processar transferência
+            processPixTransfer(code.data);
+        } else {
+            requestAnimationFrame(scanQR);
+        }
+    }
+
+    function processPixTransfer(qrData) {
+        // Enviar para sua API
+        fetch('/api/pix/qr-transfer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                qrCodeData: qrData,
+                value: 100.00 // Valor definido pelo usuário
+            })
+        });
+    }
+    </script>
+</body>
+</html>
+```
+
+## Validações de QR Code
+
+### Verificações Básicas
+1. **Formato EMV**: Estrutura válida do QR Code
+2. **Indicador PIX**: Presença do identificador PIX brasileiro
+3. **Checksum**: Validação dos dados de integridade
+4. **Expiração**: Verificação se QR dinâmico ainda é válido
+
+### Validações de Segurança
+```javascript
+function validatePixQR(qrData) {
+    // Verificar se é QR PIX
+    if (!qrData.includes('br.gov.bcb.pix')) {
+        throw new Error('Não é um QR Code PIX válido');
+    }
+
+    // Verificar tamanho razoável
+    if (qrData.length < 50 || qrData.length > 1000) {
+        throw new Error('Tamanho de QR Code suspeito');
+    }
+
+    // Verificar caracteres válidos
+    const validChars = /^[0-9A-Za-z\-\.\@\+\/\=\:]+$/;
+    if (!validChars.test(qrData)) {
+        throw new Error('Caracteres inválidos no QR Code');
+    }
+
+    return true;
+}
+```
+
+## Códigos de Erro
+
+| Código | Descrição |
+|--------|-----------|
+| `INVALID_QR_CODE` | QR Code malformado ou inválido |
+| `QR_CODE_EXPIRED` | QR Code dinâmico expirou |
+| `QR_CODE_ALREADY_PAID` | QR Code já foi pago (uso único) |
+| `INVALID_QR_FORMAT` | Formato não segue padrão PIX |
+| `QR_VALUE_MISMATCH` | Valor informado difere do QR Code |
+| `INSUFFICIENT_BALANCE` | Saldo insuficiente para a transferência |
+| `LIMIT_EXCEEDED` | Limite de transferência excedido |
+
+## Boas Práticas
+
+### Interface do Usuário
+- **Scanner responsivo**: Funcione bem em mobile
+- **Preview da transferência**: Mostre dados antes de confirmar
+- **Feedback visual**: Indique quando QR Code foi lido
+- **Validação em tempo real**: Verifique QR Code imediatamente
+
+### Segurança
+- **Validação dupla**: Confirme dados críticos com usuário
+- **Limite de tentativas**: Evite spam de leituras inválidas
+- **Log de atividade**: Registre todas as tentativas de leitura
+- **Timeout adequado**: Limite tempo de sessão do scanner
+
+### Performance
+- **Otimização de câmera**: Use resolução adequada
+- **Processamento eficiente**: Evite lag na leitura
+- **Cache de validações**: Para QR Codes já verificados
+- **Fallback para input manual**: Se scanner falhar
+
+## Diferenças dos Outros Métodos
+
+| Método | Vantagem | Desvantagem | Uso Ideal |
+|--------|----------|-------------|-----------|
+| **QR Code** | Rápido, visual, sem digitação | Precisa de câmera/scanner | Pagamentos presenciais |
+| **Chave PIX** | Simples, não precisa câmera | Usuário precisa digitar | Pagamentos remotos |
+| **Dados Bancários** | Compatível com bancos antigos | Mais campos, mais lento | Transferências tradicionais |
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Transferência por Chave" href="/api-reference/pix/withdraw/create">
+    Compare com transferência por chave PIX
+  </Card>
+  <Card title="Consultar Transferência" href="/api-reference/pix/withdraw/get">
+    Verifique status da transferência por QR Code
+  </Card>
+  <Card title="Webhooks Cash Out" href="/api-reference/pix/webhooks-cashout">
+    Configure notificações de transferência
+  </Card>
+  <Card title="Scanner Demo" href="/demo/qr-scanner">
+    Teste o scanner de QR Code PIX
+  </Card>
+</CardGroup>

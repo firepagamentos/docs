@@ -1,0 +1,525 @@
+---
+title: 'Criar Transferência'
+openapi: 'POST /pix/v2/payment/withdraw'
+description: 'Realize transferências PIX para chaves PIX ou contas bancárias de terceiros'
+---
+
+## Visão Geral
+
+Realize transferências PIX (cash out) enviando valores da sua conta FireBanking para chaves PIX ou contas bancárias de terceiros. As transferências são processadas instantaneamente e funcionam 24/7.
+
+<Warning>
+  Certifique-se de ter saldo suficiente na sua conta antes de realizar a transferência.
+</Warning>
+
+## Parâmetros da Requisição
+
+<ParamField body="type" type="string" required>
+  Tipo da operação: sempre `"PIX"`
+</ParamField>
+
+<ParamField body="value" type="number" required>
+  Valor da transferência em reais (R$ 100,00 = 100)
+</ParamField>
+
+<ParamField body="details" type="object" required>
+  Dados do beneficiário
+  <Expandable title="details">
+    <ParamField body="details.key" type="string" required>
+      Chave PIX do beneficiário (CPF, CNPJ, email, telefone ou chave aleatória)
+    </ParamField>
+    <ParamField body="details.keyType" type="string" required>
+      Tipo da chave PIX:
+      - `DOCUMENT` - CPF ou CNPJ
+      - `EMAIL` - Endereço de email
+      - `PHONE` - Número de telefone
+      - `RANDOM_KEY` - Chave aleatória (EVP)
+    </ParamField>
+    <ParamField body="details.name" type="string" required>
+      Nome completo do beneficiário
+    </ParamField>
+    <ParamField body="details.document" type="string" required>
+      CPF ou CNPJ do beneficiário (apenas números)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Identificador único da transferência em seu sistema
+</ParamField>
+
+<ParamField body="description" type="string">
+  Descrição da transferência (máximo 140 caracteres)
+</ParamField>
+
+<ParamField body="callback_url" type="string">
+  URL para receber webhooks específicos desta transferência
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Dados adicionais da transferência (chave-valor)
+</ParamField>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api-gateway.firebanking.com.br/v2/payment/withdraw" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "PIX",
+    "value": 250.50,
+    "details": {
+      "key": "usuario@email.com",
+      "keyType": "EMAIL",
+      "name": "Ana Silva Santos",
+      "document": "12345678901"
+    },
+    "externalId": "transfer-789012",
+    "description": "Pagamento de fornecedor",
+    "callback_url": "https://meusite.com/webhooks/pix-withdraw",
+    "metadata": {
+      "fornecedor_id": "F123",
+      "tipo_pagamento": "servico"
+    }
+  }'
+```
+
+```javascript JavaScript
+const pixWithdraw = await fetch('https://api-gateway.firebanking.com.br/v2/payment/withdraw', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'fbk_live_sua_chave_aqui',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    type: 'PIX',
+    value: 250.50,
+    details: {
+      key: 'usuario@email.com',
+      keyType: 'EMAIL',
+      name: 'Ana Silva Santos',
+      document: '12345678901'
+    },
+    externalId: 'transfer-789012',
+    description: 'Pagamento de fornecedor',
+    callback_url: 'https://meusite.com/webhooks/pix-withdraw',
+    metadata: {
+      fornecedor_id: 'F123',
+      tipo_pagamento: 'servico'
+    }
+  })
+});
+
+const result = await pixWithdraw.json();
+console.log('Transferência criada:', result);
+```
+
+```python Python
+import requests
+
+withdraw_data = {
+    "type": "PIX",
+    "value": 250.50,
+    "details": {
+        "key": "usuario@email.com",
+        "keyType": "EMAIL",
+        "name": "Ana Silva Santos",
+        "document": "12345678901"
+    },
+    "externalId": "transfer-789012",
+    "description": "Pagamento de fornecedor",
+    "callback_url": "https://meusite.com/webhooks/pix-withdraw",
+    "metadata": {
+        "fornecedor_id": "F123",
+        "tipo_pagamento": "servico"
+    }
+}
+
+response = requests.post(
+    'https://api-gateway.firebanking.com.br/v2/payment/withdraw',
+    json=withdraw_data,
+    headers={
+        'x-api-key': 'fbk_live_sua_chave_aqui',
+        'Content-Type': 'application/json'
+    }
+)
+
+result = response.json()
+print('Transferência criada:', result)
+```
+
+```php PHP
+<?php
+$withdrawData = [
+    'type' => 'PIX',
+    'value' => 250.50,
+    'details' => [
+        'key' => 'usuario@email.com',
+        'keyType' => 'EMAIL',
+        'name' => 'Ana Silva Santos',
+        'document' => '12345678901'
+    ],
+    'externalId' => 'transfer-789012',
+    'description' => 'Pagamento de fornecedor',
+    'callback_url' => 'https://meusite.com/webhooks/pix-withdraw',
+    'metadata' => [
+        'fornecedor_id' => 'F123',
+        'tipo_pagamento' => 'servico'
+    ]
+];
+
+$curl = curl_init();
+curl_setopt_array($curl, [
+    CURLOPT_URL => 'https://api-gateway.firebanking.com.br/v2/payment/withdraw',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($withdrawData),
+    CURLOPT_HTTPHEADER => [
+        'x-api-key: fbk_live_sua_chave_aqui',
+        'Content-Type: application/json'
+    ]
+]);
+
+$response = curl_exec($curl);
+$result = json_decode($response, true);
+echo 'Transferência criada: ' . print_r($result, true);
+?>
+```
+</CodeGroup>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK - Aguardando Confirmação
+{
+  "transactionId": "withdraw_987654321012345",
+  "externalId": "transfer-789012",
+  "status": "WAITING_CONFIRMATION",
+  "type": "cash_out",
+  "value": 25050,
+  "currency": "BRL",
+  "description": "Pagamento de fornecedor",
+  "beneficiary": {
+    "name": "Ana Silva Santos",
+    "document": "***.***.***-01",
+    "key": "usuario@email.com",
+    "keyType": "EMAIL"
+  },
+  "created_at": "2024-01-15T15:30:00Z",
+  "metadata": {
+    "fornecedor_id": "F123",
+    "tipo_pagamento": "servico"
+  },
+  "fees": {
+    "total": 0,
+    "fixed": 0,
+    "percentage": 0
+  }
+}
+```
+
+```json 200 OK - Transferência Processada
+{
+  "transactionId": "withdraw_987654321012345",
+  "externalId": "transfer-789012",
+  "status": "WITHDRAW_PAID",
+  "type": "cash_out",
+  "value": 25050,
+  "currency": "BRL",
+  "description": "Pagamento de fornecedor",
+  "beneficiary": {
+    "name": "Ana Silva Santos",
+    "document": "***.***.***-01",
+    "key": "usuario@email.com",
+    "keyType": "EMAIL",
+    "bank": {
+      "name": "Banco Inter",
+      "ispb": "00416968"
+    }
+  },
+  "processed_at": "2024-01-15T15:30:15Z",
+  "created_at": "2024-01-15T15:30:00Z",
+  "metadata": {
+    "fornecedor_id": "F123",
+    "tipo_pagamento": "servico"
+  },
+  "fees": {
+    "total": 0,
+    "fixed": 0,
+    "percentage": 0
+  }
+}
+```
+
+```json 400 Bad Request - Saldo Insuficiente
+{
+  "error": {
+    "code": "INSUFFICIENT_BALANCE",
+    "message": "Saldo insuficiente para realizar a transferência",
+    "details": "Saldo atual: R$ 100,00. Valor solicitado: R$ 250,50",
+    "request_id": "req_456789123"
+  }
+}
+```
+
+```json 400 Bad Request - Chave Inválida
+{
+  "error": {
+    "code": "INVALID_PIX_KEY",
+    "message": "Chave PIX inválida ou não encontrada",
+    "details": "Email fornecido não está registrado como chave PIX",
+    "request_id": "req_456789123"
+  }
+}
+```
+</ResponseExample>
+
+## Campos de Resposta
+
+<ResponseField name="transactionId" type="string">
+  ID único da transferência no FireBanking
+</ResponseField>
+
+<ResponseField name="externalId" type="string">
+  Seu identificador único da transferência
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Status da transferência:
+  - `WAITING_CONFIRMATION` - Aguardando confirmação/processamento
+  - `WITHDRAW_PAID` - Transferência realizada com sucesso
+  - `ERROR` - Erro no processamento
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Tipo da operação: `cash_out`
+</ResponseField>
+
+<ResponseField name="value" type="integer">
+  Valor transferido em centavos
+</ResponseField>
+
+<ResponseField name="beneficiary" type="object">
+  Dados do beneficiário
+  <Expandable title="beneficiary">
+    <ResponseField name="beneficiary.name" type="string">
+      Nome do beneficiário
+    </ResponseField>
+    <ResponseField name="beneficiary.document" type="string">
+      CPF/CNPJ mascarado
+    </ResponseField>
+    <ResponseField name="beneficiary.key" type="string">
+      Chave PIX utilizada
+    </ResponseField>
+    <ResponseField name="beneficiary.keyType" type="string">
+      Tipo da chave PIX
+    </ResponseField>
+    <ResponseField name="beneficiary.bank" type="object">
+      Dados do banco (após processamento)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="processed_at" type="string">
+  Data/hora do processamento (para transferências concluídas)
+</ResponseField>
+
+<ResponseField name="fees" type="object">
+  Taxas aplicadas à transferência
+  <Expandable title="fees">
+    <ResponseField name="fees.total" type="integer">
+      Taxa total em centavos
+    </ResponseField>
+    <ResponseField name="fees.fixed" type="integer">
+      Taxa fixa em centavos
+    </ResponseField>
+    <ResponseField name="fees.percentage" type="number">
+      Taxa percentual aplicada
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Fluxo de Processamento
+
+### 1. Validação Inicial
+- Verificação de saldo disponível
+- Validação da chave PIX do beneficiário
+- Confirmação dos dados do beneficiário
+
+### 2. Processamento
+- Débito do valor na sua conta
+- Envio da transferência PIX
+- Confirmação pelo Sistema de Pagamentos Instantâneos (SPI)
+
+### 3. Confirmação
+- Webhook enviado com status final
+- Valor disponível na conta do beneficiário
+- Comprovante gerado
+
+## Estados da Transferência
+
+<AccordionGroup>
+  <Accordion title="WAITING_CONFIRMATION">
+    - **Descrição**: Transferência criada, aguardando processamento
+    - **Duração típica**: Alguns segundos
+    - **Ação**: Sistema está validando e processando
+    - **Próximo status**: `WITHDRAW_PAID` ou `ERROR`
+  </Accordion>
+
+  <Accordion title="WITHDRAW_PAID">
+    - **Descrição**: Transferência realizada com sucesso
+    - **Valor**: Debitado da sua conta e creditado no destino
+    - **Dados extras**: Informações do banco beneficiário
+    - **Status final**: Transferência concluída
+  </Accordion>
+
+  <Accordion title="ERROR">
+    - **Descrição**: Erro no processamento da transferência
+    - **Possíveis causas**: Chave inválida, saldo insuficiente, dados incorretos
+    - **Valor**: Não foi debitado (ou estornado automaticamente)
+    - **Ação**: Verificar erro e tentar novamente
+  </Accordion>
+</AccordionGroup>
+
+## Validações e Limites
+
+### Limites Operacionais
+- **Valor mínimo**: R$ 0,01
+- **Valor máximo diurno**: R$ 20.000,00 (6h às 20h)
+- **Valor máximo noturno**: R$ 1.000,00 (20h às 6h)
+- **Limite mensal**: Configurável por conta
+
+### Validações Automáticas
+- **Saldo disponível**: Verificação em tempo real
+- **Chave PIX válida**: Validação no DICT (Diretório de Identificadores)
+- **Dados do beneficiário**: Confirmação nome/documento
+- **Limites de horário**: Conformidade com regulamentação
+
+## Tipos de Chave PIX
+
+<AccordionGroup>
+  <Accordion title="CPF/CNPJ (DOCUMENT)">
+    ```json
+    {
+      "key": "12345678901",
+      "keyType": "DOCUMENT"
+    }
+    ```
+    - **CPF**: 11 dígitos (sem formatação)
+    - **CNPJ**: 14 dígitos (sem formatação)
+    - **Validação**: Dígitos verificadores e registro PIX
+  </Accordion>
+
+  <Accordion title="Email (EMAIL)">
+    ```json
+    {
+      "key": "usuario@dominio.com",
+      "keyType": "EMAIL"
+    }
+    ```
+    - **Formato**: Endereço de email válido
+    - **Case-sensitive**: Não (convertido automaticamente)
+    - **Validação**: Formato e registro no PIX
+  </Accordion>
+
+  <Accordion title="Telefone (PHONE)">
+    ```json
+    {
+      "key": "+5511999999999",
+      "keyType": "PHONE"
+    }
+    ```
+    - **Formato**: +55 + DDD + número (ou sem +55)
+    - **Padronização**: Automática para formato brasileiro
+    - **Validação**: Formato e registro PIX
+  </Accordion>
+
+  <Accordion title="Chave Aleatória (RANDOM_KEY)">
+    ```json
+    {
+      "key": "123e4567-e89b-12d3-a456-426614174000",
+      "keyType": "RANDOM_KEY"
+    }
+    ```
+    - **Formato**: UUID v4 (36 caracteres com hífens)
+    - **Segurança**: Maior privacidade (não expõe dados pessoais)
+    - **Validação**: Formato UUID e registro PIX
+  </Accordion>
+</AccordionGroup>
+
+## Códigos de Erro
+
+| Código | Descrição |
+|--------|-----------|
+| `INSUFFICIENT_BALANCE` | Saldo insuficiente na conta |
+| `INVALID_PIX_KEY` | Chave PIX inválida ou não encontrada |
+| `INVALID_KEY_TYPE` | Tipo de chave não corresponde ao formato |
+| `INVALID_BENEFICIARY_DATA` | Dados do beneficiário inconsistentes |
+| `LIMIT_EXCEEDED` | Limite de transferência excedido |
+| `INVALID_AMOUNT` | Valor inválido (fora dos limites permitidos) |
+| `EXTERNAL_ID_EXISTS` | ExternalId já utilizado |
+| `PIX_UNAVAILABLE` | Sistema PIX temporariamente indisponível |
+
+## Boas Práticas
+
+### Segurança
+- **Validação prévia**: Sempre validar chaves PIX antes de transferir
+- **Confirmação dupla**: Implementar confirmação para valores altos
+- **Log detalhado**: Registrar todas as tentativas de transferência
+- **Rate limiting**: Limitar número de transferências por minuto
+
+### Experiência do Usuário
+- **Validação em tempo real**: Verificar chaves durante digitação
+- **Feedback claro**: Mostrar progresso da transferência
+- **Comprovante imediato**: Exibir dados da transferência confirmada
+- **Histórico acessível**: Manter registro das transferências
+
+### Performance
+- **Cache de validações**: Para chaves PIX frequentes
+- **Timeout apropriado**: 30 segundos para transferências
+- **Retry inteligente**: Retentar apenas em casos específicos
+- **Webhook prioritário**: Use webhook ao invés de polling
+
+## Webhook de Confirmação
+
+Após o processamento, você receberá um webhook:
+
+```json
+{
+  "event": "pix.withdraw_completed",
+  "transaction_id": "withdraw_987654321012345",
+  "external_id": "transfer-789012",
+  "timestamp": "2024-01-15T15:30:15Z",
+  "data": {
+    "status": "WITHDRAW_PAID",
+    "value": 25050,
+    "beneficiary": {
+      "name": "Ana Silva Santos",
+      "key": "usuario@email.com",
+      "bank": "Banco Inter"
+    },
+    "fees": {
+      "total": 0
+    }
+  }
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Consultar Transferência" href="/api-reference/pix/withdraw/get">
+    Verifique o status das suas transferências
+  </Card>
+  <Card title="Saque por QR Code" href="/api-reference/pix/withdraw/create-qrcode">
+    Transfira usando QR Code do beneficiário
+  </Card>
+  <Card title="Webhooks Cash Out" href="/api-reference/pix/webhooks-cashout">
+    Configure notificações de transferência
+  </Card>
+  <Card title="Verificar Saldo" href="/api-reference/account/balance">
+    Consulte saldo disponível para transferências
+  </Card>
+</CardGroup>

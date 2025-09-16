@@ -1,0 +1,498 @@
+---
+title: 'Webhooks de Recebimento'
+description: 'Configure notificações em tempo real para cobranças PIX (cash in)'
+---
+
+## Visão Geral
+
+Os webhooks de PIX Cash In notificam seu sistema em tempo real sobre mudanças de status nas cobranças PIX, garantindo que você possa processar pedidos e atualizar sua aplicação imediatamente após os pagamentos.
+
+<Info>
+  Todos os webhooks são enviados via POST com payload JSON e assinatura de segurança.
+</Info>
+
+## Eventos Disponíveis
+
+### pix.payment_received
+Dispara quando uma cobrança PIX é paga com sucesso.
+
+### pix.payment_expired
+Dispara quando uma cobrança PIX expira sem pagamento.
+
+### pix.refund_processed
+Dispara quando um estorno PIX é processado com sucesso.
+
+### pix.split_completed
+Dispara quando um split de pagamento é finalizado.
+
+## Configuração
+
+### URL do Webhook
+```bash
+# Configurar webhook global
+curl -X POST "https://api-gateway.firebanking.com.br/v2/webhooks" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://meusite.com/webhooks/pix",
+    "events": ["pix.payment_received", "pix.payment_expired", "pix.refund_processed"],
+    "active": true
+  }'
+```
+
+### Webhook por Transação
+```json
+// Na criação da cobrança
+{
+  "amount": 150,
+  "description": "Produto XYZ",
+  "callback_url": "https://meusite.com/webhooks/pix/specific"
+  // ... outros campos
+}
+```
+
+## Payload dos Webhooks
+
+### Pagamento Recebido
+
+```json
+{
+  "event": "pix.payment_received",
+  "pix_id": "pix_12345678901234567890",
+  "external_id": "pedido-12345",
+  "timestamp": "2024-01-15T10:45:30Z",
+  "data": {
+    "id": "pix_12345678901234567890",
+    "external_id": "pedido-12345",
+    "status": "paid",
+    "amount": 15000,
+    "currency": "BRL",
+    "description": "Compra na loja virtual",
+    "buyer": {
+      "name": "Maria Silva Santos",
+      "document": "***.***.***-01",
+      "email": "maria@email.com"
+    },
+    "payer": {
+      "name": "João Costa Silva",
+      "document": "***.***.***-98",
+      "bank": {
+        "name": "Banco do Brasil",
+        "ispb": "00000000",
+        "branch": "1234",
+        "account": "567890"
+      }
+    },
+    "paid_at": "2024-01-15T10:45:30Z",
+    "created_at": "2024-01-15T10:30:00Z",
+    "end_to_end_id": "E00000000202401151045300123456789",
+    "fees": {
+      "total": 0,
+      "fixed": 0,
+      "percentage": 0
+    },
+    "metadata": {
+      "pedido_id": "12345",
+      "vendedor": "Loja ABC"
+    }
+  },
+  "webhook": {
+    "id": "webhook_987654321",
+    "attempt": 1,
+    "max_attempts": 5
+  }
+}
+```
+
+### Cobrança Expirada
+
+```json
+{
+  "event": "pix.payment_expired",
+  "pix_id": "pix_12345678901234567890",
+  "external_id": "pedido-12345",
+  "timestamp": "2024-01-15T11:30:00Z",
+  "data": {
+    "id": "pix_12345678901234567890",
+    "external_id": "pedido-12345",
+    "status": "expired",
+    "amount": 15000,
+    "currency": "BRL",
+    "description": "Compra na loja virtual",
+    "buyer": {
+      "name": "Maria Silva Santos",
+      "document": "***.***.***-01",
+      "email": "maria@email.com"
+    },
+    "expires_at": "2024-01-15T11:30:00Z",
+    "expired_at": "2024-01-15T11:30:00Z",
+    "created_at": "2024-01-15T10:30:00Z",
+    "metadata": {
+      "pedido_id": "12345",
+      "vendedor": "Loja ABC"
+    }
+  },
+  "webhook": {
+    "id": "webhook_987654322",
+    "attempt": 1,
+    "max_attempts": 5
+  }
+}
+```
+
+### Estorno Processado
+
+```json
+{
+  "event": "pix.refund_processed",
+  "pix_id": "pix_12345678901234567890",
+  "refund_id": "refund_123456789012345",
+  "timestamp": "2024-01-15T17:00:30Z",
+  "data": {
+    "original_transaction": {
+      "id": "pix_12345678901234567890",
+      "external_id": "pedido-12345",
+      "amount": 15000
+    },
+    "refund": {
+      "id": "refund_123456789012345",
+      "status": "refund_completed",
+      "amount": 15000,
+      "description": "Produto não entregue",
+      "processed_at": "2024-01-15T17:00:30Z",
+      "end_to_end_id": "E00000000202401151700300987654321"
+    }
+  },
+  "webhook": {
+    "id": "webhook_987654323",
+    "attempt": 1,
+    "max_attempts": 5
+  }
+}
+```
+
+### Split Finalizado
+
+```json
+{
+  "event": "pix.split_completed",
+  "pix_id": "pix_split_123456789",
+  "external_id": "marketplace-001",
+  "timestamp": "2024-01-15T18:15:50Z",
+  "data": {
+    "transaction": {
+      "id": "pix_split_123456789",
+      "external_id": "marketplace-001",
+      "total_amount": 100000,
+      "paid_at": "2024-01-15T18:15:30Z"
+    },
+    "split": {
+      "total_transfers": 3,
+      "successful_transfers": 3,
+      "failed_transfers": 0,
+      "total_transferred": 100000,
+      "splits": [
+        {
+          "recipient_id": "vendor_123",
+          "amount": 85000,
+          "status": "transferred",
+          "transfer_id": "split_transfer_001",
+          "transferred_at": "2024-01-15T18:15:45Z"
+        },
+        {
+          "recipient_id": "platform_fee",
+          "amount": 10000,
+          "status": "transferred",
+          "transfer_id": "split_transfer_002",
+          "transferred_at": "2024-01-15T18:15:46Z"
+        },
+        {
+          "recipient_id": "shipping_partner",
+          "amount": 5000,
+          "status": "transferred",
+          "transfer_id": "split_transfer_003",
+          "transferred_at": "2024-01-15T18:15:47Z"
+        }
+      ]
+    }
+  },
+  "webhook": {
+    "id": "webhook_987654324",
+    "attempt": 1,
+    "max_attempts": 5
+  }
+}
+```
+
+## Implementação do Webhook
+
+### Endpoint Receptor
+
+<CodeGroup>
+```javascript Node.js/Express
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+
+app.use(express.raw({ type: 'application/json' }));
+
+app.post('/webhooks/pix', (req, res) => {
+  const signature = req.headers['x-firebanking-signature'];
+  const payload = req.body;
+  
+  // Verificar assinatura
+  if (!verifySignature(payload, signature)) {
+    return res.status(401).send('Unauthorized');
+  }
+  
+  const webhook = JSON.parse(payload);
+  
+  switch (webhook.event) {
+    case 'pix.payment_received':
+      handlePaymentReceived(webhook.data);
+      break;
+      
+    case 'pix.payment_expired':
+      handlePaymentExpired(webhook.data);
+      break;
+      
+    case 'pix.refund_processed':
+      handleRefundProcessed(webhook.data);
+      break;
+      
+    case 'pix.split_completed':
+      handleSplitCompleted(webhook.data);
+      break;
+  }
+  
+  res.status(200).send('OK');
+});
+
+function verifySignature(payload, signature) {
+  const secret = process.env.FIREBANKING_WEBHOOK_SECRET;
+  const hash = crypto.createHmac('sha256', secret)
+                    .update(payload)
+                    .digest('hex');
+  return signature === `sha256=${hash}`;
+}
+
+function handlePaymentReceived(data) {
+  console.log(`Pagamento recebido: ${data.external_id}`);
+  // Processar pedido, enviar produto, etc.
+}
+
+app.listen(3000);
+```
+
+```python Python/Flask
+from flask import Flask, request, abort
+import hashlib
+import hmac
+import json
+import os
+
+app = Flask(__name__)
+
+@app.route('/webhooks/pix', methods=['POST'])
+def webhook_pix():
+    signature = request.headers.get('X-Firebanking-Signature')
+    payload = request.get_data()
+    
+    # Verificar assinatura
+    if not verify_signature(payload, signature):
+        abort(401)
+    
+    webhook = json.loads(payload)
+    
+    if webhook['event'] == 'pix.payment_received':
+        handle_payment_received(webhook['data'])
+    elif webhook['event'] == 'pix.payment_expired':
+        handle_payment_expired(webhook['data'])
+    elif webhook['event'] == 'pix.refund_processed':
+        handle_refund_processed(webhook['data'])
+    elif webhook['event'] == 'pix.split_completed':
+        handle_split_completed(webhook['data'])
+    
+    return 'OK', 200
+
+def verify_signature(payload, signature):
+    secret = os.getenv('FIREBANKING_WEBHOOK_SECRET')
+    hash_obj = hmac.new(
+        secret.encode('utf-8'),
+        payload,
+        hashlib.sha256
+    )
+    expected_signature = f"sha256={hash_obj.hexdigest()}"
+    return signature == expected_signature
+
+def handle_payment_received(data):
+    print(f"Pagamento recebido: {data['external_id']}")
+    # Processar pedido
+
+if __name__ == '__main__':
+    app.run(port=3000)
+```
+
+```php PHP
+<?php
+header('Content-Type: application/json');
+
+$signature = $_SERVER['HTTP_X_FIREBANKING_SIGNATURE'] ?? '';
+$payload = file_get_contents('php://input');
+
+// Verificar assinatura
+if (!verifySignature($payload, $signature)) {
+    http_response_code(401);
+    exit('Unauthorized');
+}
+
+$webhook = json_decode($payload, true);
+
+switch ($webhook['event']) {
+    case 'pix.payment_received':
+        handlePaymentReceived($webhook['data']);
+        break;
+    case 'pix.payment_expired':
+        handlePaymentExpired($webhook['data']);
+        break;
+    case 'pix.refund_processed':
+        handleRefundProcessed($webhook['data']);
+        break;
+    case 'pix.split_completed':
+        handleSplitCompleted($webhook['data']);
+        break;
+}
+
+http_response_code(200);
+echo 'OK';
+
+function verifySignature($payload, $signature) {
+    $secret = getenv('FIREBANKING_WEBHOOK_SECRET');
+    $hash = 'sha256=' . hash_hmac('sha256', $payload, $secret);
+    return hash_equals($signature, $hash);
+}
+
+function handlePaymentReceived($data) {
+    error_log("Pagamento recebido: " . $data['external_id']);
+    // Processar pedido
+}
+?>
+```
+</CodeGroup>
+
+## Segurança
+
+### Verificação de Assinatura
+Todos os webhooks incluem uma assinatura HMAC-SHA256 no header `X-Firebanking-Signature`:
+
+```bash
+X-Firebanking-Signature: sha256=a1b2c3d4e5f6...
+```
+
+### Idempotência
+Cada webhook possui um ID único. Processe apenas uma vez por ID:
+
+```javascript
+const processedWebhooks = new Set();
+
+if (processedWebhooks.has(webhook.webhook.id)) {
+  return res.status(200).send('Already processed');
+}
+
+processedWebhooks.add(webhook.webhook.id);
+// Processar webhook...
+```
+
+## Retry e Falhas
+
+### Política de Retry
+- **Tentativas**: Até 5 tentativas
+- **Intervalo**: 1s, 5s, 25s, 125s, 625s
+- **Códigos de sucesso**: 200-299
+- **Timeout**: 30 segundos por tentativa
+
+### Webhook Falhou
+Se todas as tentativas falharem, você receberá um webhook especial:
+
+```json
+{
+  "event": "webhook.failed",
+  "original_event": "pix.payment_received",
+  "pix_id": "pix_12345678901234567890",
+  "webhook_id": "webhook_987654321",
+  "attempts": 5,
+  "last_error": "Connection timeout",
+  "timestamp": "2024-01-15T10:50:00Z"
+}
+```
+
+## Testes
+
+### Webhook de Teste
+```bash
+curl -X POST "https://api-gateway.firebanking.com.br/v2/webhooks/test" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "event": "pix.payment_received",
+    "url": "https://meusite.com/webhooks/pix"
+  }'
+```
+
+### Ambiente de Desenvolvimento
+- Use [ngrok](https://ngrok.com/) para expor localhost
+- Configure webhook para URL do ngrok
+- Teste com PIX de sandbox
+
+## Monitoramento
+
+### Dashboard de Webhooks
+Acompanhe a saúde dos seus webhooks:
+- Taxa de sucesso
+- Tentativas de retry
+- Webhooks falhados
+- Tempo de resposta
+
+### Logs Detalhados
+```bash
+# Consultar logs de webhook
+curl -X GET "https://api-gateway.firebanking.com.br/v2/webhooks/logs?pix_id=pix_12345678901234567890" \
+  -H "x-api-key: fbk_live_sua_chave_aqui"
+```
+
+## Boas Práticas
+
+### Performance
+- **Resposta rápida**: Retorne 200 imediatamente
+- **Processamento assíncrono**: Use filas para tarefas demoradas
+- **Cache de duplicatas**: Evite reprocessamento
+- **Timeout adequado**: Configure timeout do servidor
+
+### Confiabilidade
+- **Valideção rigorosa**: Sempre verifique assinatura
+- **Idempotência**: Trate webhooks duplicados
+- **Retry manual**: Tenha processo para webhooks falhados
+- **Monitoring**: Monitore taxas de sucesso
+
+### Segurança
+- **HTTPS obrigatório**: Nunca use HTTP
+- **Validação de origem**: Confirme que vem da FireBanking
+- **Log de segurança**: Registre tentativas de webhook
+- **Secret seguro**: Mantenha webhook secret em variáveis de ambiente
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhooks Cash Out" href="/api-reference/pix/webhooks-cashout">
+    Configure webhooks para transferências PIX
+  </Card>
+  <Card title="Configurar Webhooks" href="/api-reference/webhooks/configure">
+    Gerencie seus endpoints de webhook
+  </Card>
+  <Card title="Testar Webhooks" href="/api-reference/webhooks/test">
+    Teste seus webhooks em sandbox
+  </Card>
+  <Card title="Monitorar Webhooks" href="/dashboard/webhooks">
+    Acompanhe performance no dashboard
+  </Card>
+</CardGroup>

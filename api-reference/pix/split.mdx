@@ -1,0 +1,408 @@
+---
+title: 'Split de Pagamento'
+openapi: 'POST /pix/v2/payment'
+description: 'Divida pagamentos PIX entre múltiplos beneficiários automaticamente'
+---
+
+## Visão Geral
+
+O Split de Pagamento PIX permite dividir automaticamente o valor recebido entre múltiplos beneficiários. Ideal para marketplaces, plataformas de serviços e operações que precisam distribuir valores entre diferentes participantes.
+
+<Info>
+  O Split é configurado no momento da criação da cobrança e é executado automaticamente após o pagamento.
+</Info>
+
+## Como Funciona
+
+1. **Criação**: Cobrança criada com regras de split
+2. **Pagamento**: Cliente paga o valor total
+3. **Divisão**: Sistema divide automaticamente
+4. **Transferência**: Cada beneficiário recebe sua parte
+5. **Webhook**: Notificação de conclusão enviada
+
+## Parâmetros de Split
+
+<ParamField body="splits" type="array" required>
+  Array com configuração de cada beneficiário
+  <Expandable title="splits">
+    <ParamField body="splits[].recipient_id" type="string" required>
+      ID do beneficiário (previamente cadastrado)
+    </ParamField>
+    <ParamField body="splits[].type" type="string" required>
+      Tipo de divisão: `percentage` ou `fixed_amount`
+    </ParamField>
+    <ParamField body="splits[].value" type="number" required>
+      Valor (% para percentage, R$ para fixed_amount)
+    </ParamField>
+    <ParamField body="splits[].description" type="string">
+      Descrição da participação
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL - Split por Percentual
+curl -X POST "https://api-gateway.firebanking.com.br/v2/payment" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 1000,
+    "description": "Venda marketplace",
+    "externalId": "marketplace-001",
+    "buyer": {
+      "name": "João Silva",
+      "document": "12345678901",
+      "email": "joao@email.com"
+    },
+    "splits": [
+      {
+        "recipient_id": "vendor_123",
+        "type": "percentage",
+        "value": 85,
+        "description": "Vendedor principal"
+      },
+      {
+        "recipient_id": "platform_fee",
+        "type": "percentage",
+        "value": 10,
+        "description": "Taxa da plataforma"
+      },
+      {
+        "recipient_id": "shipping_partner",
+        "type": "percentage",
+        "value": 5,
+        "description": "Parceiro de entrega"
+      }
+    ]
+  }'
+```
+
+```bash cURL - Split Misto
+curl -X POST "https://api-gateway.firebanking.com.br/v2/payment" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 500,
+    "description": "Serviço profissional",
+    "externalId": "service-456",
+    "buyer": {
+      "name": "Maria Santos",
+      "document": "98765432100",
+      "email": "maria@email.com"
+    },
+    "splits": [
+      {
+        "recipient_id": "professional_001",
+        "type": "fixed_amount",
+        "value": 400,
+        "description": "Profissional executor"
+      },
+      {
+        "recipient_id": "platform_commission",
+        "type": "fixed_amount",
+        "value": 50,
+        "description": "Comissão da plataforma"
+      },
+      {
+        "recipient_id": "support_fund",
+        "type": "fixed_amount",
+        "value": 50,
+        "description": "Fundo de suporte"
+      }
+    ]
+  }'
+```
+</CodeGroup>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK - Split Configurado
+{
+  "id": "pix_split_123456789",
+  "externalId": "marketplace-001",
+  "status": "waiting_payment",
+  "amount": 100000,
+  "currency": "BRL",
+  "description": "Venda marketplace",
+  "qrCode": {
+    "text": "00020101021226830014br.gov.bcb.pix...",
+    "image": "data:image/png;base64,iVBORw0KGgo..."
+  },
+  "splits": [
+    {
+      "recipient_id": "vendor_123",
+      "type": "percentage",
+      "value": 85,
+      "calculated_amount": 85000,
+      "description": "Vendedor principal",
+      "status": "pending"
+    },
+    {
+      "recipient_id": "platform_fee",
+      "type": "percentage",
+      "value": 10,
+      "calculated_amount": 10000,
+      "description": "Taxa da plataforma",
+      "status": "pending"
+    },
+    {
+      "recipient_id": "shipping_partner",
+      "type": "percentage",
+      "value": 5,
+      "calculated_amount": 5000,
+      "description": "Parceiro de entrega",
+      "status": "pending"
+    }
+  ],
+  "split_summary": {
+    "total_splits": 3,
+    "total_amount": 100000,
+    "split_amount": 100000,
+    "remaining_amount": 0
+  },
+  "created_at": "2024-01-15T18:00:00Z"
+}
+```
+
+```json 200 OK - Split Executado (Após Pagamento)
+{
+  "id": "pix_split_123456789",
+  "status": "paid",
+  "amount": 100000,
+  "paid_at": "2024-01-15T18:15:30Z",
+  "splits": [
+    {
+      "recipient_id": "vendor_123",
+      "calculated_amount": 85000,
+      "status": "transferred",
+      "transfer_id": "split_transfer_001",
+      "transferred_at": "2024-01-15T18:15:45Z"
+    },
+    {
+      "recipient_id": "platform_fee",
+      "calculated_amount": 10000,
+      "status": "transferred",
+      "transfer_id": "split_transfer_002",
+      "transferred_at": "2024-01-15T18:15:46Z"
+    },
+    {
+      "recipient_id": "shipping_partner",
+      "calculated_amount": 5000,
+      "status": "transferred",
+      "transfer_id": "split_transfer_003",
+      "transferred_at": "2024-01-15T18:15:47Z"
+    }
+  ],
+  "split_summary": {
+    "total_transfers": 3,
+    "successful_transfers": 3,
+    "failed_transfers": 0,
+    "total_transferred": 100000
+  }
+}
+```
+</ResponseExample>
+
+## Tipos de Split
+
+### Por Percentual
+```json
+{
+  "type": "percentage",
+  "value": 15.5  // 15.5% do valor total
+}
+```
+- **Vantagem**: Proporcional ao valor
+- **Uso**: Comissões, marketplaces
+- **Limite**: Soma deve ser ≤ 100%
+
+### Valor Fixo
+```json
+{
+  "type": "fixed_amount",
+  "value": 25.00  // R$ 25,00 fixos
+}
+```
+- **Vantagem**: Valor garantido
+- **Uso**: Taxas fixas, serviços
+- **Limite**: Soma deve ser ≤ valor total
+
+### Split Misto
+```json
+"splits": [
+  {
+    "type": "fixed_amount",
+    "value": 50.00
+  },
+  {
+    "type": "percentage",
+    "value": 10
+  }
+]
+```
+
+## Validações de Split
+
+### Regras Obrigatórias
+- **Soma percentual**: Máximo 100%
+- **Soma valores fixos**: Não pode exceder valor total
+- **Mínimo por beneficiário**: R$ 0,01
+- **Máximo de beneficiários**: 10 por transação
+
+### Exemplos de Validação
+
+<AccordionGroup>
+  <Accordion title="✅ Válido - 100% Distribuído">
+    ```json
+    // Valor total: R$ 1.000,00
+    "splits": [
+      { "type": "percentage", "value": 80 },  // R$ 800,00
+      { "type": "percentage", "value": 20 }   // R$ 200,00
+    ]
+    // Total: 100% ✅
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Válido - Valores Fixos">
+    ```json
+    // Valor total: R$ 500,00
+    "splits": [
+      { "type": "fixed_amount", "value": 400 }, // R$ 400,00
+      { "type": "fixed_amount", "value": 100 }  // R$ 100,00
+    ]
+    // Total: R$ 500,00 ✅
+    ```
+  </Accordion>
+
+  <Accordion title="❌ Inválido - Excede 100%">
+    ```json
+    "splits": [
+      { "type": "percentage", "value": 60 },
+      { "type": "percentage", "value": 50 }
+    ]
+    // Total: 110% ❌
+    ```
+  </Accordion>
+
+  <Accordion title="❌ Inválido - Valor Fixo Excede Total">
+    ```json
+    // Valor total: R$ 100,00
+    "splits": [
+      { "type": "fixed_amount", "value": 80 },
+      { "type": "fixed_amount", "value": 30 }
+    ]
+    // Total: R$ 110,00 > R$ 100,00 ❌
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Gerenciamento de Beneficiários
+
+### Cadastrar Beneficiário
+```bash
+curl -X POST "https://api-gateway.firebanking.com.br/v2/recipients" \
+  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Loja ABC Ltda",
+    "document": "12345678000195",
+    "email": "financeiro@lojaabc.com",
+    "pix_key": "12345678000195",
+    "pix_key_type": "DOCUMENT"
+  }'
+```
+
+### Listar Beneficiários
+```bash
+curl -X GET "https://api-gateway.firebanking.com.br/v2/recipients" \
+  -H "x-api-key: fbk_live_sua_chave_aqui"
+```
+
+## Webhook de Split
+
+Após a execução do split, você receberá webhooks detalhados:
+
+```json
+{
+  "event": "pix.split_completed",
+  "pix_id": "pix_split_123456789",
+  "timestamp": "2024-01-15T18:15:50Z",
+  "data": {
+    "total_amount": 100000,
+    "total_transfers": 3,
+    "successful_transfers": 3,
+    "failed_transfers": 0,
+    "splits": [
+      {
+        "recipient_id": "vendor_123",
+        "amount": 85000,
+        "status": "transferred",
+        "transfer_id": "split_transfer_001"
+      }
+      // ... outros splits
+    ]
+  }
+}
+```
+
+## Casos de Uso
+
+### Marketplace E-commerce
+- **Vendedor**: 85% do valor
+- **Plataforma**: 10% de comissão
+- **Logística**: 5% para entrega
+
+### Plataforma de Serviços
+- **Profissional**: 80% do valor
+- **Plataforma**: 15% de comissão
+- **Seguro**: 5% para garantia
+
+### Evento/Show
+- **Artista**: 60% do valor
+- **Produtora**: 25% de produção
+- **Casa de Show**: 10% do espaço
+- **Plataforma**: 5% de comissão
+
+## Códigos de Erro
+
+| Código | Descrição |
+|--------|-----------|
+| `INVALID_SPLIT_TOTAL` | Soma dos splits excede 100% ou valor total |
+| `INVALID_RECIPIENT` | Beneficiário não encontrado ou inativo |
+| `SPLIT_MINIMUM_AMOUNT` | Valor do split menor que mínimo (R$ 0,01) |
+| `TOO_MANY_RECIPIENTS` | Máximo de 10 beneficiários por split |
+| `RECIPIENT_LIMIT_EXCEEDED` | Limite de transferência do beneficiário |
+
+## Boas Práticas
+
+### Planejamento
+- **Cadastre beneficiários**: Antes de usar no split
+- **Teste percentuais**: Valide cálculos em sandbox
+- **Documente regras**: Mantenha registro das divisões
+- **Monitore limites**: Acompanhe limites dos beneficiários
+
+### Performance
+- **Cache beneficiários**: Evite consultas repetidas
+- **Valide antes**: Confirme dados antes de criar split
+- **Use webhooks**: Para monitorar execução em tempo real
+- **Log detalhado**: Para auditoria e troubleshooting
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Gerenciar Beneficiários" href="/api-reference/recipients/list">
+    Cadastre e gerencie beneficiários de split
+  </Card>
+  <Card title="Webhooks" href="/api-reference/pix/webhooks-cashin">
+    Configure notificações de split
+  </Card>
+  <Card title="Relatórios" href="/api-reference/reports/splits">
+    Acompanhe performance dos splits
+  </Card>
+  <Card title="Sandbox" href="/testing">
+    Teste splits em ambiente de desenvolvimento
+  </Card>
+</CardGroup>
