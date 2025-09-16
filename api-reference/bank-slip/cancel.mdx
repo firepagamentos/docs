@@ -38,7 +38,7 @@ Cancele um boleto bancário que ainda não foi pago. O cancelamento é irrevers�
 
 <CodeGroup>
 ```bash cURL - Cancelamento Simples
-curl -X PATCH "https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456/cancel" \
+curl -X PATCH "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/cancel" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
@@ -47,7 +47,7 @@ curl -X PATCH "https://api-gateway.firebanking.com.br/v1/payment/bol_12345678901
 ```
 
 ```bash cURL - Por External ID
-curl -X PATCH "https://api-gateway.firebanking.com.br/v1/payment/pedido-123/cancel?type=external" \
+curl -X PATCH "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123/cancel?type=external" \
   -H "x-api-key: fbk_live_sua_chave_aqui" \
   -H "Content-Type: application/json" \
   -d '{
@@ -61,7 +61,7 @@ curl -X PATCH "https://api-gateway.firebanking.com.br/v1/payment/pedido-123/canc
 
 ```javascript JavaScript
 async function cancelBoleto(boletoId, reason) {
-  const response = await fetch(`https://api-gateway.firebanking.com.br/v1/payment/${boletoId}/cancel`, {
+  const response = await fetch(`https://api-gateway.firebanking.com.br/bank-slip/v1/payment/${boletoId}/cancel`, {
     method: 'PATCH',
     headers: {
       'x-api-key': 'fbk_live_sua_chave_aqui',
@@ -108,7 +108,7 @@ def cancel_boleto(boleto_id, reason, metadata=None):
     }
 
     response = requests.patch(
-        f'https://api-gateway.firebanking.com.br/v1/payment/{boleto_id}/cancel',
+        f'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/{boleto_id}/cancel',
         json=data,
         headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
     )
@@ -124,7 +124,7 @@ def cancel_boleto_by_order(order_id, reason):
     data = {'reason': reason}
 
     response = requests.patch(
-        f'https://api-gateway.firebanking.com.br/v1/payment/{order_id}/cancel',
+        f'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/{order_id}/cancel',
         params={'type': 'external'},
         json=data,
         headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
@@ -152,7 +152,7 @@ function cancelBoleto($boletoId, $reason, $metadata = []) {
 
     $curl = curl_init();
     curl_setopt_array($curl, [
-        CURLOPT_URL => "https://api-gateway.firebanking.com.br/v1/payment/{$boletoId}/cancel",
+        CURLOPT_URL => "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/{$boletoId}/cancel",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CUSTOMREQUEST => 'PATCH',
         CURLOPT_POSTFIELDS => json_encode($data),
@@ -565,7 +565,7 @@ app.patch('/api/boleto/:id/cancel', async (req, res) => {
 
     // Chamar API da FireBanking
     const response = await fetch(
-      `https://api-gateway.firebanking.com.br/v1/payment/${id}/cancel`,
+      `https://api-gateway.firebanking.com.br/bank-slip/v1/payment/${id}/cancel`,
       {
         method: 'PATCH',
         headers: {

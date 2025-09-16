@@ -32,24 +32,24 @@ Gere o arquivo PDF de um boleto bancário registrado. Este endpoint retorna uma 
 
 <CodeGroup>
 ```bash cURL - Retornar URL
-curl -X POST "https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456/generate-pdf" \
+curl -X POST "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/generate-pdf" \
   -H "x-api-key: fbk_live_sua_chave_aqui"
 ```
 
 ```bash cURL - Por External ID
-curl -X POST "https://api-gateway.firebanking.com.br/v1/payment/pedido-123/generate-pdf?type=external" \
+curl -X POST "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123/generate-pdf?type=external" \
   -H "x-api-key: fbk_live_sua_chave_aqui"
 ```
 
 ```bash cURL - Retornar Base64
-curl -X POST "https://api-gateway.firebanking.com.br/v1/payment/bol_1234567890123456/generate-pdf?format=base64" \
+curl -X POST "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/generate-pdf?format=base64" \
   -H "x-api-key: fbk_live_sua_chave_aqui"
 ```
 
 ```javascript JavaScript
 // Gerar PDF e retornar URL
 async function generateBoletoPDF(boletoId) {
-  const response = await fetch(`https://api-gateway.firebanking.com.br/v1/payment/${boletoId}/generate-pdf`, {
+  const response = await fetch(`https://api-gateway.firebanking.com.br/bank-slip/v1/payment/${boletoId}/generate-pdf`, {
     method: 'POST',
     headers: {
       'x-api-key': 'fbk_live_sua_chave_aqui'
@@ -90,7 +90,7 @@ def generate_boleto_pdf(boleto_id, format_type='url'):
     """Gera PDF do boleto e retorna URL ou base64"""
 
     response = requests.post(
-        f'https://api-gateway.firebanking.com.br/v1/payment/{boleto_id}/generate-pdf',
+        f'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/{boleto_id}/generate-pdf',
         params={'format': format_type},
         headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
     )
@@ -124,7 +124,7 @@ function generateBoletoPDF($boletoId, $format = 'url') {
     $curl = curl_init();
 
     curl_setopt_array($curl, [
-        CURLOPT_URL => "https://api-gateway.firebanking.com.br/v1/payment/{$boletoId}/generate-pdf?format={$format}",
+        CURLOPT_URL => "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/{$boletoId}/generate-pdf?format={$format}",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
         CURLOPT_HTTPHEADER => [
@@ -429,7 +429,7 @@ app.post('/api/boleto/:id/pdf', async (req, res) => {
 
     // Chamar API da FireBanking
     const response = await fetch(
-      `https://api-gateway.firebanking.com.br/v1/payment/${id}/generate-pdf?format=${format}`,
+      `https://api-gateway.firebanking.com.br/bank-slip/v1/payment/${id}/generate-pdf?format=${format}`,
       {
         method: 'POST',
         headers: {
