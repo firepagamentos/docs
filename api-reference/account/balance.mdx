@@ -1,174 +1,166 @@
 ---
 title: 'Obter Saldo da Conta'
-openapi: 'GET /credit-card/v1/account/balance'
+openapi: 'GET /v1/account/balance'
 ---
 
-Recuperar as informações atuais do saldo da conta, incluindo saldos disponíveis e pendentes. Este endpoint fornece dados de saldo em tempo real para sua conta FireBanking.
+Verificar saldo atualizado da conta com informações detalhadas sobre saldo total, bloqueado e disponível. Este endpoint fornece dados de saldo em tempo real para sua conta FireBanking.
 
 ## Tipos de Saldo
 
-<CardGroup cols={2}>
-  <Card title="Saldo Disponível" icon="money-bill-wave">
-    Fundos que podem ser sacados ou usados imediatamente
+<CardGroup cols={3}>
+  <Card title="Saldo Total" icon="wallet">
+    **totalBalance**
+    Saldo total da conta incluindo fundos disponíveis e bloqueados
   </Card>
-  <Card title="Saldo Pendente" icon="clock">
-    Fundos sendo processados que ficarão disponíveis em breve
+  <Card title="Saldo Bloqueado" icon="lock">
+    **blockedBalance**
+    Valor comprometido em saques e operações pendentes
+  </Card>
+  <Card title="Saldo Disponível" icon="money-bill-wave">
+    **availableBalance**
+    Saldo disponível para novas transações e saques
   </Card>
 </CardGroup>
 
 ## Exemplo de Requisição
 
 ```bash cURL
-curl -X GET "https://api-gateway.firebanking.com.br/v1/account/balance" \
-  -H "x-api-key: SUA_CHAVE_DE_API"
+curl --request GET \
+  --url https://api-gateway.firebanking.com.br/v1/account/balance \
+  --header 'x-api-key: sua_chave_api'
 ```
 
 ## Exemplo de Resposta
 
-```json Resposta
+```json Resposta de Sucesso
 {
-  "availableBalance": 1500,
-  "pendingBalance": 250,
-  "currency": "BRL",
-  "lastUpdated": "2024-01-15T16:30:00Z",
-  "accountId": "acc_12345",
-  "balanceDetails": {
-    "settlementBalance": 1400,
-    "reserveBalance": 100,
-    "processingFees": 35
-  }
+  "id": "6642d54caff30523094a6584c",
+  "totalBalance": 4.02,
+  "blockedBalance": 1.26,
+  "availableBalance": 2.76
 }
 ```
 
 ## Campos da Resposta
 
-<ResponseField name="availableBalance" type="integer">
-  Saldo disponível em reais (pode ser sacado imediatamente)
+<ResponseField name="id" type="string" required>
+  Identificador único da conta
 </ResponseField>
 
-<ResponseField name="pendingBalance" type="integer">
-  Saldo pendente em reais (fundos sendo processados)
+<ResponseField name="totalBalance" type="number" required>
+  Saldo total da conta (disponível + bloqueado)
 </ResponseField>
 
-<ResponseField name="currency" type="string">
-  Código da moeda (sempre "BRL" para Real Brasileiro)
+<ResponseField name="blockedBalance" type="number" required>
+  Valor comprometido em saques e operações pendentes
 </ResponseField>
 
-<ResponseField name="lastUpdated" type="string">
-  Timestamp de quando o saldo foi atualizado pela última vez
-</ResponseField>
-
-<ResponseField name="settlementBalance" type="integer">
-  Fundos de transações liquidadas
-</ResponseField>
-
-<ResponseField name="reserveBalance" type="integer">
-  Fundos mantidos em reserva para chargebacks/estornos
-</ResponseField>
-
-<ResponseField name="processingFees" type="integer">
-  Taxas de processamento acumuladas a serem deduzidas
+<ResponseField name="availableBalance" type="number" required>
+  Saldo disponível para novas transações
 </ResponseField>
 
 ## Cálculo do Saldo
 
+### Relação entre Saldos
+O relacionamento entre os saldos é:
+```
+Total = Disponível + Bloqueado
+```
+
+### Saldo Bloqueado
+Inclui valores comprometidos em:
+- **Saques PIX** em processamento
+- **Transferências** aguardando confirmação
+- **Reservas** para chargebacks potenciais
+- **Operações pendentes** não finalizadas
+
 ### Saldo Disponível
-Saldo disponível é calculado como:
-```
-Disponível = Saldo de Liquidação - Saldo de Reserva - Taxas de Processamento
-```
+Valor que pode ser usado para:
+- Novos saques e transferências
+- Pagamento de taxas
+- Operações em tempo real
 
-### Saldo Pendente
-Inclui:
-- **Pagamentos em processamento** que ainda não foram liquidados
-- **Autorizações capturadas** aguardando liquidação
-- **Estornos** sendo processados de volta aos clientes
-- **Transações de ajuste** do processador de pagamentos
+## Cronograma de Liberação
 
-## Cronograma de Liquidação
-
-<CardGroup cols={2}>
-  <Card title="Cartões de Crédito" icon="credit-card">
-    Normalmente liquidam em 1-2 dias úteis
+<CardGroup cols={3}>
+  <Card title="PIX" icon="qrcode">
+    **Instantâneo**
+    Disponível imediatamente após recebimento
   </Card>
-  <Card title="Cartões de Débito" icon="credit-card">
-    Geralmente liquidam em 1 dia útil
+  <Card title="Cartão" icon="credit-card">
+    **D+2**
+    Disponível 2 dias úteis após captura
+  </Card>
+  <Card title="Boleto" icon="file-invoice">
+    **D+1**
+    Disponível 1 dia útil após pagamento
   </Card>
 </CardGroup>
-
-## Fundos de Reserva
-
-Uma porção do seu saldo pode ser mantida em reserva para cobrir:
-- **Chargebacks potenciais** de transações contestadas
-- **Obrigações de estorno** para transações recentes
-- **Gerenciamento de risco** baseado na atividade da conta
-
-Percentuais de reserva são determinados por:
-- Volume e histórico de transações
-- Fatores de risco da indústria
-- Taxas de chargeback
-- Idade e performance da conta
 
 ## Casos de Uso
 
 <CardGroup cols={2}>
   <Card title="Gestão de Fluxo de Caixa" icon="chart-line">
-    Monitorar fundos disponíveis para operações de negócio
+    Monitorar fundos disponíveis para operações
+  </Card>
+  <Card title="Validação de Saque" icon="money-bill-transfer">
+    Verificar se há saldo suficiente antes de sacar
   </Card>
   <Card title="Conciliação" icon="balance-scale">
-    Corresponder saldo da conta com registros internos
+    Corresponder saldo com registros internos
   </Card>
-  <Card title="Planejamento de Saque" icon="money-bill-transfer">
-    Determinar quanto pode ser sacado
-  </Card>
-  <Card title="Relatórios Financeiros" icon="file-invoice">
-    Gerar demonstrativos financeiros e relatórios
+  <Card title="Relatórios" icon="file-invoice">
+    Gerar demonstrativos financeiros
   </Card>
 </CardGroup>
-
-<Info>
-  Informações de saldo são atualizadas em tempo real conforme transações são processadas. No entanto, tempos de liquidação dependem dos métodos de pagamento e cronogramas bancários.
-</Info>
 
 ## Limitação de Taxa
 
 Este endpoint tem os seguintes limites:
-- **60 requisições por minuto** por conta
-- **1000 requisições por hora** por conta
+- **60 requisições por minuto** por chave API
+- Recomendado usar webhooks para atualizações em tempo real
 
 <Warning>
-  Não faça polling excessivo deste endpoint. Para atualizações de saldo em tempo real, considere usar webhooks para eventos de transação.
+  Evite polling excessivo. Use webhooks para ser notificado sobre mudanças de saldo.
 </Warning>
 
 ## Cenários de Erro
 
-- **Conta não encontrada**: Conta inválida ou inativa
-- **Permissões insuficientes**: Chave de API não tem acesso ao saldo
-- **Conta suspensa**: Conta está temporariamente suspensa
-- **Serviço indisponível**: Serviço de saldo está temporariamente indisponível
+### Códigos de Resposta
 
-## Melhores Práticas
+| Código | Descrição | Solução |
+|--------|-----------|---------|
+| **200** | Sucesso | Saldo recuperado |
+| **401** | Não autorizado | Verifique header `x-api-key` |
+| **403** | Proibido | Chave API sem permissões |
+| **500** | Erro interno | Tente novamente |
 
-1. **Cache dados de saldo** - Evite chamadas desnecessárias à API
-2. **Use webhooks** - Seja notificado de eventos que afetam o saldo
-3. **Monitore reservas** - Rastreie tendências da taxa de reserva
-4. **Planeje saques** - Considere liquidações pendentes
-5. **Concilie regularmente** - Compare com contabilidade interna
+## Webhooks Relacionados
 
-## Webhooks de Saldo
+Configure webhooks para receber notificações sobre mudanças de saldo:
 
-Inscreva-se nestes webhooks para atualizações de saldo:
-- `balance.updated` - Quando o saldo disponível muda
-- `settlement.completed` - Quando transações são liquidadas
-- `reserve.adjusted` - Quando valores de reserva mudam
+```bash Configurar Webhook
+curl --request POST \
+  --url https://api.firebanking.com.br/business/webhook \
+  --header 'x-api-key: sua_chave_api' \
+  --data '{
+    "pixWebhookUrl": "https://meusite.com/webhooks/pix"
+  }'
+```
 
-## Formato da Moeda
+## Formato de Valores
 
-Todos os valores são retornados em **reais**:
-- R$ 1.500,00 = `1500` reais
-- R$ 250,00 = `250` reais  
-- R$ 35,00 = `35` reais
+Todos os valores são em **reais** com decimais:
+- R$ 4,02 = `4.02`
+- R$ 1,26 = `1.26`
+- R$ 2,76 = `2.76`
 
 <Tip>
-  Para exibir moeda adequadamente, formate de acordo com as convenções de moeda brasileira.
+  Para exibição, formate os valores de acordo com as convenções monetárias brasileiras (R$ 4,02).
 </Tip>
+
+## Próximos Passos
+
+- Configure [webhooks](/api-reference/webhooks/configure) para atualizações automáticas
+- Implemente [validação de saldo](/concepts/payment-methods) antes de transações
+- Monitore [saques PIX](/api-reference/pix/withdraw/create) para gestão de fluxo de caixa

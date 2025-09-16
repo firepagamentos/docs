@@ -1,0 +1,222 @@
+---
+title: "Retry de Webhooks"
+description: "Entenda como funciona o sistema de retry automático e como configurar seu endpoint para máxima confiabilidade"
+---
+
+O FireBanking implementa **retry automático** para garantir que webhooks importantes não sejam perdidos devido a falhas temporárias. Entenda como otimizar seu endpoint para máxima confiabilidade.
+
+## Política de Retry
+
+### Configuração Automática
+
+<AccordionGroup>
+  <Accordion title="Tentativas e Intervalos">
+    - **Tentativas**: Até 5 tentativas com backoff exponencial
+    - **Intervalos**: 1s, 3s, 9s, 27s, 81s
+    - **Timeout**: 30 segundos por tentativa
+    - **Total**: Até ~2 minutos de tentativas
+  </Accordion>
+
+  <Accordion title="Critérios de Retry">
+    **Retry automático ocorre quando:**
+    - Status HTTP 5xx (500, 502, 503, 504)
+    - Timeout de conexão (>30s)
+    - Erro de rede/DNS
+    - Conexão recusada
+
+    **Não há retry para:**
+    - Status 2xx (webhook processado)
+    - Status 4xx (erro do cliente)
+    - Status 200 com erro no body
+  </Accordion>
+</AccordionGroup>
+
+## Implementação Robusta
+
+### Resposta Adequada
+
+Seu endpoint deve responder corretamente para evitar retries desnecessários:
+
+```javascript
+app.post('/webhook', async (req, res) => {
+  try {
+    // Responder IMEDIATAMENTE
+    res.status(200).send('OK');
+
+    // Processar ASSINCRONAMENTE
+    setImmediate(() => {
+      processWebhookAsync(req.body);
+    });
+
+  } catch (error) {
+    // Log do erro mas ainda responder 200
+    console.error('Webhook error:', error);
+    res.status(200).send('Received with errors');
+
+    // Processar o erro separadamente
+    handleWebhookError(req.body, error);
+  }
+});
+```
+
+<Warning>
+  **Importante**: Sempre responda com status 200-299 se o webhook foi **recebido** corretamente, mesmo que haja erros no processamento interno.
+</Warning>
+
+## Tratamento de Duplicatas
+
+### Idempotência
+
+Implemente controle de idempotência para evitar processamento duplicado:
+
+```javascript
+const Redis = require('redis');
+const redis = Redis.createClient();
+
+app.post('/webhook', async (req, res) => {
+  const webhookId = req.body.transaction_id;
+  const attempt = req.body.webhook?.attempt || 1;
+
+  // Verificar se já foi processado
+  const processed = await redis.get(`webhook:${webhookId}`);
+
+  if (processed) {
+    console.log(`Webhook ${webhookId} já processado - tentativa ${attempt}`);
+    return res.status(200).send('Already processed');
+  }
+
+  // Marcar como processado ANTES de processar
+  await redis.setex(`webhook:${webhookId}`, 3600, 'processed');
+
+  // Responder imediatamente
+  res.status(200).send('OK');
+
+  // Processar
+  try {
+    await processWebhook(req.body);
+    console.log(`Webhook ${webhookId} processado com sucesso`);
+  } catch (error) {
+    // Log do erro mas manter como "processado"
+    console.error(`Erro processando webhook ${webhookId}:`, error);
+  }
+});
+```
+
+## Monitoramento de Retry
+
+### Métricas Importantes
+
+Configure alertas para:
+
+- Taxa de retry > 10%
+- Tempo médio de resposta > 5 segundos
+- Taxa de falha final > 1%
+- Webhooks não processados há > 1 hora
+
+### Dashboard de Monitoramento
+
+O painel FireBanking mostra:
+
+<CardGroup cols={2}>
+  <Card title="Status de Entrega" icon="chart-line">
+    - Webhooks entregues no primeiro attempt
+    - Webhooks que precisaram de retry
+    - Webhooks que falharam definitivamente
+  </Card>
+  <Card title="Performance" icon="clock">
+    - Tempo de resposta do seu endpoint
+    - Distribuição de tentativas
+    - Padrões de falha por horário
+  </Card>
+</CardGroup>
+
+## Recuperação de Webhooks Perdidos
+
+### Sincronização Periódica
+
+Implemente job de sincronização para webhooks que falharam definitivamente:
+
+```javascript
+const cron = require('node-cron');
+
+// Executar a cada hora
+cron.schedule('0 * * * *', async () => {
+  console.log('Iniciando sincronização de webhooks perdidos');
+
+  const lastHour = new Date(Date.now() - 60 * 60 * 1000);
+  const missingWebhooks = await findMissingWebhooks(lastHour);
+
+  for (const transaction of missingWebhooks) {
+    try {
+      // Buscar status atual da transação
+      const currentStatus = await getTransactionStatus(transaction.id);
+
+      // Simular webhook perdido
+      await processWebhook({
+        event: `${transaction.type}.${currentStatus.status}`,
+        transaction_id: transaction.id,
+        data: currentStatus,
+        timestamp: new Date().toISOString(),
+        _recovered: true
+      });
+
+      console.log(`Webhook recuperado: ${transaction.id}`);
+    } catch (error) {
+      console.error(`Erro recuperando webhook ${transaction.id}:`, error);
+    }
+  }
+});
+```
+
+## Boas Práticas
+
+### Endpoint Robusto
+
+<AccordionGroup>
+  <Accordion title="Configuração de Servidor">
+    ```javascript
+    const app = express();
+
+    // Timeout adequado
+    app.use(timeout('25s'));
+
+    // Rate limiting
+    app.use(rateLimit({
+      windowMs: 1000, // 1 segundo
+      max: 100 // 100 requests por segundo
+    }));
+
+    // Body parser com limite
+    app.use(express.json({ limit: '1mb' }));
+    ```
+  </Accordion>
+
+  <Accordion title="Tratamento de Erros">
+    ```javascript
+    app.post('/webhook', async (req, res) => {
+      try {
+        // Sempre responder primeiro
+        res.status(200).send('OK');
+
+        // Validação básica
+        if (!isValidWebhook(req.body)) {
+          throw new Error('Invalid webhook format');
+        }
+
+        // Processamento
+        await processWebhook(req.body);
+
+      } catch (error) {
+        // Log mas não falhar o webhook
+        logWebhookError(error, req.body);
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Passos
+
+- Configure [monitoramento](/concepts/webhooks#monitoramento-e-debug) adequado
+- Implemente [validação de assinatura](/concepts/webhooks#validação-de-segurança)
+- Teste [cenários de falha](/api-reference/webhooks/test) em desenvolvimento

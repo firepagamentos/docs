@@ -1,0 +1,123 @@
+---
+title: "Testar Webhooks"
+description: "Ferramentas e métodos para testar sua implementação de webhooks no ambiente de desenvolvimento"
+---
+
+Teste sua implementação de webhooks **antes de ir para produção**. Esta página fornece ferramentas e estratégias para validar o recebimento e processamento de notificações.
+
+## Ferramentas de Teste
+
+### Webhook.site
+
+Use [webhook.site](https://webhook.site) para criar endpoints temporários e visualizar payloads:
+
+1. **Acesse** webhook.site
+2. **Copie** a URL única gerada
+3. **Configure** como webhook URL temporária
+4. **Simule** transações no sandbox
+5. **Visualize** os payloads recebidos
+
+### ngrok para Desenvolvimento Local
+
+Configure um túnel para testar localmente:
+
+```bash
+# Instalar ngrok
+npm install -g ngrok
+
+# Expor porta local
+ngrok http 3000
+
+# Use a URL https fornecida como webhook URL
+```
+
+## Ambiente de Sandbox
+
+### URLs de Teste
+
+Configure webhooks no ambiente de sandbox usando sua chave de teste (`fbk_test_...`).
+
+### Simulação de Eventos
+
+Crie transações de teste para disparar webhooks usando cartões de teste específicos:
+
+- `5383638854408981` - Mastercard (sempre aprovado)
+- `4000000000000002` - Visa (sempre negado)
+
+## Validação de Implementação
+
+### Checklist de Testes
+
+<AccordionGroup>
+  <Accordion title="Recebimento Básico">
+    - ✅ Endpoint responde com status 200
+    - ✅ Payload JSON é parseado corretamente
+    - ✅ Headers são lidos adequadamente
+    - ✅ Timeout de resposta < 30 segundos
+  </Accordion>
+
+  <Accordion title="Validação de Segurança">
+    - ✅ Verificação de assinatura implementada
+    - ✅ Validação de timestamp para replay attacks
+    - ✅ HTTPS obrigatório configurado
+    - ✅ Logs de tentativas inválidas
+  </Accordion>
+
+  <Accordion title="Tratamento de Erros">
+    - ✅ Retry automático testado
+    - ✅ Idempotência implementada
+    - ✅ Fallback para webhooks perdidos
+    - ✅ Monitoramento de falhas
+  </Accordion>
+</AccordionGroup>
+
+## Cenários de Teste
+
+### Teste de Retry
+
+Simule falhas para testar o retry automático:
+
+```javascript
+app.post('/webhook/fail-test', (req, res) => {
+  const attempt = req.body.webhook?.attempt || 1;
+
+  if (attempt < 3) {
+    // Falhar nas primeiras 2 tentativas
+    console.log(`Simulando falha - tentativa ${attempt}`);
+    return res.status(500).send('Internal Server Error');
+  }
+
+  // Sucesso na 3ª tentativa
+  console.log('Webhook processado com sucesso na tentativa', attempt);
+  res.status(200).send('OK');
+});
+```
+
+### Teste de Idempotência
+
+Verifique se duplicatas são tratadas corretamente:
+
+```javascript
+const processedWebhooks = new Set();
+
+app.post('/webhook/idempotent', (req, res) => {
+  const transactionId = req.body.transaction_id;
+
+  if (processedWebhooks.has(transactionId)) {
+    console.log('Webhook já processado:', transactionId);
+    return res.status(200).send('Already processed');
+  }
+
+  // Processar webhook
+  processedWebhooks.add(transactionId);
+  console.log('Novo webhook processado:', transactionId);
+
+  res.status(200).send('Processed');
+});
+```
+
+## Próximos Passos
+
+- Revise [conceitos de webhook](/concepts/webhooks) para implementação robusta
+- Configure [tratamento de retry](/api-reference/webhooks/retry) adequado
+- Implemente monitoramento em produção

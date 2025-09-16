@@ -577,11 +577,11 @@
         }
       }
     },
-    "/credit-card/v1/account/balance": {
+    "/v1/account/balance": {
       "get": {
         "tags": ["Conta"],
         "summary": "Obter Saldo da Conta",
-        "description": "Recuperar saldo atual da conta",
+        "description": "Verificar saldo atualizado da conta com informações detalhadas sobre saldo total, bloqueado e disponível",
         "security": [{"apiKeyAuth": []}],
         "responses": {
           "200": {
@@ -589,7 +589,27 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BalanceResponse"
+                  "$ref": "#/components/schemas/AccountBalanceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -1218,6 +1238,185 @@
           }
         }
       }
+    },
+    "/business/webhook": {
+      "get": {
+        "tags": ["Webhooks"],
+        "summary": "Obter Configuração de Webhooks",
+        "description": "Recupera as URLs de webhook configuradas para cada método de pagamento",
+        "security": [{"apiKeyAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Configuração de webhooks obtida com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookConfiguration"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Configurar Webhooks",
+        "description": "Configura URLs de webhook para receber notificações em tempo real",
+        "security": [{"apiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookConfiguration"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhooks configurados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookConfiguration"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "URL inválida ou protocolo não HTTPS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Webhooks"],
+        "summary": "Atualizar Webhooks Parcialmente",
+        "description": "Atualiza uma ou mais URLs de webhook específicas",
+        "security": [{"apiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pixWebhookUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "bankSlipWebhookUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "creditCardWebhookUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "onboardingWebhookUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhooks atualizados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookConfiguration"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "URL inválida ou protocolo não HTTPS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/business/webhook/{product}": {
+      "delete": {
+        "tags": ["Webhooks"],
+        "summary": "Remover Webhook Específico",
+        "description": "Remove a URL de webhook de um produto específico",
+        "security": [{"apiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "product",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["pix", "bankSlip", "creditCard", "onboarding"]
+            },
+            "description": "Produto do qual remover o webhook"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook removido com sucesso"
+          },
+          "404": {
+            "description": "Produto não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1820,23 +2019,31 @@
           }
         }
       },
-      "BalanceResponse": {
+      "AccountBalanceResponse": {
         "type": "object",
         "properties": {
-          "availableBalance": {
-            "type": "integer",
-            "description": "Saldo disponível em reais"
-          },
-          "pendingBalance": {
-            "type": "integer",
-            "description": "Saldo pendente em reais"
-          },
-          "currency": {
+          "id": {
             "type": "string",
-            "description": "Código da moeda",
-            "example": "BRL"
+            "description": "Identificador único da conta",
+            "example": "6642d54caff30523094a6584c"
+          },
+          "totalBalance": {
+            "type": "number",
+            "description": "Saldo total da conta",
+            "example": 4.02
+          },
+          "blockedBalance": {
+            "type": "number",
+            "description": "Valor comprometido em saques",
+            "example": 1.26
+          },
+          "availableBalance": {
+            "type": "number",
+            "description": "Saldo disponível para transações",
+            "example": 2.76
           }
-        }
+        },
+        "required": ["id", "totalBalance", "blockedBalance", "availableBalance"]
       },
       "HealthResponse": {
         "type": "object",
@@ -2787,6 +2994,108 @@
             }
           }
         }
+      },
+      "WebhookConfiguration": {
+        "type": "object",
+        "properties": {
+          "pixWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para webhooks do PIX (Cash In e Cash Out)",
+            "example": "https://meusite.com/webhooks/pix"
+          },
+          "bankSlipWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para webhooks de Boleto",
+            "example": "https://meusite.com/webhooks/boleto"
+          },
+          "creditCardWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para webhooks de Cartão de Crédito",
+            "example": "https://meusite.com/webhooks/cartao"
+          },
+          "onboardingWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para webhooks de Onboarding (contas específicas)",
+            "example": "https://meusite.com/webhooks/onboarding"
+          }
+        }
+      },
+      "WebhookPayload": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "description": "Tipo do evento",
+            "enum": [
+              "payment.authorized",
+              "payment.captured",
+              "payment.failed",
+              "payment.expired",
+              "payment.refunded",
+              "payment.cancelled",
+              "subscription.created",
+              "subscription.payment_successful",
+              "subscription.payment_failed",
+              "subscription.cancelled",
+              "subscription.suspended",
+              "pix.charge.created",
+              "pix.charge.paid",
+              "pix.charge.expired",
+              "pix.charge.cancelled",
+              "pix.withdraw.created",
+              "pix.withdraw.processed",
+              "pix.withdraw.failed",
+              "pix.withdraw.cancelled",
+              "bankslip.created",
+              "bankslip.paid",
+              "bankslip.expired",
+              "bankslip.cancelled",
+              "onboarding.started",
+              "onboarding.completed",
+              "onboarding.rejected",
+              "onboarding.pending_documents"
+            ]
+          },
+          "transaction_id": {
+            "type": "string",
+            "description": "ID da transação"
+          },
+          "external_id": {
+            "type": "string",
+            "description": "ID externo da transação"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp do evento"
+          },
+          "data": {
+            "type": "object",
+            "description": "Dados específicos do evento"
+          },
+          "webhook": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "ID do webhook"
+              },
+              "attempt": {
+                "type": "integer",
+                "description": "Número da tentativa"
+              },
+              "max_attempts": {
+                "type": "integer",
+                "description": "Máximo de tentativas"
+              }
+            }
+          }
+        },
+        "required": ["event", "transaction_id", "timestamp", "data"]
       }
     },
     "securitySchemes": {

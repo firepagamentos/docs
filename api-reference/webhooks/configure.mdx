@@ -1,0 +1,46 @@
+---
+title: "Configurar Webhooks"
+openapi: "POST /business/webhook"
+---
+
+Configure webhooks para receber **notificações em tempo real** sobre mudanças no status das transações. Esta API permite configurar URLs específicas para cada método de pagamento.
+
+<Note>
+  **HTTPS Obrigatório**: Todas as URLs de webhook devem usar protocolo HTTPS. URLs HTTP serão rejeitadas com erro 400.
+</Note>
+
+## Webhooks por Produto
+
+Configure URLs específicas para cada método de pagamento:
+
+<CardGroup cols={2}>
+  <Card title="PIX" icon="qrcode">
+    **Eventos**: Cash In, Cash Out, Expiração, Cancelamento
+    **URL**: `pixWebhookUrl`
+  </Card>
+  <Card title="Boleto" icon="file-invoice">
+    **Eventos**: Pagamento, Vencimento, Cancelamento
+    **URL**: `bankSlipWebhookUrl`
+  </Card>
+  <Card title="Cartão" icon="credit-card">
+    **Eventos**: Autorização, Captura, Estorno, Falha
+    **URL**: `creditCardWebhookUrl`
+  </Card>
+  <Card title="Onboarding" icon="user-check">
+    **Eventos**: Início, Conclusão, Rejeição, Documentos
+    **URL**: `onboardingWebhookUrl`
+  </Card>
+</CardGroup>
+
+## Produtos Disponíveis
+
+- `pix` - PIX Cash In e Cash Out
+- `bankSlip` - Boleto Bancário
+- `creditCard` - Cartão de Crédito
+- `onboarding` - Processo de Onboarding
+
+## Próximos Passos
+
+- Implemente [validação de assinatura](/concepts/webhooks#validação-de-segurança) nos seus endpoints
+- Configure [tratamento de retry](/api-reference/webhooks/retry) para maior confiabilidade
+- Teste webhooks no [ambiente de sandbox](/api-reference/webhooks/test)

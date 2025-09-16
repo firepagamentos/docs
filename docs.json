@@ -160,12 +160,11 @@
           {
             "group": "Conta",
             "pages": [
-              "api-reference/account/balance",
-              "api-reference/account/transactions"
+              "api-reference/account/balance"
             ]
           },
           {
-            "group": "Webhooks Gerais",
+            "group": "Webhooks",
             "pages": [
               "api-reference/webhooks/configure",
               "api-reference/webhooks/test",
@@ -175,8 +174,7 @@
           {
             "group": "Sistema",
             "pages": [
-              "api-reference/health/check",
-              "api-reference/health/status"
+              "api-reference/health/check"
             ]
           }
         ]

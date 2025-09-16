@@ -101,9 +101,28 @@ A autenticação x-api-key é usada para:
 
 ## Webhooks
 
-Endpoints de webhook não requerem autenticação via cabeçalho. A segurança é fornecida através de:
+### Configuração de Webhooks
+
+Os webhooks **requerem autenticação via x-api-key** para configuração e gerenciamento. Configure URLs específicas para cada método de pagamento:
+
+```bash Configurar Webhooks
+curl --request POST \
+  --url https://api.firebanking.com.br/business/webhook \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: sua_chave_api' \
+  --data '{
+    "pixWebhookUrl": "https://meusite.com/webhooks/pix",
+    "bankSlipWebhookUrl": "https://meusite.com/webhooks/boleto",
+    "creditCardWebhookUrl": "https://meusite.com/webhooks/cartao"
+  }'
+```
+
+### Segurança de Webhooks
+
+**Recebimento de webhooks** não requer autenticação via cabeçalho. A segurança é fornecida através de:
 
 - **URLs únicas**: Específicas para cada conta
+- **HTTPS obrigatório**: Todas as URLs devem usar protocolo HTTPS
 - **Assinatura digital**: Verificação de integridade do payload
 - **Retry automático**: Tentativas automáticas em caso de falha
 - **Timeout configurável**: Controle de tempo de resposta
@@ -114,17 +133,36 @@ Endpoints de webhook não requerem autenticação via cabeçalho. A segurança �
 const crypto = require('crypto');
 
 function verifyWebhookSignature(payload, signature, secret) {
-  const expectedSignature = crypto
+  const expectedSignature = 'sha256=' + crypto
     .createHmac('sha256', secret)
     .update(payload)
     .digest('hex');
 
   return crypto.timingSafeEqual(
-    Buffer.from(signature, 'hex'),
-    Buffer.from(expectedSignature, 'hex')
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
   );
 }
 ```
+
+### URLs por Produto
+
+Configure webhooks específicos para cada método:
+
+<CardGroup cols={3}>
+  <Card title="PIX" icon="qrcode">
+    **pixWebhookUrl**
+    Cash In e Cash Out PIX
+  </Card>
+  <Card title="Boleto" icon="file-invoice">
+    **bankSlipWebhookUrl**
+    Confirmações e vencimentos
+  </Card>
+  <Card title="Cartão" icon="credit-card">
+    **creditCardWebhookUrl**
+    Autorizações e capturas
+  </Card>
+</CardGroup>
 
 ## Tratamento de Erros
 

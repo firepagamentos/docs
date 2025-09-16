@@ -20,8 +20,44 @@ Webhooks são requisições HTTP POST enviadas automaticamente pelo FireBanking 
 
 ## Configuração
 
-### URL de Callback Global
-Configure uma URL padrão para receber todas as notificações no Dashboard.
+### URLs por Produto
+
+Configure webhooks específicos para cada método de pagamento através da API:
+
+<CardGroup cols={3}>
+  <Card title="PIX" icon="qrcode">
+    **pixWebhookUrl**
+    Eventos de entrada e saída PIX
+  </Card>
+  <Card title="Boleto" icon="file-invoice">
+    **bankSlipWebhookUrl**
+    Confirmações e cancelamentos
+  </Card>
+  <Card title="Cartão" icon="credit-card">
+    **creditCardWebhookUrl**
+    Autorizações e capturas
+  </Card>
+</CardGroup>
+
+### Configuração via API
+
+Configure as URLs de webhook usando o endpoint de gerenciamento:
+
+```bash Configurar Webhooks
+curl --request POST \
+  --url https://api.firebanking.com.br/business/webhook \
+  --header 'Content-Type: application/json' \
+  --header 'apiKey: sua_chave_api' \
+  --data '{
+    "pixWebhookUrl": "https://meusite.com/webhooks/pix",
+    "bankSlipWebhookUrl": "https://meusite.com/webhooks/boleto",
+    "creditCardWebhookUrl": "https://meusite.com/webhooks/cartao"
+  }'
+```
+
+<Warning>
+  **HTTPS Obrigatório**: Todas as URLs de webhook devem usar protocolo HTTPS. URLs HTTP serão rejeitadas com erro 400.
+</Warning>
 
 ### URLs Específicas por Transação
 Defina URLs customizadas no momento da criação da transação:
@@ -35,6 +71,20 @@ Defina URLs customizadas no momento da criação da transação:
   }
 }
 ```
+
+### Webhook de Onboarding
+
+Para contas específicas, está disponível o webhook de onboarding:
+
+```json
+{
+  "onboardingWebhookUrl": "https://meusite.com/webhooks/onboarding"
+}
+```
+
+<Info>
+  O webhook de onboarding está disponível apenas para contas específicas. Consulte seu especialista FireBanking para configuração detalhada.
+</Info>
 
 ## Eventos Disponíveis
 
@@ -52,6 +102,30 @@ Defina URLs customizadas no momento da criação da transação:
 - `subscription.payment_failed` - Falha na cobrança recorrente
 - `subscription.cancelled` - Assinatura cancelada
 - `subscription.suspended` - Assinatura suspensa por falha
+
+### PIX Cash In (Cobrança)
+- `pix.charge.created` - Cobrança PIX criada com sucesso
+- `pix.charge.paid` - Pagamento PIX recebido
+- `pix.charge.expired` - Cobrança PIX expirada
+- `pix.charge.cancelled` - Cobrança PIX cancelada
+
+### PIX Cash Out (Saque)
+- `pix.withdraw.created` - Saque PIX criado
+- `pix.withdraw.processed` - Saque PIX processado com sucesso
+- `pix.withdraw.failed` - Falha no processamento do saque
+- `pix.withdraw.cancelled` - Saque PIX cancelado
+
+### Boleto Bancário
+- `bankslip.created` - Boleto gerado com sucesso
+- `bankslip.paid` - Boleto pago pelo cliente
+- `bankslip.expired` - Boleto vencido
+- `bankslip.cancelled` - Boleto cancelado
+
+### Onboarding
+- `onboarding.started` - Processo de onboarding iniciado
+- `onboarding.completed` - Onboarding finalizado com sucesso
+- `onboarding.rejected` - Onboarding rejeitado
+- `onboarding.pending_documents` - Documentos pendentes
 
 ## Estrutura do Payload
 
@@ -133,9 +207,14 @@ function verifyWebhookSignature($payload, $signature, $secret) {
 </CodeGroup>
 
 ### Validação de Origem
-- Verifique se a requisição origina dos IPs do FireBanking
-- Valide o timestamp para evitar ataques de replay
-- Use HTTPS obrigatoriamente nos endpoints de webhook
+- **HTTPS obrigatório**: Todas as URLs de webhook devem usar protocolo HTTPS
+- **IPs autorizados**: Verifique se a requisição origina dos IPs do FireBanking
+- **Timestamp**: Valide o timestamp para evitar ataques de replay
+- **URLs HTTP rejeitadas**: URLs HTTP serão rejeitadas com erro 400
+
+<Warning>
+  **Segurança Crítica**: Nunca configure webhooks com protocolo HTTP. O FireBanking rejeita automaticamente qualquer URL que não use HTTPS para garantir a integridade dos dados.
+</Warning>
 
 ## Implementação Robusta
 
@@ -172,6 +251,56 @@ def process_webhook(webhook_data):
     mark_webhook_as_processed(transaction_id)
     
     return "OK"
+```
+
+## Gerenciamento de Webhooks via API
+
+### Consultar Configuração Atual
+
+```bash Obter URLs Configuradas
+curl --request GET \
+  --url https://api.firebanking.com.br/business/webhook \
+  --header 'apiKey: sua_chave_api'
+```
+
+**Resposta:**
+```json
+{
+  "pixWebhookUrl": "https://meusite.com/webhooks/pix",
+  "bankSlipWebhookUrl": "https://meusite.com/webhooks/boleto",
+  "creditCardWebhookUrl": "https://meusite.com/webhooks/cartao",
+  "onboardingWebhookUrl": "https://meusite.com/webhooks/onboarding"
+}
+```
+
+### Atualizar Configuração
+
+```bash Atualizar URLs Parcialmente
+curl --request PATCH \
+  --url https://api.firebanking.com.br/business/webhook \
+  --header 'Content-Type: application/json' \
+  --header 'apiKey: sua_chave_api' \
+  --data '{
+    "pixWebhookUrl": "https://novosite.com/webhooks/pix"
+  }'
+```
+
+### Códigos de Resposta
+
+| Status | Descrição | Ação |
+|--------|-----------|------|
+| **200 OK** | Webhook configurado com sucesso | Continue normalmente |
+| **400 Bad Request** | URL inválida ou protocolo não HTTPS | Verifique o formato da URL |
+| **401 Unauthorized** | Chave API ausente | Adicione header `apiKey` |
+| **403 Forbidden** | Chave API inválida | Verifique suas credenciais |
+| **422 Unprocessable Entity** | Erro de validação | Corrija parâmetros enviados |
+
+### Remover Webhook
+
+```bash Remover URL Específica
+curl --request DELETE \
+  --url https://api.firebanking.com.br/business/webhook/pix \
+  --header 'apiKey: sua_chave_api'
 ```
 
 ## Monitoramento e Debug
@@ -213,8 +342,96 @@ Use o ambiente de sandbox para testar sua implementação:
   </Accordion>
 </AccordionGroup>
 
+## Webhooks por Produto
+
+### PIX Cash In e Cash Out
+
+Configure o webhook PIX para receber notificações de:
+- **Cobranças recebidas**: Quando clientes pagam via PIX
+- **Saques processados**: Para transferências PIX de saída
+- **Expiração de cobranças**: QR Codes que expiraram
+- **Falhas de saque**: Quando há problemas no processamento
+
+```json Exemplo de Webhook PIX
+{
+  "event": "pix.charge.paid",
+  "transaction_id": "pix_123456789",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "amount": 50.00,
+    "payer": {
+      "name": "João Silva",
+      "document": "***.***.***-**"
+    }
+  }
+}
+```
+
+### Boleto Bancário
+
+Configure o webhook de boleto para:
+- **Confirmações de pagamento**: Quando boletos são pagos
+- **Vencimentos**: Notificação de boletos vencidos
+- **Cancelamentos**: Boletos cancelados pelo cliente ou sistema
+
+```json Exemplo de Webhook Boleto
+{
+  "event": "bankslip.paid",
+  "transaction_id": "boleto_987654321",
+  "timestamp": "2024-01-15T14:20:00Z",
+  "data": {
+    "amount": 150.00,
+    "paid_at": "2024-01-15T14:15:00Z",
+    "bank": "001"
+  }
+}
+```
+
+### Cartão de Crédito
+
+Configure o webhook de cartão para:
+- **Autorizações**: Pagamentos pré-autorizados
+- **Capturas**: Valores efetivamente cobrados
+- **Estornos**: Processamento de reembolsos
+- **Falhas**: Cartões negados ou problemas técnicos
+
+```json Exemplo de Webhook Cartão
+{
+  "event": "payment.captured",
+  "transaction_id": "card_555666777",
+  "timestamp": "2024-01-15T16:45:00Z",
+  "data": {
+    "amount": 299.90,
+    "installments": 3,
+    "brand": "visa",
+    "last_four": "1234"
+  }
+}
+```
+
+### Onboarding (Contas Específicas)
+
+Para contas que possuem processo de onboarding:
+- **Início do processo**: Novo cliente iniciou onboarding
+- **Documentos pendentes**: Solicitação de documentos adicionais
+- **Aprovação**: Onboarding concluído com sucesso
+- **Rejeição**: Onboarding rejeitado por conformidade
+
+```json Exemplo de Webhook Onboarding
+{
+  "event": "onboarding.completed",
+  "customer_id": "cust_789012345",
+  "timestamp": "2024-01-15T18:30:00Z",
+  "data": {
+    "status": "approved",
+    "tier": "premium",
+    "activated_products": ["pix", "card", "boleto"]
+  }
+}
+```
+
 ## Próximos Passos
 
 - Configure [Tratamento de Erros](/concepts/error-handling) para diferentes cenários de webhook
-- Explore a [API de Webhooks](/api-reference/webhooks/provider) para configuração programática
+- Explore a [API de Webhooks](/api-reference/webhooks/configure) para configuração programática
 - Teste sua implementação no [ambiente de desenvolvimento](/testing)
