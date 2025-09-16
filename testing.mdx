@@ -303,7 +303,7 @@ curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \
 #### Fluxo Básico de Cobrança PIX
 
 ```bash Cobrança PIX Teste
-curl -X POST "https://api-gateway.firebanking.dev/pix/v2/charge/qrcode" \
+curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -324,7 +324,7 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/charge/qrcode" \
 #### Testando QR Code Dinâmico
 
 ```bash QR Code Dinâmico
-curl -X POST "https://api-gateway.firebanking.dev/pix/v2/charge/dynamic" \
+curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -344,7 +344,7 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/charge/dynamic" \
 **Valor Inválido:**
 
 ```bash Valor PIX Inválido
-curl -X POST "https://api-gateway.firebanking.dev/pix/v2/charge/qrcode" \
+curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
   -H "x-api-key: fbk_test_seu_token" \
   -H "Content-Type: application/json" \
   -d '{
