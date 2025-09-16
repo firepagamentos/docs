@@ -1,0 +1,650 @@
+---
+title: 'Integração Cartão de Crédito'
+description: 'Guia completo para processar pagamentos com cartão de crédito na API FireBanking'
+---
+
+## Visão Geral
+
+O **processamento de cartão de crédito** é ideal para e-commerce, marketplaces e aplicações que precisam de confirmação instantânea, parcelamento ou assinaturas recorrentes.
+
+<CardGroup cols={2}>
+  <Card title="Pagamento Simples" icon="credit-card">
+    Processe pagamentos únicos com captura imediata
+  </Card>
+  <Card title="Pré-autorização" icon="lock">
+    Reserve limite sem capturar - ideal para reservas
+  </Card>
+  <Card title="Parcelamento" icon="calendar">
+    Aceite pagamentos parcelados em até 12x
+  </Card>
+  <Card title="Tokenização" icon="shield">
+    Salve dados de cartão para pagamentos futuros
+  </Card>
+</CardGroup>
+
+## Fluxo de Integração
+
+<Steps>
+  <Step title="Configuração Inicial">
+    Configure suas credenciais de API no ambiente de sandbox
+  </Step>
+  <Step title="Primeiro Pagamento">
+    Processe uma transação de teste com cartão válido
+  </Step>
+  <Step title="Tratamento de Respostas">
+    Implemente lógica para status de aprovação/negação
+  </Step>
+  <Step title="Webhooks">
+    Configure notificações para mudanças de status
+  </Step>
+  <Step title="Ambiente de Produção">
+    Migre para produção com credenciais reais
+  </Step>
+</Steps>
+
+## Configuração de Credenciais
+
+### Ambientes Disponíveis
+
+<CardGroup cols={2}>
+  <Card title="Sandbox (Testes)" icon="flask">
+    **Base URL**: `https://api-gateway.firebanking.dev/v1`
+
+    Use para desenvolvimento e testes
+  </Card>
+  <Card title="Produção" icon="globe">
+    **Base URL**: `https://api-gateway.firebanking.com.br/v1`
+
+    Use apenas com dados reais validados
+  </Card>
+</CardGroup>
+
+### Obtendo suas Chaves
+
+1. Acesse o [Dashboard FireBanking](https://dashboard.firebanking.com)
+2. Vá em **API & Webhooks** → **Chaves de API**
+3. Copie sua chave de **Sandbox** (formato: `fbk_test_...`)
+
+```bash Exemplo de Chave de Teste
+fbk_test_1234567890abcdef1234567890abcdef
+```
+
+## Seu Primeiro Pagamento
+
+### Estrutura da Requisição
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api-gateway.firebanking.dev/v1/credit-card/v1/payment" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "purchaseValue": 100,
+    "installments": 1,
+    "externalId": "card-payment-001",
+    "purchaseTitle": "Pagamento com Cartão",
+    "payment": {
+      "chargeType": "FEE_TO_CUSTOMER",
+      "capture": true,
+      "card": {
+        "name": "JOSE DAS NEVES TEST",
+        "number": "5383638854408981",
+        "expiration": "12/2024",
+        "securityCode": "220"
+      }
+    },
+    "buyer": {
+      "name": "João da Silva Teste",
+      "document": "11144477735",
+      "email": "joao.teste@exemplo.com",
+      "phone": "11999999999",
+      "countryCode": "+55",
+      "address": {
+        "country": "BR",
+        "state": "SP",
+        "city": "São Paulo",
+        "district": "Centro",
+        "street": "Rua das Flores, 123",
+        "zipCode": "01000000",
+        "number": "123"
+      }
+    }
+  }'
+```
+
+```javascript JavaScript
+const paymentData = {
+  purchaseValue: 100, // R$ 100,00
+  installments: 1,
+  externalId: "card-payment-001",
+  purchaseTitle: "Pagamento com Cartão",
+  payment: {
+    chargeType: "FEE_TO_CUSTOMER",
+    capture: true, // Captura imediata
+    card: {
+      name: "JOSE DAS NEVES TEST",
+      number: "5383638854408981", // Cartão de teste
+      expiration: "12/2024",
+      securityCode: "220"
+    }
+  },
+  buyer: {
+    name: "João da Silva Teste",
+    document: "11144477735", // CPF válido para testes
+    email: "joao.teste@exemplo.com",
+    phone: "11999999999",
+    countryCode: "+55",
+    address: {
+      country: "BR",
+      state: "SP",
+      city: "São Paulo",
+      district: "Centro",
+      street: "Rua das Flores, 123",
+      zipCode: "01000000",
+      number: "123"
+    }
+  }
+};
+
+const response = await fetch('https://api-gateway.firebanking.dev/v1/credit-card/v1/payment', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(paymentData)
+});
+
+const payment = await response.json();
+console.log('Pagamento criado:', payment);
+```
+
+```python Python
+import requests
+
+payment_data = {
+    "purchaseValue": 100,  # R$ 100,00
+    "installments": 1,
+    "externalId": "card-payment-001",
+    "purchaseTitle": "Pagamento com Cartão",
+    "payment": {
+        "chargeType": "FEE_TO_CUSTOMER",
+        "capture": True,  # Captura imediata
+        "card": {
+            "name": "JOSE DAS NEVES TEST",
+            "number": "5383638854408981",  # Cartão de teste
+            "expiration": "12/2024",
+            "securityCode": "220"
+        }
+    },
+    "buyer": {
+        "name": "João da Silva Teste",
+        "document": "11144477735",  # CPF válido para testes
+        "email": "joao.teste@exemplo.com",
+        "phone": "11999999999",
+        "countryCode": "+55",
+        "address": {
+            "country": "BR",
+            "state": "SP",
+            "city": "São Paulo",
+            "district": "Centro",
+            "street": "Rua das Flores, 123",
+            "zipCode": "01000000",
+            "number": "123"
+        }
+    }
+}
+
+response = requests.post(
+    'https://api-gateway.firebanking.dev/v1/credit-card/v1/payment',
+    json=payment_data,
+    headers={
+        'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+        'Content-Type': 'application/json'
+    }
+)
+
+payment = response.json()
+print('Pagamento criado:', payment)
+```
+
+```php PHP
+<?php
+$paymentData = [
+    'purchaseValue' => 100, // R$ 100,00
+    'installments' => 1,
+    'externalId' => 'card-payment-001',
+    'purchaseTitle' => 'Pagamento com Cartão',
+    'payment' => [
+        'chargeType' => 'FEE_TO_CUSTOMER',
+        'capture' => true, // Captura imediata
+        'card' => [
+            'name' => 'JOSE DAS NEVES TEST',
+            'number' => '5383638854408981', // Cartão de teste
+            'expiration' => '12/2024',
+            'securityCode' => '220'
+        ]
+    ],
+    'buyer' => [
+        'name' => 'João da Silva Teste',
+        'document' => '11144477735', // CPF válido para testes
+        'email' => 'joao.teste@exemplo.com',
+        'phone' => '11999999999',
+        'countryCode' => '+55',
+        'address' => [
+            'country' => 'BR',
+            'state' => 'SP',
+            'city' => 'São Paulo',
+            'district' => 'Centro',
+            'street' => 'Rua das Flores, 123',
+            'zipCode' => '01000000',
+            'number' => '123'
+        ]
+    ]
+];
+
+$curl = curl_init();
+curl_setopt_array($curl, [
+    CURLOPT_URL => 'https://api-gateway.firebanking.dev/v1/credit-card/v1/payment',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($paymentData),
+    CURLOPT_HTTPHEADER => [
+        'x-api-key: fbk_test_SUA_CHAVE_AQUI',
+        'Content-Type: application/json'
+    ]
+]);
+
+$response = curl_exec($curl);
+$payment = json_decode($response, true);
+echo 'Pagamento criado: ' . print_r($payment, true);
+?>
+```
+</CodeGroup>
+
+### Resposta de Sucesso
+
+```json Exemplo de Resposta Aprovada
+{
+  "transactionId": "txn_1234567890",
+  "externalId": "card-payment-001",
+  "status": "APPROVED",
+  "purchaseValue": 100,
+  "installments": 1,
+  "authorizationCode": "123456",
+  "nsu": "000001",
+  "tid": "10101010101010101010",
+  "brand": "mastercard",
+  "lastFourDigits": "8981",
+  "created_at": "2024-01-15T10:30:00Z",
+  "captured_at": "2024-01-15T10:30:05Z"
+}
+```
+
+## Parâmetros Importantes
+
+### Valores Monetários
+<Note>
+  **Importante**: Todos os valores são em **reais** (BRL)
+  - R$ 1,00 = `1`
+  - R$ 10,00 = `10`
+  - R$ 100,00 = `100`
+</Note>
+
+### Tipos de Cobrança
+
+| chargeType | Descrição | Quem Paga a Taxa |
+|------------|-----------|------------------|
+| `FEE_TO_CUSTOMER` | Taxa cobrada do cliente | Cliente |
+| `FEE_TO_MERCHANT` | Taxa cobrada do lojista | Lojista |
+
+### Captura Imediata vs Pré-autorização
+
+<AccordionGroup>
+  <Accordion title="Captura Imediata (capture: true)">
+    - **Uso**: E-commerce tradicional, pagamentos instantâneos
+    - **Comportamento**: Valor é cobrado imediatamente do cartão
+    - **Cancelamento**: Possível via estorno até 120 dias
+    - **Ideal para**: Produtos digitais, entrega imediata
+  </Accordion>
+
+  <Accordion title="Pré-autorização (capture: false)">
+    - **Uso**: Hotéis, aluguel de carros, reservas
+    - **Comportamento**: Valor é reservado no limite, mas não cobrado
+    - **Captura posterior**: Necessária em até 5 dias
+    - **Cancelamento**: Libera o limite sem cobrança
+    - **Ideal para**: Serviços com confirmação posterior
+  </Accordion>
+</AccordionGroup>
+
+## Cartões de Teste
+
+Use estes cartões específicos no ambiente de sandbox:
+
+### Cartões Aprovados
+```json
+{
+  "mastercard_aprovado": {
+    "number": "5383638854408981",
+    "expiration": "12/2024",
+    "securityCode": "220",
+    "name": "JOSE DAS NEVES TEST"
+  },
+  "visa_aprovado": {
+    "number": "4000000000000010",
+    "expiration": "12/2024",
+    "securityCode": "123",
+    "name": "MARIA SILVA TEST"
+  }
+}
+```
+
+### Cartões Negados
+```json
+{
+  "visa_negado": {
+    "number": "4000000000000002",
+    "expiration": "12/2024",
+    "securityCode": "123",
+    "error": "Cartão sempre negado - para testar fluxo de erro"
+  }
+}
+```
+
+## Parcelamento
+
+### Configuração de Parcelas
+
+<CodeGroup>
+```json 3x sem juros
+{
+  "purchaseValue": 300,
+  "installments": 3,
+  "installmentType": "MERCHANT_INTEREST_FREE"
+}
+```
+
+```json 6x com juros (cliente)
+{
+  "purchaseValue": 600,
+  "installments": 6,
+  "installmentType": "CUSTOMER_INTEREST",
+  "interestRate": 2.5
+}
+```
+</CodeGroup>
+
+### Tipos de Parcelamento
+
+| Tipo | Descrição | Quem Paga Juros |
+|------|-----------|-----------------|
+| `MERCHANT_INTEREST_FREE` | Sem juros (lojista absorve) | Lojista |
+| `CUSTOMER_INTEREST` | Com juros para o cliente | Cliente |
+
+## Tokenização
+
+Salve dados de cartão de forma segura para pagamentos futuros:
+
+### Criando um Token
+
+<CodeGroup>
+```bash cURL - Criar Token
+curl -X POST "https://api-gateway.firebanking.dev/v1/credit-card/v1/token" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "card": {
+      "name": "JOSE DAS NEVES TEST",
+      "number": "5383638854408981",
+      "expiration": "12/2024",
+      "securityCode": "220"
+    },
+    "buyer": {
+      "document": "11144477735",
+      "name": "João da Silva"
+    }
+  }'
+```
+
+```javascript JavaScript - Usar Token
+const paymentWithToken = {
+  purchaseValue: 50,
+  installments: 1,
+  externalId: "token-payment-001",
+  payment: {
+    chargeType: "FEE_TO_CUSTOMER",
+    capture: true,
+    token: "fbk_token_abc123def456" // Token previamente criado
+  },
+  buyer: {
+    document: "11144477735" // Mesmo CPF do token
+  }
+};
+```
+</CodeGroup>
+
+### Resposta do Token
+
+```json
+{
+  "token": "fbk_token_abc123def456",
+  "lastFourDigits": "8981",
+  "brand": "mastercard",
+  "expiresAt": "2024-12-31T23:59:59Z",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+## Status e Consultas
+
+### Status Possíveis
+
+| Status | Descrição | Ação Recomendada |
+|--------|-----------|------------------|
+| `PROCESSING` | Processando autorização | Aguardar webhook |
+| `APPROVED` | Pagamento aprovado | Liberar produto |
+| `DENIED` | Pagamento negado | Ofertar outro método |
+| `AUTHORIZED` | Pré-autorizado | Capturar em até 5 dias |
+| `CANCELLED` | Cancelado/estornado | Confirmar cancelamento |
+
+### Consultando Status
+
+<CodeGroup>
+```bash cURL - Consultar por ID
+curl -X GET "https://api-gateway.firebanking.dev/v1/credit-card/v1/payment/{transactionId}" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+```
+
+```bash cURL - Consultar por External ID
+curl -X GET "https://api-gateway.firebanking.dev/v1/credit-card/v1/payment?externalId=card-payment-001" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+```
+</CodeGroup>
+
+## Captura Posterior
+
+Para pagamentos pré-autorizados, capture o valor:
+
+<CodeGroup>
+```bash cURL - Capturar Valor Total
+curl -X POST "https://api-gateway.firebanking.dev/v1/credit-card/v1/payment/{transactionId}/capture" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 100
+  }'
+```
+
+```bash cURL - Capturar Valor Parcial
+curl -X POST "https://api-gateway.firebanking.dev/v1/credit-card/v1/payment/{transactionId}/capture" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 75
+  }'
+```
+</CodeGroup>
+
+## Webhooks para Cartão
+
+Configure endpoints para receber notificações:
+
+### Eventos Disponíveis
+
+| Evento | Descrição |
+|--------|-----------|
+| `payment.authorized` | Pagamento pré-autorizado |
+| `payment.captured` | Pagamento capturado |
+| `payment.denied` | Pagamento negado |
+| `payment.cancelled` | Pagamento cancelado |
+| `payment.refunded` | Pagamento estornado |
+
+### Payload do Webhook
+
+```json Exemplo de Webhook
+{
+  "event": "payment.captured",
+  "transaction_id": "txn_1234567890",
+  "external_id": "card-payment-001",
+  "timestamp": "2024-01-15T10:30:05Z",
+  "data": {
+    "transactionId": "txn_1234567890",
+    "status": "APPROVED",
+    "purchaseValue": 100,
+    "installments": 1,
+    "brand": "mastercard",
+    "lastFourDigits": "8981"
+  }
+}
+```
+
+## Tratamento de Erros
+
+### Erros Comuns
+
+<AccordionGroup>
+  <Accordion title="Cartão Negado (400)">
+    ```json
+    {
+      "error": {
+        "code": "CARD_DECLINED",
+        "message": "Cartão recusado pelo banco emissor",
+        "details": "Saldo insuficiente ou cartão bloqueado"
+      }
+    }
+    ```
+    **Solução**: Oferecer método alternativo ou solicitar outro cartão
+  </Accordion>
+
+  <Accordion title="Dados Inválidos (422)">
+    ```json
+    {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Dados de cartão inválidos",
+        "fields": ["card.number", "card.expiration"]
+      }
+    }
+    ```
+    **Solução**: Validar dados antes do envio
+  </Accordion>
+
+  <Accordion title="Limite Excedido (403)">
+    ```json
+    {
+      "error": {
+        "code": "LIMIT_EXCEEDED",
+        "message": "Valor excede limite permitido",
+        "limit": 5000
+      }
+    }
+    ```
+    **Solução**: Reduzir valor ou usar PIX/boleto
+  </Accordion>
+</AccordionGroup>
+
+## Assinaturas Recorrentes
+
+Para cobranças automáticas mensais ou anuais:
+
+### Criando Assinatura
+
+<CodeGroup>
+```bash cURL - Assinatura Mensal
+curl -X POST "https://api-gateway.firebanking.dev/v1/credit-card/v1/subscription" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 29.90,
+    "interval": "MONTHLY",
+    "description": "Assinatura Premium",
+    "token": "fbk_token_abc123def456",
+    "buyer": {
+      "document": "11144477735",
+      "email": "joao@exemplo.com"
+    },
+    "startDate": "2024-02-01"
+  }'
+```
+
+```json Resposta da Assinatura
+{
+  "subscriptionId": "sub_abc123",
+  "status": "ACTIVE",
+  "amount": 29.90,
+  "interval": "MONTHLY",
+  "nextCharge": "2024-02-01T00:00:00Z",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+</CodeGroup>
+
+## Migração para Produção
+
+<Steps>
+  <Step title="Validar Testes">
+    Confirme que todos os cenários funcionam em sandbox
+  </Step>
+  <Step title="Obter Credenciais de Produção">
+    Solicite chaves de produção via dashboard
+  </Step>
+  <Step title="Atualizar URLs">
+    Mude para `api-gateway.firebanking.com.br`
+  </Step>
+  <Step title="Implementar Logs">
+    Configure logging para monitoramento
+  </Step>
+  <Step title="Monitorar Transações">
+    Acompanhe as primeiras transações reais
+  </Step>
+</Steps>
+
+### Checklist de Produção
+
+- [ ] Webhooks configurados e testados
+- [ ] Tratamento de erros implementado
+- [ ] Validação de dados no frontend
+- [ ] Logs de auditoria configurados
+- [ ] Monitoramento de uptime ativo
+- [ ] Backup de credenciais seguro
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhooks Avançados" icon="webhook" href="/api-reference/credit-card/webhooks">
+    Configure notificações para todos os eventos
+  </Card>
+  <Card title="Referência da API" icon="code" href="/api-reference/credit-card/payment/create">
+    Documentação completa dos endpoints
+  </Card>
+  <Card title="Integração PIX" icon="qrcode" href="/guides/integration/pix">
+    Adicione PIX como método alternativo
+  </Card>
+  <Card title="Melhores Práticas" icon="star" href="/guides/best-practices">
+    Otimize sua integração para produção
+  </Card>
+</CardGroup>
+
+---
+
+**🎉 Parabéns!** Você agora tem uma integração completa de cartão de crédito com a FireBanking.

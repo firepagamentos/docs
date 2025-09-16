@@ -1,0 +1,171 @@
+---
+title: 'Guias de Integração por Meio de Pagamento'
+description: 'Escolha o melhor método de pagamento para sua integração e acesse o guia completo'
+---
+
+## Visão Geral
+
+A FireBanking oferece múltiplos métodos de pagamento para atender diferentes necessidades de negócio. Cada método possui características únicas e é adequado para cenários específicos.
+
+<CardGroup cols={3}>
+  <Card title="Cartão de Crédito" icon="credit-card" href="/guides/integration/credit-card">
+    **Instantâneo** • Taxa variável • Parcelamento
+  </Card>
+  <Card title="PIX" icon="qrcode" href="/guides/integration/pix">
+    **Instantâneo** • Taxa baixa • 24/7
+  </Card>
+  <Card title="Boleto Bancário" icon="file-invoice" href="/guides/integration/bank-slip">
+    **1-3 dias** • Taxa fixa • Ampla aceitação
+  </Card>
+</CardGroup>
+
+## Comparação de Métodos
+
+<AccordionGroup>
+  <Accordion title="💳 Cartão de Crédito">
+    **Características:**
+    - ⚡ Confirmação instantânea
+    - 💸 Taxa percentual sobre valor
+    - 📅 Parcelamento em até 12x
+    - 🔒 Pré-autorização disponível
+    - 🔄 Assinaturas recorrentes
+
+    **Ideal para:**
+    - E-commerce e marketplace
+    - Valores baixos e médios
+    - Necessidade de confirmação imediata
+    - Vendas parceladas
+    - Assinaturas mensais/anuais
+
+    **Taxa média:** 2.5% - 4.5% + R$ 0,30
+  </Accordion>
+
+  <Accordion title="📱 PIX">
+    **Características:**
+    - ⚡ Confirmação em segundos
+    - 💰 Taxa fixa baixa
+    - 🕐 Disponível 24h/7 dias
+    - 📱 QR Code ou chave PIX
+    - 💼 Ideal para B2B
+
+    **Ideal para:**
+    - Pagamentos instantâneos
+    - Valores médios e altos
+    - Transferências entre empresas
+    - Economia em taxas
+    - Pagamentos urgentes
+
+    **Taxa média:** R$ 0,50 - R$ 2,00 por transação
+  </Accordion>
+
+  <Accordion title="🏦 Boleto Bancário">
+    **Características:**
+    - 📅 Prazo de 1-3 dias úteis
+    - 💰 Taxa fixa
+    - 🏪 Pagável em qualquer banco
+    - 📄 Comprovante físico
+    - 📋 Sem necessidade de conta bancária
+
+    **Ideal para:**
+    - Clientes sem cartão
+    - Valores altos (>R$ 200)
+    - Pagamentos corporativos
+    - Preferência por comprovante físico
+    - Controle de fluxo de caixa
+
+    **Taxa média:** R$ 1,50 - R$ 3,00 por boleto
+  </Accordion>
+</AccordionGroup>
+
+## Tabela Comparativa
+
+| Aspecto | Cartão de Crédito | PIX | Boleto |
+|---------|------------------|-----|--------|
+| **Tempo de confirmação** | Instantâneo | Instantâneo | 1-3 dias úteis |
+| **Disponibilidade** | 24h/7 dias | 24h/7 dias | Horário bancário |
+| **Taxa** | % do valor | Fixa | Fixa |
+| **Valor mínimo** | R$ 1,00 | R$ 1,00 | R$ 10,00 |
+| **Valor máximo** | R$ 50.000 | R$ 100.000 | R$ 100.000 |
+| **Parcelamento** | ✅ Até 12x | ❌ À vista | ❌ À vista |
+| **Assinaturas** | ✅ Sim | ❌ Não | ❌ Não |
+| **Estorno** | ✅ Automático | ✅ Manual | ❌ Não disponível |
+
+## Fluxo de Decisão
+
+```mermaid
+graph TD
+    A[Precisa de confirmação instantânea?] --> B[Sim]
+    A --> C[Não - Boleto]
+
+    B --> D[Cliente tem cartão/conta?]
+    D --> E[Cartão - PIX]
+    D --> F[Não tem - Boleto]
+
+    E --> G[Valor alto >R$ 500?]
+    G --> H[Sim - PIX]
+    G --> I[Não - Cartão]
+
+    H --> J[PIX Guide]
+    I --> K[Precisa parcelar?]
+    K --> L[Sim - Cartão]
+    K --> M[Não - PIX ou Cartão]
+
+    L --> N[Card Guide]
+    M --> O[PIX Guide]
+    C --> P[Boleto Guide]
+    F --> P
+```
+
+## Implementação Híbrida
+
+Muitas empresas oferecem **múltiplos métodos** na mesma checkout para maximizar conversão:
+
+<Steps>
+  <Step title="Análise do Cliente">
+    Identifique o perfil do cliente e valor da compra
+  </Step>
+  <Step title="Oferta Inteligente">
+    Apresente os métodos mais adequados em ordem de prioridade
+  </Step>
+  <Step title="Fallback Strategy">
+    Tenha métodos alternativos caso o principal falhe
+  </Step>
+</Steps>
+
+### Exemplo de Priorização
+
+```json Configuração Recomendada
+{
+  "payment_methods": {
+    "primary": "credit_card",
+    "secondary": "pix",
+    "fallback": "bank_slip"
+  },
+  "rules": {
+    "high_value": ["pix", "credit_card", "bank_slip"],
+    "low_value": ["credit_card", "pix"],
+    "corporate": ["pix", "bank_slip", "credit_card"]
+  }
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="🚀 Começar com PIX" icon="qrcode" href="/guides/integration/pix">
+    Ideal para quem quer menor custo e rapidez
+  </Card>
+  <Card title="💳 Começar com Cartão" icon="credit-card" href="/guides/integration/credit-card">
+    Ideal para e-commerce e parcelamento
+  </Card>
+  <Card title="🏦 Começar com Boleto" icon="file-invoice" href="/guides/integration/bank-slip">
+    Ideal para valores altos e B2B
+  </Card>
+  <Card title="⚙️ Integração Completa" icon="cogs" href="/guides/integration-flow">
+    Implementar todos os métodos
+  </Card>
+</CardGroup>
+
+---
+
+**💡 Dica:** Recomendamos começar com **PIX** para implementação mais simples e menor custo, depois expandir para cartão de crédito conforme a necessidade de parcelamento.

@@ -1,0 +1,711 @@
+---
+title: 'Integração Boleto Bancário'
+description: 'Guia completo para emitir e gerenciar boletos bancários na API FireBanking'
+---
+
+## Visão Geral
+
+O **Boleto Bancário** é um dos métodos de pagamento mais tradicionais e amplamente aceitos no Brasil. Ideal para clientes que preferem não usar cartão ou para transações de valores altos.
+
+<CardGroup cols={2}>
+  <Card title="Emissão Simples" icon="file-invoice">
+    Gere boletos com dados completos e código de barras
+  </Card>
+  <Card title="Pagamento Universal" icon="building">
+    Aceito em qualquer banco, lotérica ou app bancário
+  </Card>
+  <Card title="Gestão Flexível" icon="calendar">
+    Configure vencimentos, multas e prorrogações
+  </Card>
+  <Card title="PDF Automático" icon="file-pdf">
+    Gere PDFs prontos para impressão ou envio
+  </Card>
+</CardGroup>
+
+## Características do Boleto
+
+### Vantagens
+- 🏦 **Ampla aceitação**: Pagável em qualquer banco brasileiro
+- 💰 **Taxa fixa**: Custo previsível independente do valor
+- 📄 **Comprovante físico**: Cliente recebe comprovante oficial
+- ⏰ **Prazo flexível**: Configure vencimento conforme necessário
+- 🔒 **Segurança**: Código de barras único e verificável
+
+### Características
+- ⏳ **Tempo de compensação**: 1-3 dias úteis
+- 💸 **Valor mínimo**: R$ 10,00
+- 💰 **Ideal para**: Valores acima de R$ 200,00
+- 📋 **Sem conta necessária**: Cliente não precisa ter conta bancária
+- 🏪 **Múltiplos canais**: Bancos, lotéricas, apps, internet banking
+
+## Fluxo de Integração
+
+<Steps>
+  <Step title="Configuração de Credenciais">
+    Configure suas chaves de API para boletos
+  </Step>
+  <Step title="Primeiro Boleto">
+    Emita um boleto de teste com dados válidos
+  </Step>
+  <Step title="Geração de PDF">
+    Configure geração automática de PDF
+  </Step>
+  <Step title="Webhooks">
+    Configure notificações para pagamentos confirmados
+  </Step>
+  <Step title="Gestão de Vencimentos">
+    Implemente lógica para multas e prorrogações
+  </Step>
+</Steps>
+
+## Ambientes e Credenciais
+
+### URLs dos Ambientes
+
+<CardGroup cols={2}>
+  <Card title="Sandbox Boleto" icon="flask">
+    **Base URL**: `https://api-gateway.firebanking.dev/v1/bank-slip/v1`
+
+    Use para testes e desenvolvimento
+  </Card>
+  <Card title="Produção Boleto" icon="globe">
+    **Base URL**: `https://api-gateway.firebanking.com.br/v1/bank-slip/v1`
+
+    Use apenas após validação completa
+  </Card>
+</CardGroup>
+
+### Autenticação
+
+O boleto usa as mesmas credenciais das outras APIs:
+
+```bash Headers de Autenticação
+x-api-key: fbk_test_1234567890abcdef1234567890abcdef
+Content-Type: application/json
+```
+
+## Emitindo seu Primeiro Boleto
+
+### Estrutura da Requisição
+
+<CodeGroup>
+```bash cURL - Emitir Boleto
+curl -X POST "https://api-gateway.firebanking.dev/v1/bank-slip/v1/payment" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 150.75,
+    "description": "Pagamento de serviços - Janeiro 2024",
+    "externalId": "boleto-001",
+    "dueDate": "2024-02-15",
+    "fineRate": 2.0,
+    "interestRate": 1.0,
+    "instructions": [
+      "Pagamento via boleto bancário",
+      "Não receber após o vencimento"
+    ],
+    "buyer": {
+      "name": "João da Silva Santos",
+      "document": "11144477735",
+      "email": "joao.santos@exemplo.com",
+      "phone": "11999887766",
+      "address": {
+        "street": "Rua das Flores, 123",
+        "neighborhood": "Centro",
+        "city": "São Paulo",
+        "state": "SP",
+        "zipCode": "01000000"
+      }
+    },
+    "discount": {
+      "type": "FIXED",
+      "value": 5.00,
+      "limitDate": "2024-02-10"
+    }
+  }'
+```
+
+```javascript JavaScript - Emitir Boleto
+const boletoData = {
+  amount: 150.75,
+  description: "Pagamento de serviços - Janeiro 2024",
+  externalId: "boleto-001",
+  dueDate: "2024-02-15",
+  fineRate: 2.0, // 2% de multa após vencimento
+  interestRate: 1.0, // 1% ao mês de juros
+  instructions: [
+    "Pagamento via boleto bancário",
+    "Não receber após o vencimento"
+  ],
+  buyer: {
+    name: "João da Silva Santos",
+    document: "11144477735",
+    email: "joao.santos@exemplo.com",
+    phone: "11999887766",
+    address: {
+      street: "Rua das Flores, 123",
+      neighborhood: "Centro",
+      city: "São Paulo",
+      state: "SP",
+      zipCode: "01000000"
+    }
+  },
+  discount: {
+    type: "FIXED",
+    value: 5.00,
+    limitDate: "2024-02-10"
+  }
+};
+
+const response = await fetch('https://api-gateway.firebanking.dev/v1/bank-slip/v1/payment', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(boletoData)
+});
+
+const boleto = await response.json();
+console.log('Boleto emitido:', boleto);
+```
+
+```python Python - Emitir Boleto
+import requests
+from datetime import datetime, timedelta
+
+# Data de vencimento: 30 dias a partir de hoje
+due_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+
+boleto_data = {
+    "amount": 150.75,
+    "description": "Pagamento de serviços - Janeiro 2024",
+    "externalId": "boleto-001",
+    "dueDate": due_date,
+    "fineRate": 2.0,  # 2% de multa
+    "interestRate": 1.0,  # 1% ao mês de juros
+    "instructions": [
+        "Pagamento via boleto bancário",
+        "Não receber após o vencimento"
+    ],
+    "buyer": {
+        "name": "João da Silva Santos",
+        "document": "11144477735",
+        "email": "joao.santos@exemplo.com",
+        "phone": "11999887766",
+        "address": {
+            "street": "Rua das Flores, 123",
+            "neighborhood": "Centro",
+            "city": "São Paulo",
+            "state": "SP",
+            "zipCode": "01000000"
+        }
+    },
+    "discount": {
+        "type": "FIXED",
+        "value": 5.00,
+        "limitDate": "2024-02-10"
+    }
+}
+
+response = requests.post(
+    'https://api-gateway.firebanking.dev/v1/bank-slip/v1/payment',
+    json=boleto_data,
+    headers={
+        'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+        'Content-Type': 'application/json'
+    }
+)
+
+boleto = response.json()
+print('Boleto emitido:', boleto)
+```
+</CodeGroup>
+
+### Resposta da Emissão
+
+```json Exemplo de Resposta
+{
+  "boletoId": "boleto_abc123def456",
+  "externalId": "boleto-001",
+  "status": "REGISTERED",
+  "amount": 150.75,
+  "dueDate": "2024-02-15",
+  "barCode": "34191234567890123456789012345678901234567890",
+  "digitable": "34191.23456 78901.234567 89012.345678 9 123456789012345",
+  "bankNumber": "341",
+  "bankName": "Itaú Unibanco",
+  "nossoNumero": "12345678901",
+  "documentNumber": "boleto-001",
+  "created_at": "2024-01-15T10:30:00Z",
+  "registeredAt": "2024-01-15T10:30:05Z",
+  "pdfUrl": "https://storage.firebanking.dev/boletos/boleto_abc123def456.pdf"
+}
+```
+
+## Parâmetros do Boleto
+
+### Configurações de Vencimento
+
+<AccordionGroup>
+  <Accordion title="Data de Vencimento">
+    **dueDate**: Data limite para pagamento sem multa/juros
+    - Formato: `YYYY-MM-DD`
+    - Mínimo: Data atual + 1 dia
+    - Máximo: Data atual + 365 dias
+  </Accordion>
+
+  <Accordion title="Multa por Atraso">
+    **fineRate**: Percentual de multa após vencimento
+    - Valor: 0% a 10%
+    - Aplicada uma única vez
+    - Calculada sobre valor original
+  </Accordion>
+
+  <Accordion title="Juros de Mora">
+    **interestRate**: Percentual mensal de juros
+    - Valor: 0% a 20% ao mês
+    - Aplicado proporcionalmente aos dias
+    - Calculado após a multa
+  </Accordion>
+
+  <Accordion title="Desconto">
+    **discount**: Desconto para pagamento antecipado
+    - Tipos: `FIXED` (valor) ou `PERCENTAGE` (%)
+    - **limitDate**: Data limite para desconto
+    - Aplicado antes de multas/juros
+  </Accordion>
+</AccordionGroup>
+
+### Instruções Personalizadas
+
+```json Exemplos de Instruções
+{
+  "instructions": [
+    "Pagamento referente ao contrato 123/2024",
+    "Não receber após 30 dias do vencimento",
+    "Dúvidas: (11) 1234-5678",
+    "Email: cobranca@empresa.com"
+  ]
+}
+```
+
+## Geração de PDF
+
+### PDF Automático
+
+Por padrão, todo boleto gera automaticamente um PDF:
+
+<CodeGroup>
+```bash cURL - Baixar PDF
+curl -X GET "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456/pdf" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  --output boleto.pdf
+```
+
+```javascript JavaScript - PDF Base64
+const response = await fetch('https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456/pdf?format=base64', {
+  headers: {
+    'x-api-key': 'fbk_test_SUA_CHAVE_AQUI'
+  }
+});
+
+const pdfData = await response.json();
+console.log('PDF Base64:', pdfData.base64);
+
+// Para baixar no navegador
+const link = document.createElement('a');
+link.href = `data:application/pdf;base64,${pdfData.base64}`;
+link.download = 'boleto.pdf';
+link.click();
+```
+</CodeGroup>
+
+### PDF Personalizado
+
+Configure layout e informações personalizadas:
+
+```json Configuração de PDF
+{
+  "pdfConfig": {
+    "logo": "https://sua-empresa.com/logo.png",
+    "companyName": "Sua Empresa LTDA",
+    "theme": "blue", // blue, green, red, purple
+    "hideInstructions": false,
+    "additionalInfo": "Informações extras no PDF"
+  }
+}
+```
+
+## Consultando Status
+
+<CodeGroup>
+```bash cURL - Consulta por ID
+curl -X GET "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+```
+
+```bash cURL - Consulta por External ID
+curl -X GET "https://api-gateway.firebanking.dev/v1/bank-slip/v1/payment?externalId=boleto-001" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+```
+</CodeGroup>
+
+### Status do Boleto
+
+| Status | Descrição | Ação |
+|--------|-----------|------|
+| `PENDING` | Aguardando registro no banco | Aguardar confirmação |
+| `REGISTERED` | Registrado e disponível para pagamento | Enviar para cliente |
+| `PAID` | Pago e confirmado | Liberar produto/serviço |
+| `EXPIRED` | Vencido sem pagamento | Gerar novo boleto |
+| `CANCELLED` | Cancelado manualmente | Confirmar cancelamento |
+
+## Webhooks para Boleto
+
+Configure notificações automáticas para mudanças de status:
+
+### Eventos Disponíveis
+
+| Evento | Descrição |
+|--------|-----------|
+| `boleto.registered` | Boleto registrado no banco |
+| `boleto.paid` | Boleto pago e confirmado |
+| `boleto.expired` | Boleto venceu sem pagamento |
+| `boleto.cancelled` | Boleto foi cancelado |
+
+### Payload do Webhook
+
+```json Exemplo - Boleto Pago
+{
+  "event": "boleto.paid",
+  "boletoId": "boleto_abc123def456",
+  "externalId": "boleto-001",
+  "timestamp": "2024-02-14T14:30:00Z",
+  "data": {
+    "boletoId": "boleto_abc123def456",
+    "status": "PAID",
+    "amount": 150.75,
+    "paidAmount": 145.75, // Com desconto
+    "paidAt": "2024-02-14T14:30:00Z",
+    "bankReceiptNumber": "123456789",
+    "paymentMethod": "BANK_AGENCY",
+    "discount": 5.00,
+    "fine": 0.00,
+    "interest": 0.00
+  }
+}
+```
+
+### Configurando Webhooks
+
+<CodeGroup>
+```bash cURL - Configurar Webhook
+curl -X POST "https://api-gateway.firebanking.dev/v1/webhooks/configure" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "url": "https://sua-api.com/webhooks/boleto",
+    "events": ["boleto.paid", "boleto.expired"],
+    "active": true
+  }'
+```
+
+```javascript JavaScript - Processar Webhook
+app.post('/webhooks/boleto', (req, res) => {
+  const { event, boletoId, data } = req.body;
+
+  switch(event) {
+    case 'boleto.paid':
+      console.log(`Boleto pago: ${boletoId} - R$ ${data.paidAmount}`);
+      // Liberar produto/serviço
+      processPayment(data);
+      break;
+
+    case 'boleto.expired':
+      console.log(`Boleto vencido: ${boletoId}`);
+      // Notificar cliente e oferecer novo boleto
+      handleExpiredBoleto(data);
+      break;
+
+    case 'boleto.registered':
+      console.log(`Boleto registrado: ${boletoId}`);
+      // Enviar PDF para cliente
+      sendBoletoToCustomer(data);
+      break;
+  }
+
+  res.status(200).send('OK');
+});
+```
+</CodeGroup>
+
+## Gestão de Boletos
+
+### Cancelamento
+
+<CodeGroup>
+```bash cURL - Cancelar Boleto
+curl -X DELETE "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "reason": "Cancelamento solicitado pelo cliente"
+  }'
+```
+
+```json Resposta Cancelamento
+{
+  "boletoId": "boleto_abc123def456",
+  "status": "CANCELLED",
+  "cancelledAt": "2024-01-20T15:30:00Z",
+  "reason": "Cancelamento solicitado pelo cliente"
+}
+```
+</CodeGroup>
+
+### Prorrogação de Vencimento
+
+<CodeGroup>
+```bash cURL - Prorrogar Vencimento
+curl -X PATCH "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "newDueDate": "2024-03-15",
+    "reason": "Prorrogação solicitada pelo cliente"
+  }'
+```
+
+```json Resposta Prorrogação
+{
+  "boletoId": "boleto_abc123def456",
+  "status": "REGISTERED",
+  "oldDueDate": "2024-02-15",
+  "newDueDate": "2024-03-15",
+  "updatedAt": "2024-01-20T15:30:00Z"
+}
+```
+</CodeGroup>
+
+## Dados de Teste
+
+### Informações Válidas para Sandbox
+
+```json Cliente de Teste
+{
+  "buyer": {
+    "name": "João Testador Boleto",
+    "document": "11144477735",
+    "email": "joao.teste@exemplo.com",
+    "phone": "11999887766",
+    "address": {
+      "street": "Rua de Teste, 123",
+      "neighborhood": "Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipCode": "01000000"
+    }
+  }
+}
+```
+
+### Simulando Pagamentos
+
+<CodeGroup>
+```bash cURL - Simular Pagamento
+curl -X POST "https://api-gateway.firebanking.dev/v1/bank-slip/v1/boleto_abc123def456/simulate-payment" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "paidAmount": 145.75,
+    "paymentDate": "2024-02-14",
+    "bankReceiptNumber": "123456789"
+  }'
+```
+
+```json Resposta Simulação
+{
+  "boletoId": "boleto_abc123def456",
+  "status": "PAID",
+  "paidAt": "2024-02-14T14:30:00Z",
+  "originalAmount": 150.75,
+  "paidAmount": 145.75,
+  "discount": 5.00
+}
+```
+</CodeGroup>
+
+## Casos de Uso Comuns
+
+### E-commerce
+
+<CodeGroup>
+```javascript Boleto para E-commerce
+const createEcommerceBoleto = async (orderId, customerData, amount) => {
+  const boletoData = {
+    amount: amount,
+    description: `Pedido #${orderId}`,
+    externalId: `order-${orderId}`,
+    dueDate: getDueDatePlusDays(7), // 7 dias para pagamento
+    fineRate: 2.0,
+    interestRate: 1.0,
+    instructions: [
+      `Pagamento do pedido #${orderId}`,
+      "Prazo de 7 dias para pagamento",
+      "Após vencimento: multa de 2% + juros de 1% a.m."
+    ],
+    buyer: customerData,
+    discount: {
+      type: "PERCENTAGE",
+      value: 5, // 5% desconto até 3 dias antes
+      limitDate: getDueDatePlusDays(4)
+    }
+  };
+
+  return createBoleto(boletoData);
+};
+```
+</CodeGroup>
+
+### Cobrança Recorrente Manual
+
+```javascript Boleto Recorrente
+const createRecurringBoleto = async (subscriptionId, month) => {
+  const dueDate = getLastDayOfMonth(month);
+
+  const boletoData = {
+    amount: 99.90,
+    description: `Assinatura ${subscriptionId} - ${month}`,
+    externalId: `subscription-${subscriptionId}-${month}`,
+    dueDate: dueDate,
+    fineRate: 2.0,
+    interestRate: 1.0,
+    instructions: [
+      `Mensalidade da assinatura ${subscriptionId}`,
+      `Referente ao mês: ${month}`,
+      "Pagamento mensal"
+    ],
+    buyer: await getSubscriberData(subscriptionId)
+  };
+
+  return createBoleto(boletoData);
+};
+```
+
+## Tratamento de Erros
+
+### Erros Comuns
+
+<AccordionGroup>
+  <Accordion title="Data de Vencimento Inválida (400)">
+    ```json
+    {
+      "error": {
+        "code": "INVALID_DUE_DATE",
+        "message": "Data de vencimento deve ser no futuro",
+        "dueDate": "2024-01-10"
+      }
+    }
+    ```
+    **Solução**: Usar data futura (mínimo: hoje + 1 dia)
+  </Accordion>
+
+  <Accordion title="Valor Abaixo do Mínimo (422)">
+    ```json
+    {
+      "error": {
+        "code": "AMOUNT_TOO_LOW",
+        "message": "Valor mínimo para boleto é R$ 10,00",
+        "minimum": 10.00,
+        "requested": 5.00
+      }
+    }
+    ```
+    **Solução**: Usar valor igual ou maior que R$ 10,00
+  </Accordion>
+
+  <Accordion title="CPF/CNPJ Inválido (422)">
+    ```json
+    {
+      "error": {
+        "code": "INVALID_DOCUMENT",
+        "message": "CPF/CNPJ inválido",
+        "document": "12345678900"
+      }
+    }
+    ```
+    **Solução**: Validar CPF/CNPJ antes de enviar
+  </Accordion>
+</AccordionGroup>
+
+## Limites e Valores
+
+### Limites Operacionais
+
+| Aspecto | Limite |
+|---------|--------|
+| **Valor mínimo** | R$ 10,00 |
+| **Valor máximo** | R$ 100.000,00 |
+| **Prazo mínimo** | 1 dia |
+| **Prazo máximo** | 365 dias |
+| **Multa máxima** | 10% |
+| **Juros máximos** | 20% ao mês |
+
+### Horários de Processamento
+
+- **Registro**: Imediato (24h/7 dias)
+- **Compensação**: 1-3 dias úteis
+- **Webhooks**: Tempo real
+- **Cancelamento**: Até 1 dia antes do vencimento
+
+## Migração para Produção
+
+<Steps>
+  <Step title="Validar Testes">
+    Teste emissão, pagamento e cancelamento no sandbox
+  </Step>
+  <Step title="Configurar Webhooks">
+    URLs de produção validadas e seguras
+  </Step>
+  <Step title="Obter Credenciais">
+    Solicite chaves de produção via dashboard
+  </Step>
+  <Step title="Atualizar URLs">
+    Mude para ambiente de produção
+  </Step>
+  <Step title="Validar Compliance">
+    Verifique requisitos regulatórios
+  </Step>
+</Steps>
+
+### Checklist de Produção
+
+- [ ] Emissão de boletos testada
+- [ ] Webhooks configurados e funcionando
+- [ ] PDFs sendo gerados corretamente
+- [ ] Tratamento de erros implementado
+- [ ] Validação de dados completa
+- [ ] Monitoramento de status ativo
+- [ ] Processo de cancelamento validado
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhooks Boleto" icon="webhook" href="/api-reference/bank-slip/webhook-paid">
+    Configure notificações para pagamentos
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/bank-slip/create">
+    Documentação completa dos endpoints
+  </Card>
+  <Card title="Integração PIX" icon="qrcode" href="/guides/integration/pix">
+    Combine boleto com PIX para maior conversão
+  </Card>
+  <Card title="Melhores Práticas" icon="star" href="/guides/best-practices">
+    Otimize sua integração de boletos
+  </Card>
+</CardGroup>
+
+---
+
+**📋 Pronto!** Sua integração de boleto bancário está completa e pronta para receber pagamentos.

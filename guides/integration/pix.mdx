@@ -1,0 +1,622 @@
+---
+title: 'Integração PIX'
+description: 'Guia completo para processar pagamentos PIX instantâneos na API FireBanking'
+---
+
+## Visão Geral
+
+O **PIX** é o sistema de pagamentos instantâneos brasileiro que funciona 24h/7 dias. Ideal para transferências rápidas, pagamentos B2B e transações com custo reduzido.
+
+<CardGroup cols={2}>
+  <Card title="PIX QR Code" icon="qrcode">
+    Gere QR Codes dinâmicos para pagamentos únicos
+  </Card>
+  <Card title="PIX Chave" icon="key">
+    Receba pagamentos via CPF, email, telefone ou chave aleatória
+  </Card>
+  <Card title="PIX Transferência" icon="paper-plane">
+    Realize transferências para terceiros
+  </Card>
+  <Card title="Split PIX" icon="users">
+    Divida pagamentos entre múltiplos beneficiários
+  </Card>
+</CardGroup>
+
+## Características do PIX
+
+### Vantagens
+- ⚡ **Instantâneo**: Confirmação em até 10 segundos
+- 💰 **Custo baixo**: Taxa fixa muito menor que cartão
+- 🕐 **24/7**: Funciona todos os dias, incluindo feriados
+- 🔒 **Seguro**: Criptografia e autenticação bancária
+- 📱 **Universal**: Todos os bancos brasileiros
+
+### Limitações
+- ❌ Não permite parcelamento
+- ❌ Não suporta assinaturas automáticas
+- ❌ Horário estendido apenas para pessoas físicas
+- ❌ Limite diário por instituição
+
+## Fluxo de Integração
+
+<Steps>
+  <Step title="Configuração de Credenciais">
+    Configure suas chaves PIX no ambiente de sandbox
+  </Step>
+  <Step title="Primeira Cobrança">
+    Crie um QR Code ou cobrança por chave
+  </Step>
+  <Step title="Webhooks PIX">
+    Configure notificações para pagamentos recebidos
+  </Step>
+  <Step title="Testes de Pagamento">
+    Simule pagamentos no ambiente de teste
+  </Step>
+  <Step title="Produção">
+    Migre para ambiente real com validação completa
+  </Step>
+</Steps>
+
+## Ambientes e Credenciais
+
+### URLs dos Ambientes
+
+<CardGroup cols={2}>
+  <Card title="Sandbox PIX" icon="flask">
+    **Base URL**: `https://api-gateway.firebanking.dev/v1/pix/v2`
+
+    Use para testes e desenvolvimento
+  </Card>
+  <Card title="Produção PIX" icon="globe">
+    **Base URL**: `https://api-gateway.firebanking.com.br/v1/pix/v2`
+
+    Use apenas após validação completa
+  </Card>
+</CardGroup>
+
+### Chaves de API
+
+O PIX usa as mesmas credenciais das outras APIs:
+
+```bash Exemplo de Autenticação
+x-api-key: fbk_test_1234567890abcdef1234567890abcdef
+Content-Type: application/json
+```
+
+## PIX Cobrança (Receber)
+
+### Criando QR Code Dinâmico
+
+<CodeGroup>
+```bash cURL - QR Code
+curl -X POST "https://api-gateway.firebanking.dev/v1/pix/v2/charge/qrcode" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 100.50,
+    "description": "Pagamento PIX - Pedido #123",
+    "externalId": "pix-qr-001",
+    "expiration": 3600,
+    "buyer": {
+      "name": "João da Silva",
+      "document": "11144477735",
+      "email": "joao@exemplo.com"
+    },
+    "additionalInfo": [
+      {
+        "key": "Produto",
+        "value": "Assinatura Premium"
+      }
+    ]
+  }'
+```
+
+```javascript JavaScript - QR Code
+const pixData = {
+  amount: 100.50,
+  description: "Pagamento PIX - Pedido #123",
+  externalId: "pix-qr-001",
+  expiration: 3600, // 1 hora em segundos
+  buyer: {
+    name: "João da Silva",
+    document: "11144477735",
+    email: "joao@exemplo.com"
+  },
+  additionalInfo: [
+    {
+      key: "Produto",
+      value: "Assinatura Premium"
+    }
+  ]
+};
+
+const response = await fetch('https://api-gateway.firebanking.dev/v1/pix/v2/charge/qrcode', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(pixData)
+});
+
+const pixCharge = await response.json();
+console.log('QR Code PIX:', pixCharge);
+```
+
+```python Python - QR Code
+import requests
+
+pix_data = {
+    "amount": 100.50,
+    "description": "Pagamento PIX - Pedido #123",
+    "externalId": "pix-qr-001",
+    "expiration": 3600,  # 1 hora em segundos
+    "buyer": {
+        "name": "João da Silva",
+        "document": "11144477735",
+        "email": "joao@exemplo.com"
+    },
+    "additionalInfo": [
+        {
+            "key": "Produto",
+            "value": "Assinatura Premium"
+        }
+    ]
+}
+
+response = requests.post(
+    'https://api-gateway.firebanking.dev/v1/pix/v2/charge/qrcode',
+    json=pix_data,
+    headers={
+        'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+        'Content-Type': 'application/json'
+    }
+)
+
+pix_charge = response.json()
+print('QR Code PIX:', pix_charge)
+```
+</CodeGroup>
+
+### Resposta do QR Code
+
+```json Exemplo de Resposta
+{
+  "chargeId": "pix_charge_abc123",
+  "externalId": "pix-qr-001",
+  "status": "WAITING_PAYMENT",
+  "amount": 100.50,
+  "description": "Pagamento PIX - Pedido #123",
+  "qrCode": "00020101021243650016COM.MERCADOLIBRE02013063638f1264a-5618-4...",
+  "qrCodeBase64": "iVBORw0KGgoAAAANSUhEUgAAAcIAAAHCAQMAAAB...",
+  "expiresAt": "2024-01-15T11:30:00Z",
+  "created_at": "2024-01-15T10:30:00Z",
+  "pixKey": "12345678-1234-1234-1234-123456789012"
+}
+```
+
+### Cobrança por Chave PIX
+
+<CodeGroup>
+```bash cURL - Chave PIX
+curl -X POST "https://api-gateway.firebanking.dev/v1/pix/v2/charge/key" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 250.00,
+    "description": "Pagamento via chave PIX",
+    "externalId": "pix-key-001",
+    "pixKey": "joao@empresa.com",
+    "pixKeyType": "EMAIL",
+    "buyer": {
+      "name": "Maria Santos",
+      "document": "22255588846"
+    }
+  }'
+```
+
+```json Resposta Chave PIX
+{
+  "chargeId": "pix_charge_def456",
+  "externalId": "pix-key-001",
+  "status": "WAITING_PAYMENT",
+  "amount": 250.00,
+  "pixKey": "joao@empresa.com",
+  "pixKeyType": "EMAIL",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+</CodeGroup>
+
+### Tipos de Chave PIX
+
+| Tipo | Formato | Exemplo |
+|------|---------|---------|
+| `CPF` | 11 dígitos | `12345678901` |
+| `CNPJ` | 14 dígitos | `12345678000123` |
+| `EMAIL` | Email válido | `usuario@exemplo.com` |
+| `PHONE` | +55 + DDD + número | `+5511999887766` |
+| `RANDOM` | UUID v4 | `123e4567-e89b-12d3-a456-426614174000` |
+
+## Consultando Status
+
+<CodeGroup>
+```bash cURL - Consulta por ID
+curl -X GET "https://api-gateway.firebanking.dev/v1/pix/v2/charge/pix_charge_abc123" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+```
+
+```bash cURL - Consulta por External ID
+curl -X GET "https://api-gateway.firebanking.dev/v1/pix/v2/charge?externalId=pix-qr-001" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+```
+</CodeGroup>
+
+### Status PIX Possíveis
+
+| Status | Descrição | Ação |
+|--------|-----------|------|
+| `WAITING_PAYMENT` | Aguardando pagamento | Mostrar QR Code |
+| `PAID` | Pago com sucesso | Liberar produto |
+| `EXPIRED` | Expirado sem pagamento | Criar nova cobrança |
+| `CANCELLED` | Cancelado manualmente | Confirmar cancelamento |
+
+## PIX Transferência (Enviar)
+
+### Transferência para Chave
+
+<CodeGroup>
+```bash cURL - Transferir PIX
+curl -X POST "https://api-gateway.firebanking.dev/v1/pix/v2/withdraw" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 150.75,
+    "description": "Transferência PIX - Pagamento fornecedor",
+    "externalId": "pix-transfer-001",
+    "recipient": {
+      "pixKey": "fornecedor@empresa.com",
+      "pixKeyType": "EMAIL",
+      "name": "Empresa Fornecedor LTDA",
+      "document": "12345678000123"
+    }
+  }'
+```
+
+```json Resposta Transferência
+{
+  "transferId": "pix_transfer_xyz789",
+  "externalId": "pix-transfer-001",
+  "status": "PROCESSING",
+  "amount": 150.75,
+  "recipient": {
+    "pixKey": "fornecedor@empresa.com",
+    "name": "Empresa Fornecedor LTDA"
+  },
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+</CodeGroup>
+
+### Status de Transferência
+
+| Status | Descrição | Tempo Médio |
+|--------|-----------|-------------|
+| `PROCESSING` | Processando transferência | 5-10 segundos |
+| `COMPLETED` | Transferência concluída | - |
+| `FAILED` | Falha na transferência | - |
+| `CANCELLED` | Cancelada | - |
+
+## Webhooks PIX
+
+Configure endpoints para receber notificações automáticas:
+
+### Eventos Disponíveis
+
+| Evento | Descrição |
+|--------|-----------|
+| `pix.charge.paid` | Cobrança PIX foi paga |
+| `pix.charge.expired` | Cobrança PIX expirou |
+| `pix.transfer.completed` | Transferência PIX concluída |
+| `pix.transfer.failed` | Transferência PIX falhou |
+
+### Payload do Webhook
+
+```json Exemplo - Cobrança Paga
+{
+  "event": "pix.charge.paid",
+  "chargeId": "pix_charge_abc123",
+  "externalId": "pix-qr-001",
+  "timestamp": "2024-01-15T10:32:15Z",
+  "data": {
+    "chargeId": "pix_charge_abc123",
+    "status": "PAID",
+    "amount": 100.50,
+    "paidAmount": 100.50,
+    "paidAt": "2024-01-15T10:32:15Z",
+    "endToEndId": "E123456782024011510321512345",
+    "payer": {
+      "name": "João da Silva",
+      "document": "11144477735"
+    }
+  }
+}
+```
+
+### Configurando Webhook
+
+<CodeGroup>
+```bash cURL - Configurar Webhook
+curl -X POST "https://api-gateway.firebanking.dev/v1/webhooks/configure" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "url": "https://sua-api.com/webhooks/pix",
+    "events": ["pix.charge.paid", "pix.charge.expired"],
+    "active": true
+  }'
+```
+
+```javascript JavaScript - Processar Webhook
+// Endpoint para receber webhooks
+app.post('/webhooks/pix', (req, res) => {
+  const { event, chargeId, data } = req.body;
+
+  switch(event) {
+    case 'pix.charge.paid':
+      console.log(`PIX pago: ${chargeId} - R$ ${data.paidAmount}`);
+      // Liberar produto/serviço
+      processPayment(data);
+      break;
+
+    case 'pix.charge.expired':
+      console.log(`PIX expirado: ${chargeId}`);
+      // Notificar cliente sobre expiração
+      notifyExpiration(data);
+      break;
+  }
+
+  res.status(200).send('OK');
+});
+```
+</CodeGroup>
+
+## Split PIX
+
+Divida pagamentos entre múltiplos beneficiários automaticamente:
+
+### Configurando Split
+
+<CodeGroup>
+```bash cURL - PIX com Split
+curl -X POST "https://api-gateway.firebanking.dev/v1/pix/v2/charge/qrcode" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 1000.00,
+    "description": "Venda com comissão",
+    "externalId": "pix-split-001",
+    "split": [
+      {
+        "recipientId": "vendor_123",
+        "amount": 800.00,
+        "description": "Vendedor principal"
+      },
+      {
+        "recipientId": "platform_456",
+        "amount": 200.00,
+        "description": "Taxa da plataforma"
+      }
+    ]
+  }'
+```
+
+```json Resposta Split
+{
+  "chargeId": "pix_charge_split_001",
+  "status": "WAITING_PAYMENT",
+  "amount": 1000.00,
+  "qrCode": "00020101021243650016...",
+  "split": [
+    {
+      "recipientId": "vendor_123",
+      "amount": 800.00,
+      "status": "PENDING"
+    },
+    {
+      "recipientId": "platform_456",
+      "amount": 200.00,
+      "status": "PENDING"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+## Testes no Sandbox
+
+### Dados de Teste
+
+Use estes dados para simular pagamentos:
+
+```json Pagador de Teste
+{
+  "name": "João Testador PIX",
+  "document": "11144477735",
+  "email": "joao.teste@exemplo.com"
+}
+```
+
+### Simulando Pagamentos
+
+<CodeGroup>
+```bash cURL - Simular Pagamento
+curl -X POST "https://api-gateway.firebanking.dev/v1/pix/v2/charge/pix_charge_abc123/simulate-payment" \\
+  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "payer": {
+      "name": "João Testador PIX",
+      "document": "11144477735"
+    }
+  }'
+```
+
+```json Resposta Simulação
+{
+  "chargeId": "pix_charge_abc123",
+  "status": "PAID",
+  "paidAt": "2024-01-15T10:35:00Z",
+  "endToEndId": "E123456782024011510351000001"
+}
+```
+</CodeGroup>
+
+## Limites e Valores
+
+### Limites por Tipo de Conta
+
+| Tipo | Limite Diário | Limite por Transação |
+|------|---------------|---------------------|
+| **Pessoa Física** | R$ 1.000 (dia) / R$ 5.000 (noite) | R$ 500 (dia) / R$ 1.000 (noite) |
+| **Pessoa Jurídica** | Sem limite padrão | R$ 100.000 |
+| **Conta Simplificada** | R$ 200 | R$ 200 |
+
+### Horários PIX
+
+- **Horário Estendido**: 20h às 6h (limite reduzido PF)
+- **Finais de Semana**: Funcionamento normal
+- **Feriados**: Funcionamento normal
+
+## Tratamento de Erros
+
+### Erros Comuns PIX
+
+<AccordionGroup>
+  <Accordion title="Chave PIX Inválida (400)">
+    ```json
+    {
+      "error": {
+        "code": "INVALID_PIX_KEY",
+        "message": "Chave PIX não encontrada ou inválida",
+        "pixKey": "usuario@inexistente.com"
+      }
+    }
+    ```
+    **Solução**: Validar chave antes de criar cobrança
+  </Accordion>
+
+  <Accordion title="Valor Acima do Limite (422)">
+    ```json
+    {
+      "error": {
+        "code": "AMOUNT_LIMIT_EXCEEDED",
+        "message": "Valor excede limite permitido",
+        "limit": 1000,
+        "requested": 5000
+      }
+    }
+    ```
+    **Solução**: Reduzir valor ou dividir em múltiplas transações
+  </Accordion>
+
+  <Accordion title="QR Code Expirado (410)">
+    ```json
+    {
+      "error": {
+        "code": "QR_CODE_EXPIRED",
+        "message": "QR Code expirou",
+        "expiredAt": "2024-01-15T11:30:00Z"
+      }
+    }
+    ```
+    **Solução**: Gerar novo QR Code
+  </Accordion>
+</AccordionGroup>
+
+## Boas Práticas PIX
+
+### Geração de QR Code
+
+<Steps>
+  <Step title="Tempo de Expiração">
+    Configure entre 15 minutos e 24 horas conforme o contexto
+  </Step>
+  <Step title="Informações Adicionais">
+    Inclua dados relevantes para identificação
+  </Step>
+  <Step title="Valor Exato">
+    Evite valores com muitas casas decimais
+  </Step>
+  <Step title="Fallback">
+    Tenha método alternativo caso PIX falhe
+  </Step>
+</Steps>
+
+### Monitoramento
+
+```javascript Exemplo de Log Estruturado
+const pixLog = {
+  timestamp: new Date().toISOString(),
+  event: 'pix_charge_created',
+  chargeId: 'pix_charge_abc123',
+  amount: 100.50,
+  externalId: 'pix-qr-001',
+  buyer: {
+    document: '11144477735'
+  }
+};
+
+console.log(JSON.stringify(pixLog));
+```
+
+## Migração para Produção
+
+<Steps>
+  <Step title="Validar Integração">
+    Teste todos os cenários no sandbox
+  </Step>
+  <Step title="Configurar Webhooks">
+    URLs de produção validadas e seguras
+  </Step>
+  <Step title="Chaves de Produção">
+    Obtenha credenciais de produção
+  </Step>
+  <Step title="Monitoramento">
+    Configure alertas para falhas
+  </Step>
+  <Step title="Compliance">
+    Valide com equipe jurídica se necessário
+  </Step>
+</Steps>
+
+### Checklist de Produção
+
+- [ ] Webhooks configurados e testados
+- [ ] Validação de chaves PIX
+- [ ] Tratamento de erros completo
+- [ ] Logs estruturados ativos
+- [ ] Monitoramento de uptime
+- [ ] Backup de dados críticos
+- [ ] Teste de carga realizado
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhooks PIX" icon="webhook" href="/api-reference/pix/webhooks-cashin">
+    Configure notificações para pagamentos PIX
+  </Card>
+  <Card title="Split PIX" icon="users" href="/api-reference/pix/split">
+    Divida pagamentos automaticamente
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/pix/charge/create-qrcode">
+    Documentação completa dos endpoints PIX
+  </Card>
+  <Card title="Integração Boleto" icon="file-invoice" href="/guides/integration/bank-slip">
+    Adicione boleto como método alternativo
+  </Card>
+</CardGroup>
+
+---
+
+**🚀 Pronto!** Sua integração PIX está completa e pronta para receber pagamentos instantâneos.
