@@ -228,7 +228,7 @@ payment_external = response_external.json()
 </ResponseField>
 
 <ResponseField name="amount" type="integer">
-  Valor da transação em centavos
+  Valor da transação em reais (formato decimal)
 </ResponseField>
 
 <ResponseField name="qrCode" type="object">
@@ -288,10 +288,10 @@ payment_external = response_external.json()
   Taxas aplicadas à transação
   <Expandable title="fees">
     <ResponseField name="fees.total" type="integer">
-      Taxa total em centavos
+      Taxa total em reais (formato decimal)
     </ResponseField>
     <ResponseField name="fees.fixed" type="integer">
-      Taxa fixa em centavos
+      Taxa fixa em reais (formato decimal)
     </ResponseField>
     <ResponseField name="fees.percentage" type="number">
       Taxa percentual aplicada

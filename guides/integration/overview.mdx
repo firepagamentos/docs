@@ -149,6 +149,31 @@ Muitas empresas oferecem **múltiplos métodos** na mesma checkout para maximiza
 }
 ```
 
+## Valores Monetários
+
+<Warning>
+**Importante sobre representação de valores:**
+
+Todos os valores monetários na API FireBanking são expressos em **formato decimal** (BRL):
+
+- R$ 1,00 → `1.00` ou `1`
+- R$ 10,50 → `10.50` ou `10.5`
+- R$ 100,99 → `100.99`
+
+**Exemplos práticos:**
+```json
+{
+  "amount": 25.00,       // R$ 25,00
+  "amount": 150.50,      // R$ 150,50
+  "amount": 1999.90      // R$ 1.999,90
+}
+```
+
+**Formatos aceitos:**
+- Números inteiros: `20`, `100`, `1500`
+- Decimais: `1.50`, `99.99`, `2500.75`
+</Warning>
+
 ## Próximos Passos
 
 <CardGroup cols={2}>
