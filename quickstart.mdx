@@ -1,66 +1,84 @@
 ---
 title: 'Início Rápido'
-description: 'Processe seu primeiro pagamento com a API FireBanking em menos de 5 minutos'
+description: 'Escolha seu método de pagamento e comece a integrar em menos de 10 minutos'
 ---
 
-## Visão Geral
+## Bem-vindo à API FireBanking
 
-Este guia mostra como **processar seu primeiro pagamento** usando a API FireBanking. Você aprenderá a:
+A FireBanking oferece **múltiplos métodos de pagamento** para atender diferentes necessidades de negócio. Escolha o método ideal para seu caso e siga nosso guia específico de integração.
 
-- Configurar autenticação
-- Criar uma transação de teste
-- Verificar o status do pagamento
-- Configurar webhooks básicos
+<CardGroup cols={3}>
+  <Card title="PIX" icon="qrcode" href="/guides/integration/pix">
+    **⚡ Instantâneo** • **💰 Taxa baixa** • **🕐 24/7**
+
+    Ideal para pagamentos rápidos e custo baixo
+  </Card>
+  <Card title="Cartão de Crédito" icon="credit-card" href="/guides/integration/credit-card">
+    **⚡ Instantâneo** • **📅 Parcelamento** • **🔄 Recorrente**
+
+    Ideal para e-commerce e parcelamento
+  </Card>
+  <Card title="Boleto Bancário" icon="file-invoice" href="/guides/integration/bank-slip">
+    **🏦 Universal** • **💰 Taxa fixa** • **📄 Comprovante**
+
+    Ideal para valores altos e B2B
+  </Card>
+</CardGroup>
 
 <Note>
-  Use sempre o **ambiente de sandbox** para testes. Nunca use dados reais de cartão em desenvolvimento.
+  **Não sabe qual escolher?** Acesse nossa [comparação detalhada](/guides/integration/overview) dos métodos de pagamento.
 </Note>
 
-## Passo 1: Obtenha suas Credenciais
+## Configuração Inicial
 
-### Chave de API de Teste
+### 1. Obtenha suas Credenciais
 
 1. Acesse o [Dashboard FireBanking](https://dashboard.firebanking.com)
-2. Vá em **API & Webhooks** → **Chaves de API** 
+2. Vá em **API & Webhooks** → **Chaves de API**
 3. Copie sua chave de **Sandbox** (formato: `fbk_test_...`)
 
 ```bash Exemplo de Chave
 fbk_test_1234567890abcdef1234567890abcdef
 ```
 
-### URLs do Ambiente
+### 2. Ambientes Disponíveis
 
 <CardGroup cols={2}>
   <Card title="Sandbox (Testes)" icon="flask">
     **Base URL**: `https://api-gateway.firebanking.dev/v1`
+
+    Use para desenvolvimento e testes
   </Card>
   <Card title="Produção" icon="globe">
     **Base URL**: `https://api-gateway.firebanking.com.br/v1`
+
+    Use apenas com dados reais validados
   </Card>
 </CardGroup>
 
-### Estrutura da API
+### 3. Estrutura da API
 
 Nossa API é **modular** e organizada por método de pagamento:
 
 <AccordionGroup>
   <Accordion title="Endpoints por Método">
-    - **PIX**: `{base_url}/pix/v2/payment`
-    - **Boleto**: `{base_url}/bank-slip/v1/payment`
+    - **PIX**: `{base_url}/pix/v2/charge/qrcode`
     - **Cartão**: `{base_url}/credit-card/v1/payment`
+    - **Boleto**: `{base_url}/bank-slip/v1/payment`
   </Accordion>
 
   <Accordion title="Características Técnicas">
+    - **Autenticação**: Header `x-api-key` obrigatório
     - **Formato JSON**: Todas as requisições e respostas
-    - **Códigos HTTP semânticos**: 200, 400, 403, 500, etc.
-    - **IDs únicos**: Identificadores consistentes para recursos
-    - **Respostas estruturadas**: Formato padronizado de erro e sucesso
+    - **Códigos HTTP**: Semânticos (200, 400, 403, 500, etc.)
+    - **IDs únicos**: Identificadores consistentes
+    - **Webhooks**: Notificações em tempo real
   </Accordion>
 </AccordionGroup>
 
-## Passo 2: Teste a Conexão
+## Teste sua Conexão
 
-Primeiro, verifique se sua autenticação está funcionando:
+Verifique se sua autenticação está funcionando:
 
 <CodeGroup>
 ```bash cURL
@@ -71,51 +89,29 @@ curl -X GET "https://api-gateway.firebanking.dev/v1/account/balance" \
 
 ```javascript JavaScript
 const response = await fetch('https://api-gateway.firebanking.dev/v1/account/balance', {
-  method: 'GET',
   headers: {
-    'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
+    'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
     'Content-Type': 'application/json'
   }
 });
 
 const balance = await response.json();
-console.log('Saldo:', balance);
+console.log('Conta ativa:', balance.account_status === 'active');
 ```
 
 ```python Python
 import requests
 
-headers = {
-    'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
-    'Content-Type': 'application/json'
-}
-
 response = requests.get(
     'https://api-gateway.firebanking.dev/v1/account/balance',
-    headers=headers
+    headers={
+        'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+        'Content-Type': 'application/json'
+    }
 )
 
 balance = response.json()
-print('Saldo:', balance)
-```
-
-```php PHP
-<?php
-$curl = curl_init();
-
-curl_setopt_array($curl, [
-    CURLOPT_URL => 'https://api-gateway.firebanking.dev/v1/account/balance',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_HTTPHEADER => [
-        'x-api-key: fbk_test_SUA_CHAVE_AQUI',
-        'Content-Type: application/json'
-    ]
-]);
-
-$response = curl_exec($curl);
-$balance = json_decode($response, true);
-echo 'Saldo: ' . print_r($balance, true);
-?>
+print('Conta ativa:', balance['account_status'] == 'active')
 ```
 </CodeGroup>
 
@@ -128,401 +124,86 @@ echo 'Saldo: ' . print_r($balance, true);
 }
 ```
 
-## Passo 3: Seu Primeiro Pagamento
+## Guias de Integração por Método
 
-Agora vamos criar uma transação de **R$ 100,00 à vista** usando um cartão de teste:
+Agora que você tem suas credenciais configuradas, escolha seu método preferido e siga o guia específico:
 
-<CodeGroup>
-```bash cURL
-curl -X POST "https://api-gateway.firebanking.dev/v1/payment" \
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "purchaseValue": 100,
-    "installments": 1,
-    "externalId": "primeiro-pagamento-001",
-    "purchaseTitle": "Minha Primeira Compra",
-    "payment": {
-      "chargeType": "FEE_TO_CUSTOMER",
-      "capture": true,
-      "card": {
-        "name": "JOSE DAS NEVES TEST",
-        "number": "5383638854408981",
-        "expiration": "12/2024",
-        "securityCode": "220"
-      }
-    },
-    "buyer": {
-      "name": "João da Silva Teste",
-      "document": "11144477735",
-      "email": "joao.teste@exemplo.com",
-      "phone": "11999999999",
-      "countryCode": "+55",
-      "address": {
-        "country": "BR",
-        "state": "SP",
-        "city": "São Paulo",
-        "district": "Centro",
-        "street": "Rua das Flores, 123",
-        "zipCode": "01000000",
-        "number": "123"
-      }
-    }
-  }'
-```
+### 🚀 Recomendado para Iniciantes: PIX
 
-```javascript JavaScript
-const paymentData = {
-  purchaseValue: 100, // R$ 100,00 em reais
-  installments: 1,
-  externalId: "primeiro-pagamento-001",
-  purchaseTitle: "Minha Primeira Compra",
-  payment: {
-    chargeType: "FEE_TO_CUSTOMER",
-    capture: true, // Captura imediata
-    card: {
-      name: "JOSE DAS NEVES TEST",
-      number: "5383638854408981", // Cartão de teste - sempre aprovado
-      expiration: "12/2024",
-      securityCode: "220"
-    }
-  },
-  buyer: {
-    name: "João da Silva Teste",
-    document: "11144477735", // CPF válido para testes
-    email: "joao.teste@exemplo.com",
-    phone: "11999999999",
-    countryCode: "+55",
-    address: {
-      country: "BR",
-      state: "SP",
-      city: "São Paulo",
-      district: "Centro",
-      street: "Rua das Flores, 123",
-      zipCode: "01000000",
-      number: "123"
-    }
-  }
-};
+<Card title="Guia Completo PIX" icon="qrcode" href="/guides/integration/pix">
+  **Por que começar com PIX?**
+  - ✅ Integração mais simples
+  - ✅ Menor custo (taxa fixa)
+  - ✅ Confirmação instantânea
+  - ✅ Funciona 24h/7 dias
 
-const response = await fetch('https://api-gateway.firebanking.dev/v1/payment', {
-  method: 'POST',
-  headers: {
-    'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(paymentData)
-});
+  **Tempo estimado**: 15-20 minutos
+</Card>
 
-const payment = await response.json();
-console.log('Pagamento criado:', payment);
-```
+### 💳 Para E-commerce: Cartão de Crédito
 
-```python Python
-import requests
+<Card title="Guia Completo Cartão" icon="credit-card" href="/guides/integration/credit-card">
+  **Ideal se você precisa de:**
+  - ✅ Parcelamento em até 12x
+  - ✅ Assinaturas recorrentes
+  - ✅ Tokenização de cartões
+  - ✅ Pré-autorização
 
-payment_data = {
-    "purchaseValue": 100,  # R$ 100,00 em reais
-    "installments": 1,
-    "externalId": "primeiro-pagamento-001",
-    "purchaseTitle": "Minha Primeira Compra",
-    "payment": {
-        "chargeType": "FEE_TO_CUSTOMER",
-        "capture": True,  # Captura imediata
-        "card": {
-            "name": "JOSE DAS NEVES TEST",
-            "number": "5383638854408981",  # Cartão de teste
-            "expiration": "12/2024",
-            "securityCode": "220"
-        }
-    },
-    "buyer": {
-        "name": "João da Silva Teste",
-        "document": "11144477735",  # CPF válido para testes
-        "email": "joao.teste@exemplo.com",
-        "phone": "11999999999",
-        "countryCode": "+55",
-        "address": {
-            "country": "BR",
-            "state": "SP",
-            "city": "São Paulo",
-            "district": "Centro",
-            "street": "Rua das Flores, 123",
-            "zipCode": "01000000",
-            "number": "123"
-        }
-    }
-}
+  **Tempo estimado**: 25-30 minutos
+</Card>
 
-response = requests.post(
-    'https://api-gateway.firebanking.dev/v1/payment',
-    json=payment_data,
-    headers={
-        'x-api-key': ' fbk_test_SUA_CHAVE_AQUI',
-        'Content-Type': 'application/json'
-    }
-)
+### 🏦 Para Valores Altos: Boleto Bancário
 
-payment = response.json()
-print('Pagamento criado:', payment)
-```
+<Card title="Guia Completo Boleto" icon="file-invoice" href="/guides/integration/bank-slip">
+  **Ideal se você tem:**
+  - ✅ Clientes sem cartão
+  - ✅ Valores acima de R$ 200
+  - ✅ Necessidade de comprovante físico
+  - ✅ Flexibilidade de prazo
 
-```php PHP
-<?php
-$paymentData = [
-    'purchaseValue' => 100, // R$ 100,00 em reais
-    'installments' => 1,
-    'externalId' => 'primeiro-pagamento-001',
-    'purchaseTitle' => 'Minha Primeira Compra',
-    'payment' => [
-        'chargeType' => 'FEE_TO_CUSTOMER',
-        'capture' => true, // Captura imediata
-        'card' => [
-            'name' => 'JOSE DAS NEVES TEST',
-            'number' => '5383638854408981', // Cartão de teste
-            'expiration' => '12/2024',
-            'securityCode' => '220'
-        ]
-    ],
-    'buyer' => [
-        'name' => 'João da Silva Teste',
-        'document' => '11144477735', // CPF válido para testes
-        'email' => 'joao.teste@exemplo.com',
-        'phone' => '11999999999',
-        'countryCode' => '+55',
-        'address' => [
-            'country' => 'BR',
-            'state' => 'SP',
-            'city' => 'São Paulo',
-            'district' => 'Centro',
-            'street' => 'Rua das Flores, 123',
-            'zipCode' => '01000000',
-            'number' => '123'
-        ]
-    ]
-];
+  **Tempo estimado**: 20-25 minutos
+</Card>
 
-$curl = curl_init();
-curl_setopt_array($curl, [
-    CURLOPT_URL => 'https://api-gateway.firebanking.dev/v1/payment',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => json_encode($paymentData),
-    CURLOPT_HTTPHEADER => [
-        'x-api-key: fbk_test_SUA_CHAVE_AQUI',
-        'Content-Type: application/json'
-    ]
-]);
-
-$response = curl_exec($curl);
-$payment = json_decode($response, true);
-echo 'Pagamento criado: ' . print_r($payment, true);
-?>
-```
-</CodeGroup>
-
-### Entendendo a Resposta
-
-A API retorna uma **resposta estruturada** com formato JSON padronizado:
-
-```json Exemplo de Resposta de Sucesso
-{
-  "transactionId": "txn_1234567890",
-  "externalId": "primeiro-pagamento-001",
-  "status": "APPROVED",
-  "purchaseValue": 100,
-  "installments": 1,
-  "authorizationCode": "123456",
-  "nsu": "000001",
-  "tid": "10101010101010101010",
-  "created_at": "2024-01-15T10:30:00Z"
-}
-```
-
-### Entendendo os Dados
-
-<AccordionGroup>
-  <Accordion title="Valores Monetários">
-    **Importante**: Todos os valores são em **reais**
-    - R$ 1,00 = `1`
-    - R$ 10,00 = `10` 
-    - R$ 100,00 = `100`
-  </Accordion>
-  
-  <Accordion title="Cartões de Teste">
-    Use sempre cartões específicos para teste:
-    - `5383638854408981` - Mastercard (sempre aprovado)
-    - `5555555555554444` - Mastercard (sempre aprovado)
-    - `4000000000000002` - Visa (sempre negado)
-  </Accordion>
-  
-  <Accordion title="Dados do Comprador">
-    CPFs válidos para teste:
-    - `11144477735`
-    - `22255588846`
-    - `33366699957`
-  </Accordion>
-</AccordionGroup>
-
-## Passo 4: Resposta do Pagamento
-
-**Resposta de sucesso:**
-```json
-{
-  "id": "fb_trans_1234567890",
-  "externalId": "primeiro-pagamento-001",
-  "status": "completed",
-  "amount": 100,
-  "currency": "BRL",
-  "installments": 1,
-  "createdAt": "2024-01-15T10:30:00Z",
-  "capturedAt": "2024-01-15T10:30:05Z",
-  "payment": {
-    "method": "credit_card",
-    "brand": "visa",
-    "lastFourDigits": "1111"
-  },
-  "buyer": {
-    "name": "João da Silva Teste",
-    "email": "joao.teste@exemplo.com"
-  }
-}
-```
-
-**Status possíveis:**
-- `processing` - Processando autorização
-- `completed` - Pagamento aprovado e capturado  
-- `failed` - Pagamento negado
-- `authorized` - Apenas pré-autorizado (aguardando captura)
-
-## Passo 5: Consultar Status
-
-Para verificar o status atual de um pagamento:
-
-<CodeGroup>
-```bash cURL
-curl -X GET "https://api-gateway.firebanking.dev/v1/payment/fb_trans_1234567890" \
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
-```
-
-```javascript JavaScript
-const response = await fetch('https://api-gateway.firebanking.dev/v1/payment/fb_trans_1234567890', {
-  headers: {
-    'x-api-key': ' fbk_test_SUA_CHAVE_AQUI'
-  }
-});
-
-const payment = await response.json();
-console.log('Status do pagamento:', payment.status);
-```
-
-```python Python
-response = requests.get(
-    'https://api-gateway.firebanking.dev/v1/payment/fb_trans_1234567890',
-    headers={'x-api-key': ' fbk_test_SUA_CHAVE_AQUI'}
-)
-
-payment = response.json()
-print('Status do pagamento:', payment['status'])
-```
-</CodeGroup>
-
-## Passo 6: Configurar Webhook (Opcional)
-
-Para receber notificações em tempo real, configure um webhook:
-
-### Endpoint de Teste
-
-Use [webhook.site](https://webhook.site) para criar um endpoint temporário de teste.
-
-### Adicionando Webhook na Transação
-
-```json
-{
-  "purchaseValue": 100,
-  "callback_url": "https://webhook.site/SEU-UUID-AQUI",
-  // ... resto dos dados
-}
-```
-
-### Exemplo de Payload Recebido
-
-```json
-{
-  "event": "payment.completed",
-  "transaction_id": "fb_trans_1234567890",
-  "external_id": "primeiro-pagamento-001",
-  "timestamp": "2024-01-15T10:30:05Z",
-  "data": {
-    "id": "fb_trans_1234567890",
-    "status": "completed",
-    "amount": 100,
-    "currency": "BRL"
-  }
-}
-```
-
-## Testando Cenários de Erro
-
-### Cartão Negado
-
-Use o cartão `4000000000000002` para simular uma negação:
-
-```json
-{
-  "error": {
-    "code": "CARD_DECLINED",
-    "message": "Cartão recusado pelo banco emissor"
-  }
-}
-```
-
-### Valor Inválido
-
-Teste com valor negativo ou zero:
-
-```json
-{
-  "purchaseValue": 0  // Causará erro de validação
-}
-```
-
-## Próximos Passos
+## Recursos Adicionais
 
 <CardGroup cols={2}>
-  <Card title="Conceitos Principais" icon="book" href="/concepts/payments">
-    Entenda os conceitos fundamentais do FireBanking
+  <Card title="Comparação de Métodos" icon="scale" href="/guides/integration/overview">
+    Entenda qual método escolher para cada cenário
   </Card>
-  <Card title="Fluxos de Autorização" icon="route" href="/concepts/subscriptions">
-    Aprenda sobre pré-autorização vs captura imediata
+  <Card title="Conceitos de Pagamentos" icon="book" href="/concepts/payments">
+    Aprenda sobre fluxos e conceitos fundamentais
   </Card>
   <Card title="Configurar Webhooks" icon="webhook" href="/concepts/webhooks">
     Receba notificações em tempo real
   </Card>
   <Card title="Ambiente de Testes" icon="flask" href="/testing">
-    Guia completo para testes
+    Guia completo para testes e validação
   </Card>
 </CardGroup>
 
-## Casos de Uso Avançados
+## Implementação Múltipla
+
+Muitas empresas implementam **vários métodos** para maximizar a conversão:
 
 <Steps>
-  <Step title="Pagamentos Parcelados">
-    Teste com `"installments": 3` para parcelamento em 3x
+  <Step title="Comece com PIX">
+    Implementação mais rápida e menor custo
   </Step>
-  <Step title="Pré-Autorização">
-    Use `"capture": false` para reservar limite sem cobrar
+  <Step title="Adicione Cartão">
+    Para parcelamento e assinaturas
   </Step>
-  <Step title="Tokenização">
-    Salve dados de cartão para futuras cobranças
+  <Step title="Inclua Boleto">
+    Para clientes sem cartão e valores altos
   </Step>
-  <Step title="Assinaturas">
-    Configure cobranças recorrentes mensais ou anuais
+  <Step title="Configure Webhooks">
+    Monitore todos os métodos em tempo real
   </Step>
 </Steps>
 
-**🎉 Parabéns!** Você processou seu primeiro pagamento com a API FireBanking.
+---
+
+**🎯 Próximo Passo**: Escolha um dos guias de integração acima e comece a processar pagamentos em menos de 20 minutos!
 
 <Note>
-  **Próximo passo recomendado**: Configure [autenticação segura](/authentication) para sua aplicação em produção.
+  **Dúvidas?** Nossa [documentação completa](/concepts/overview) tem exemplos detalhados para todos os cenários.
 </Note>
