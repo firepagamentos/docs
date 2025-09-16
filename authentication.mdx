@@ -5,14 +5,32 @@ description: 'Aprenda como se autenticar com a API FireBanking'
 
 ## Visão Geral
 
-A API FireBanking usa um método de autenticação simples e consistente para todas as operações. Todos os endpoints da API requerem autenticação através do cabeçalho `x-api-key`.
+A API FireBanking usa um método de autenticação **simples e consistente** para todas as operações. Nossa arquitetura unificada garante que você use as mesmas credenciais para todos os métodos de pagamento.
 
 <CardGroup cols={1}>
   <Card title="x-api-key" icon="key">
-    **Método Único de Autenticação**  
+    **Método Único de Autenticação**
     Usado em todos os endpoints: Cartão de Crédito, PIX, Boleto e APIs gerais
   </Card>
 </CardGroup>
+
+### Características da Autenticação
+
+<AccordionGroup>
+  <Accordion title="Formato Padronizado">
+    - **Header obrigatório**: `x-api-key` em todas as requisições
+    - **Formato JSON**: Todas as respostas seguem estrutura consistente
+    - **Códigos HTTP semânticos**: Status codes padronizados
+    - **Identificadores únicos**: Recursos com IDs consistentes
+  </Accordion>
+
+  <Accordion title="Segurança Integrada">
+    - **Webhooks assinados**: Verificação automática de integridade
+    - **Erro 403 Forbidden**: Para credenciais inválidas ou expiradas
+    - **Rate limiting**: Proteção contra abuso de API
+    - **Logs de auditoria**: Rastreamento completo de operações
+  </Accordion>
+</AccordionGroup>
 
 ## Autenticação x-api-key
 
@@ -47,7 +65,57 @@ A autenticação x-api-key é usada para:
 
 ## Webhooks
 
-Endpoints de webhook não requerem autenticação via cabeçalho. A segurança é fornecida através de URLs únicas específicas para cada conta.
+Endpoints de webhook não requerem autenticação via cabeçalho. A segurança é fornecida através de:
+
+- **URLs únicas**: Específicas para cada conta
+- **Assinatura digital**: Verificação de integridade do payload
+- **Retry automático**: Tentativas automáticas em caso de falha
+- **Timeout configurável**: Controle de tempo de resposta
+
+### Verificação de Assinatura
+
+```javascript Exemplo de Verificação
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature, 'hex'),
+    Buffer.from(expectedSignature, 'hex')
+  );
+}
+```
+
+## Tratamento de Erros
+
+### Códigos de Resposta
+
+| Código | Descrição | Ação Recomendada |
+|--------|-----------|------------------|
+| **200 OK** | Requisição processada com sucesso | Continue com o fluxo |
+| **400 Bad Request** | Erro na estrutura da requisição | Verifique parâmetros enviados |
+| **401 Unauthorized** | Chave de API ausente | Adicione header `x-api-key` |
+| **403 Forbidden** | Chave de API inválida ou expirada | Verifique suas credenciais |
+| **429 Too Many Requests** | Limite de requisições excedido | Implemente retry com backoff |
+| **500 Internal Server Error** | Erro interno do servidor | Tente novamente ou contate suporte |
+
+### Estrutura de Erro Padronizada
+
+```json Exemplo de Resposta de Erro
+{
+  "error": {
+    "code": "INVALID_API_KEY",
+    "message": "Chave de API inválida ou expirada",
+    "details": "Verifique se a chave está correta e ativa",
+    "request_id": "req_1234567890",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
 
 ### Segurança de Webhook
 

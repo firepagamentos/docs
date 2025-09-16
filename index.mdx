@@ -16,6 +16,54 @@ Integre **múltiplos métodos de pagamento** em uma única plataforma com nossa 
   </Card>
 </CardGroup>
 
+## Arquitetura da API
+
+A **FireBanking** é uma techfin B2B que oferece infraestrutura de pagamentos através de uma **API unificada** que simplifica a integração com múltiplos provedores bancários.
+
+### Estrutura Modular
+
+Nossa API é organizada em **módulos especializados** por método de pagamento:
+
+<CardGroup cols={3}>
+  <Card title="PIX" icon="qrcode">
+    **Path**: `/pix`
+    Pagamentos instantâneos e transferências
+  </Card>
+  <Card title="Boleto" icon="file-invoice">
+    **Path**: `/bank-slip`
+    Cobranças bancárias tradicionais
+  </Card>
+  <Card title="Cartão" icon="credit-card">
+    **Path**: `/credit-card`
+    Pagamentos com cartão e tokenização
+  </Card>
+</CardGroup>
+
+### Características Técnicas
+
+<AccordionGroup>
+  <Accordion title="Interface Unificada">
+    - **Base Domain**: `https://api-gateway.firebanking.com.br/`
+    - **Formato JSON**: Payloads e respostas padronizadas
+    - **Códigos HTTP**: Semânticos e consistentes
+    - **Identificadores**: Recursos com IDs únicos
+  </Accordion>
+
+  <Accordion title="Abstração de Complexidade">
+    - **Roteamento automático**: Para múltiplos provedores bancários
+    - **Interface única**: Independente do provedor backend
+    - **Configuração simplificada**: Sem necessidade de integrações múltiplas
+    - **Failover automático**: Entre provedores quando disponível
+  </Accordion>
+
+  <Accordion title="Segurança e Confiabilidade">
+    - **Webhooks assinados**: Para verificação de integridade
+    - **Respostas estruturadas**: Tratamento de erros padronizado
+    - **Autenticação única**: Via header `x-api-key`
+    - **Retry automático**: Para webhooks e operações críticas
+  </Accordion>
+</AccordionGroup>
+
 ## Métodos de Pagamento Disponíveis
 
 <CardGroup cols={3}>
@@ -133,3 +181,9 @@ Integre **múltiplos métodos de pagamento** em uma única plataforma com nossa 
 </CardGroup>
 
 Ou comece pelo [guia de início rápido multi-método →](/quickstart)
+
+## Suporte Técnico
+
+<Card title="Contato com Gerente de Conta" icon="headset">
+  Nossa equipe técnica está disponível para ajudar na sua integração. Entre em contato com seu gerente de conta para assistência especializada e configurações personalizadas.
+</Card>

@@ -35,9 +35,28 @@ fbk_test_1234567890abcdef1234567890abcdef
     **Base URL**: `https://api-gateway.firebanking.dev/v1`
   </Card>
   <Card title="Produção" icon="globe">
-    **Base URL**: `https://api-gateway.firebanking.com.br/v1` 
+    **Base URL**: `https://api-gateway.firebanking.com.br/v1`
   </Card>
 </CardGroup>
+
+### Estrutura da API
+
+Nossa API é **modular** e organizada por método de pagamento:
+
+<AccordionGroup>
+  <Accordion title="Endpoints por Método">
+    - **PIX**: `{base_url}/pix/v2/payment`
+    - **Boleto**: `{base_url}/bank-slip/v1/payment`
+    - **Cartão**: `{base_url}/credit-card/v1/payment`
+  </Accordion>
+
+  <Accordion title="Características Técnicas">
+    - **Formato JSON**: Todas as requisições e respostas
+    - **Códigos HTTP semânticos**: 200, 400, 403, 500, etc.
+    - **IDs únicos**: Identificadores consistentes para recursos
+    - **Respostas estruturadas**: Formato padronizado de erro e sucesso
+  </Accordion>
+</AccordionGroup>
 
 ## Passo 2: Teste a Conexão
 
@@ -301,6 +320,24 @@ echo 'Pagamento criado: ' . print_r($payment, true);
 ?>
 ```
 </CodeGroup>
+
+### Entendendo a Resposta
+
+A API retorna uma **resposta estruturada** com formato JSON padronizado:
+
+```json Exemplo de Resposta de Sucesso
+{
+  "transactionId": "txn_1234567890",
+  "externalId": "primeiro-pagamento-001",
+  "status": "APPROVED",
+  "purchaseValue": 100,
+  "installments": 1,
+  "authorizationCode": "123456",
+  "nsu": "000001",
+  "tid": "10101010101010101010",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
 
 ### Entendendo os Dados
 
