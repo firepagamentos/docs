@@ -30,15 +30,9 @@ Você pode criar assinaturas usando:
 
 ```json Exemplo de Requisição
 {
-  "uuidPlan": "plan-uuid-12345",
   "basicValue": {
     "type": "MONTHLY",
     "valuePerMonth": 30
-  },
-  "additionalValue": {
-    "type": "MONTHLY",
-    "value": 5,
-    "description": "Taxa adicional de setup"
   },
   "payment": {
     "method": "CREDIT_CARD",
@@ -82,7 +76,6 @@ Você pode criar assinaturas usando:
 
 ```json Requisição com Token
 {
-  "uuidPlan": "plan-uuid-67890",
   "basicValue": {
     "type": "QUARTERLY",
     "valuePerMonth": 50
@@ -107,20 +100,14 @@ Você pode criar assinaturas usando:
 {
   "uuid": "subscription-uuid-12345",
   "status": "active",
-  "planUuid": "plan-uuid-12345",
   "basicValue": {
     "type": "MONTHLY",
     "valuePerMonth": 30
   },
-  "additionalValue": {
-    "type": "MONTHLY",
-    "value": 5,
-    "description": "Taxa adicional de setup"
-  },
   "buyerUuid": "buyer-uuid-67890",
   "startDate": "2024-02-01",
   "nextBillingDate": "2024-02-01",
-  "totalMonthlyValue": 35,
+  "totalMonthlyValue": 30,
   "externalId": "subscription-ext-456",
   "description": "Assinatura mensal premium",
   "createdAt": "2024-01-15T14:30:00Z"
@@ -140,23 +127,11 @@ O valor central da assinatura cobrado na frequência especificada.
   Valor mensal em reais (sempre especificar mensal mesmo para trimestral/anual)
 </ParamField>
 
-### Valor Adicional (Opcional)
-Cobranças adicionais únicas ou recorrentes como taxas de configuração.
-
-<ParamField body="additionalValue.type" type="string">
-  Frequência: `MONTHLY`, `QUARTERLY`, ou `ANNUALLY`
-</ParamField>
-
-<ParamField body="additionalValue.value" type="integer">
-  Valor adicional em reais
-</ParamField>
-
 ## Lógica de Cobrança
 
 ### Assinaturas Mensais
 - **Básico**: R$ 29,99/mês = `valuePerMonth: 30`
-- **Adicional**: R$ 5,00/mês configuração = `value: 5`
-- **Total**: R$ 34,99/mês
+- **Total**: R$ 29,99/mês
 
 ### Assinaturas Trimestrais
 - **Básico**: R$ 149,99 a cada 3 meses = `valuePerMonth: 50` (cobrado como R$ 150,00)
@@ -207,8 +182,7 @@ Eventos de webhook incluem:
 
 ## Melhores Práticas
 
-1. **Validar planos** - Certificar que o `uuidPlan` existe e está ativo
-2. **Testar cartões primeiro** - Use tokenização de cartão para validar métodos de pagamento
+1. **Testar cartões primeiro** - Use tokenização de cartão para validar métodos de pagamento
 3. **Preços claros** - Seja transparente sobre todas as cobranças aos clientes
 4. **Lidar com falhas** - Implemente lógica de retry para pagamentos falhados
 5. **Monitorar webhooks** - Rastrear eventos de assinatura para inteligência de negócio

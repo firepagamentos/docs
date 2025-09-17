@@ -1710,19 +1710,10 @@
       },
       "CreateSubscriptionRequest": {
         "type": "object",
-        "required": ["uuidPlan", "basicValue", "payment"],
+        "required": ["basicValue", "payment"],
         "properties": {
-          "uuidPlan": {
-            "type": "string",
-            "format": "uuid",
-            "description": "UUID do plano da assinatura",
-            "example": "plan-uuid-12345"
-          },
           "basicValue": {
             "$ref": "#/components/schemas/SubscriptionValue"
-          },
-          "additionalValue": {
-            "$ref": "#/components/schemas/AdditionalValue"
           },
           "payment": {
             "$ref": "#/components/schemas/SubscriptionPayment"
