@@ -1,6 +1,6 @@
 ---
-title: 'Autenticação'
-description: 'Aprenda como se autenticar com a API FireBanking'
+title: "Autenticação"
+description: "Aprenda como se autenticar com a API FireBanking"
 ---
 
 ## Visão Geral
@@ -9,8 +9,8 @@ A API FireBanking usa um método de autenticação **simples e consistente** par
 
 <CardGroup cols={1}>
   <Card title="x-api-key" icon="key">
-    **Método Único de Autenticação**
-    Usado em todos os endpoints: Cartão de Crédito, PIX, Boleto e APIs gerais
+    **Método Único de Autenticação** Usado em todos os endpoints: Cartão de
+    Crédito, PIX, Boleto e APIs gerais
   </Card>
 </CardGroup>
 
@@ -55,7 +55,7 @@ curl -X GET "https://api-gateway.firebanking.com.br/v1/account/balance" \
   -H "Content-Type: application/json"
 ```
 
-```bash cURL - PIX (Conforme API Gateway v11)
+```bash cURL - PIX
 curl --request GET \
   --url https://api-gateway.firebanking.com.br/pix/v2/payment/id \
   --header 'Accept: application/json' \
@@ -75,6 +75,7 @@ curl --request GET \
   --header 'Accept: application/json' \
   --header 'x-api-key: sua_chave_api_aqui'
 ```
+
 </CodeGroup>
 
 ### Configuração no Postman
@@ -91,6 +92,7 @@ curl --request GET \
 ### Endpoints Aplicáveis
 
 A autenticação x-api-key é usada para:
+
 - **Operações de pagamento** (criar, listar, obter, capturar, estornar)
 - **Pagamentos PIX** (criar, listar, consultar)
 - **Boletos** (criar, consultar, listar)
@@ -130,13 +132,12 @@ curl --request POST \
 ### Verificação de Assinatura
 
 ```javascript Exemplo de Verificação
-const crypto = require('crypto');
+const crypto = require("crypto");
 
 function verifyWebhookSignature(payload, signature, secret) {
-  const expectedSignature = 'sha256=' + crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
+  const expectedSignature =
+    "sha256=" +
+    crypto.createHmac("sha256", secret).update(payload).digest("hex");
 
   return crypto.timingSafeEqual(
     Buffer.from(signature),
@@ -151,16 +152,13 @@ Configure webhooks específicos para cada método:
 
 <CardGroup cols={3}>
   <Card title="PIX" icon="qrcode">
-    **pixWebhookUrl**
-    Cash In e Cash Out PIX
+    **pixWebhookUrl** Cash In e Cash Out PIX
   </Card>
   <Card title="Boleto" icon="file-invoice">
-    **bankSlipWebhookUrl**
-    Confirmações e vencimentos
+    **bankSlipWebhookUrl** Confirmações e vencimentos
   </Card>
   <Card title="Cartão" icon="credit-card">
-    **creditCardWebhookUrl**
-    Autorizações e capturas
+    **creditCardWebhookUrl** Autorizações e capturas
   </Card>
 </CardGroup>
 
@@ -168,14 +166,14 @@ Configure webhooks específicos para cada método:
 
 ### Códigos de Resposta
 
-| Código | Descrição | Ação Recomendada |
-|--------|-----------|------------------|
-| **200 OK** | Requisição processada com sucesso | Continue com o fluxo |
-| **400 Bad Request** | Erro na estrutura da requisição | Verifique parâmetros enviados |
-| **401 Unauthorized** | Chave de API ausente | Adicione header `x-api-key` |
-| **403 Forbidden** | Chave de API inválida ou expirada | Verifique suas credenciais |
-| **429 Too Many Requests** | Limite de requisições excedido | Implemente retry com backoff |
-| **500 Internal Server Error** | Erro interno do servidor | Tente novamente ou contate suporte |
+| Código                        | Descrição                         | Ação Recomendada                   |
+| ----------------------------- | --------------------------------- | ---------------------------------- |
+| **200 OK**                    | Requisição processada com sucesso | Continue com o fluxo               |
+| **400 Bad Request**           | Erro na estrutura da requisição   | Verifique parâmetros enviados      |
+| **401 Unauthorized**          | Chave de API ausente              | Adicione header `x-api-key`        |
+| **403 Forbidden**             | Chave de API inválida ou expirada | Verifique suas credenciais         |
+| **429 Too Many Requests**     | Limite de requisições excedido    | Implemente retry com backoff       |
+| **500 Internal Server Error** | Erro interno do servidor          | Tente novamente ou contate suporte |
 
 ### Estrutura de Erro Padronizada
 
@@ -213,25 +211,25 @@ Sua chave de API pode ser obtida através de:
 </CardGroup>
 
 **Processo de obtenção:**
+
 1. **Faça login** no seu painel FireBanking
 2. **Navegue para** Configurações de API ou seção de Desenvolvedor
 3. **Gere** ou copie sua Chave de API
 4. **Armazene com segurança** - trate como uma senha
 
 <Info>
-  Cada chave está **associada ao contexto específico do cliente** e pode ter **escopos e permissões definidos** conforme seu plano de negócio.
+  Cada chave está **associada ao contexto específico do cliente** e pode ter
+  **escopos e permissões definidos** conforme seu plano de negócio.
 </Info>
 
 ### Formatos de Chave
 
 <CardGroup cols={2}>
   <Card title="Chaves de Sandbox" icon="flask">
-    **Formato**: `fbk_test_...`  
-    Para testes e desenvolvimento
+    **Formato**: `fbk_test_...` Para testes e desenvolvimento
   </Card>
   <Card title="Chaves de Produção" icon="globe">
-    **Formato**: `fbk_live_...`  
-    Apenas para transações ao vivo
+    **Formato**: `fbk_live_...` Apenas para transações ao vivo
   </Card>
 </CardGroup>
 
@@ -245,12 +243,12 @@ Sua chave de API pode ser obtida através de:
     - Chave antiga é automaticamente revogada após o período
   </Accordion>
 
-  <Accordion title="Gestão de Chaves">
-    - **Revogação imediata** possível via dashboard
-    - **Geração de nova chave** revoga a anterior (após transição)
-    - **Rotação periódica** recomendada para segurança
-    - **Backup seguro** antes de revogar chave atual
-  </Accordion>
+{" "}
+<Accordion title="Gestão de Chaves">
+  - **Revogação imediata** possível via dashboard - **Geração de nova chave**
+  revoga a anterior (após transição) - **Rotação periódica** recomendada para
+  segurança - **Backup seguro** antes de revogar chave atual
+</Accordion>
 
   <Accordion title="Transições Seguras">
     - Atualize sistemas gradualmente durante a janela de 20 minutos
@@ -325,13 +323,13 @@ Para operações sensíveis como saques PIX:
 const apiKey = process.env.FIREBANKING_API_KEY;
 
 // ❌ Ruim - Codificado no fonte
-const apiKey = 'fbk_live_1234567890abcdef';
+const apiKey = "fbk_live_1234567890abcdef";
 
 // ✅ Bom - Cabeçalhos seguros
 const headers = {
-  'x-api-key': apiKey,
-  'Content-Type': 'application/json',
-  'User-Agent': 'SeuApp/1.0'
+  "x-api-key": apiKey,
+  "Content-Type": "application/json",
+  "User-Agent": "SeuApp/1.0",
 };
 ```
 
@@ -341,30 +339,32 @@ Sempre trate erros de autenticação de forma graciosa:
 
 ```javascript Tratamento de Erros
 try {
-  const response = await fetch('https://api-gateway.firebanking.com.br/v1/payment', {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(paymentData)
-  });
+  const response = await fetch(
+    "https://api-gateway.firebanking.com.br/v1/payment",
+    {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(paymentData),
+    }
+  );
 
   if (response.status === 401) {
     // Tratar não autorizado - chave pode ser inválida
-    throw new Error('Chave de API inválida');
+    throw new Error("Chave de API inválida");
   }
-  
+
   if (response.status === 403) {
     // Tratar proibido - chave não tem permissões
-    throw new Error('Permissões insuficientes');
+    throw new Error("Permissões insuficientes");
   }
 
   const result = await response.json();
   return result;
-  
 } catch (error) {
-  console.error('Erro de autenticação:', error);
+  console.error("Erro de autenticação:", error);
   throw error;
 }
 ```
@@ -374,6 +374,7 @@ try {
 ### Respostas de Erro Comuns
 
 #### Chave Inválida
+
 ```json
 {
   "error": 401,
@@ -383,6 +384,7 @@ try {
 ```
 
 #### Permissões Insuficientes
+
 ```json
 {
   "error": 403,
@@ -392,6 +394,7 @@ try {
 ```
 
 #### Autenticação Ausente
+
 ```json
 {
   "error": 401,
@@ -421,10 +424,10 @@ try {
 
 Todas as chaves têm os mesmos limites de taxa:
 
-| Tipo de Operação | Limite de Taxa | Uso |
-|------------------|-------------|-----|
-| Operações de API | 60 req/min | Pagamentos, consultas, etc. |
-| Webhooks | Sem limite | Recebimento de notificações |
+| Tipo de Operação | Limite de Taxa | Uso                         |
+| ---------------- | -------------- | --------------------------- |
+| Operações de API | 60 req/min     | Pagamentos, consultas, etc. |
+| Webhooks         | Sem limite     | Recebimento de notificações |
 
 <Info>
   Limites de taxa são aplicados por chave de API, não por endereço IP.
