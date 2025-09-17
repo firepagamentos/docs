@@ -134,9 +134,7 @@
         "groups": [
           {
             "group": "Visão Geral",
-            "pages": [
-              "api-reference/bank-slip/introduction"
-            ]
+            "pages": ["api-reference/bank-slip/introduction"]
           },
           {
             "group": "Emissão",
@@ -165,9 +163,7 @@
         "groups": [
           {
             "group": "Conta",
-            "pages": [
-              "api-reference/account/balance"
-            ]
+            "pages": ["api-reference/account/balance"]
           },
           {
             "group": "Webhooks",
@@ -179,9 +175,7 @@
           },
           {
             "group": "Sistema",
-            "pages": [
-              "api-reference/health/check"
-            ]
+            "pages": ["api-reference/health/check"]
           }
         ]
       }
@@ -214,7 +208,7 @@
     }
   },
   "logo": {
-    "light": "https://link-pagamento.firebanking.dev/logo-fire/logo-white.svg",
+    "light": "https://res.cloudinary.com/dcjuutigr/image/upload/v1758124358/fire-bg-white_rcfiee.svg",
     "dark": "https://link-pagamento.firebanking.dev/logo-fire/logo-white.svg"
   },
   "navbar": {
