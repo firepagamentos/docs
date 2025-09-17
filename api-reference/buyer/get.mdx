@@ -16,14 +16,14 @@ Recuperar informações detalhadas de um comprador específico pelo seu UUID. Es
 <CodeGroup>
 ```bash cURL
 curl -X GET "https://api-gateway.firebanking.com.br/v1/buyer/550e8400-e29b-41d4-a716-446655440000" \
-  -H "x-api-key: fbk_live_sua_chave_aqui"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 ```javascript JavaScript
 const response = await fetch('https://api-gateway.firebanking.com.br/v1/buyer/550e8400-e29b-41d4-a716-446655440000', {
   method: 'GET',
   headers: {
-    'x-api-key': 'fbk_live_sua_chave_aqui'
+    'x-api-key': 'SUA_CHAVE_DE_API'
   }
 });
 
@@ -35,7 +35,7 @@ console.log('Dados do comprador:', buyer);
 import requests
 
 headers = {
-    'x-api-key': 'fbk_live_sua_chave_aqui'
+    'x-api-key': 'SUA_CHAVE_DE_API'
 }
 
 response = requests.get(
@@ -56,7 +56,7 @@ curl_setopt_array($curl, [
     CURLOPT_URL => "https://api-gateway.firebanking.com.br/v1/buyer/{$buyerUuid}",
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => [
-        'x-api-key: fbk_live_sua_chave_aqui'
+        'x-api-key: SUA_CHAVE_DE_API'
     ]
 ]);
 
@@ -209,7 +209,7 @@ async function validateBuyerBeforePayment(buyerUuid) {
   try {
     const response = await fetch(`https://api-gateway.firebanking.com.br/v1/buyer/${buyerUuid}`, {
       headers: {
-        'x-api-key': 'fbk_live_sua_chave_aqui'
+        'x-api-key': 'SUA_CHAVE_DE_API'
       }
     });
 

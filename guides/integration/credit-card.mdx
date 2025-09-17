@@ -63,10 +63,10 @@ O **processamento de cartão de crédito** é ideal para e-commerce, marketplace
 
 1. Acesse o [Dashboard FireBanking](https://app.firebanking.io)
 2. Vá em **API & Webhooks** → **Chaves de API**
-3. Copie sua chave de **Sandbox** (formato: `fbk_test_...`)
+3. Copie sua chave de **Sandbox** (formato: `a9b484fc-9...`)
 
 ```bash Exemplo de Chave de Teste
-fbk_test_1234567890abcdef1234567890abcdef
+a9b484fc-90a6-4255-9394-e3c1ca0633b9
 ```
 
 ## Seu Primeiro Pagamento
@@ -76,7 +76,7 @@ fbk_test_1234567890abcdef1234567890abcdef
 <CodeGroup>
 ```bash cURL
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "purchaseValue": 100,
@@ -151,7 +151,7 @@ const response = await fetch(
   {
     method: "POST",
     headers: {
-      "x-api-key": "fbk_test_SUA_CHAVE_AQUI",
+      "x-api-key": "SUA_CHAVE_DE_API",
       "Content-Type": "application/json",
     },
     body: JSON.stringify(paymentData),
@@ -202,7 +202,7 @@ response = requests.post(
     'https://api-gateway.firebanking.dev/credit-card/v1/payment',
     json=payment_data,
     headers={
-        'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+        'x-api-key': 'SUA_CHAVE_DE_API',
         'Content-Type': 'application/json'
     }
 )
@@ -253,7 +253,7 @@ curl_setopt_array($curl, [
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => json_encode($paymentData),
     CURLOPT_HTTPHEADER => [
-        'x-api-key: fbk_test_SUA_CHAVE_AQUI',
+        'x-api-key: SUA_CHAVE_DE_API',
         'Content-Type: application/json'
     ]
 ]);
@@ -396,7 +396,7 @@ Salve dados de cartão de forma segura para pagamentos futuros:
 <CodeGroup>
 ```bash cURL - Criar Token
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/token" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "card": {
@@ -459,12 +459,12 @@ const paymentWithToken = {
 <CodeGroup>
 ```bash cURL - Consultar por ID
 curl -X GET "https://api-gateway.firebanking.dev/credit-card/v1/payment/{transactionId}" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 ```bash cURL - Consultar por External ID
 curl -X GET "https://api-gateway.firebanking.dev/credit-card/v1/payment?externalId=card-payment-001" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 </CodeGroup>
@@ -476,7 +476,7 @@ Para pagamentos pré-autorizados, capture o valor:
 <CodeGroup>
 ```bash cURL - Capturar Valor Total
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment/{transactionId}/capture" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "amount": 100
@@ -485,7 +485,7 @@ curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment/{transa
 
 ```bash cURL - Capturar Valor Parcial
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment/{transactionId}/capture" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "amount": 75
@@ -581,7 +581,7 @@ Para cobranças automáticas mensais ou anuais:
 <CodeGroup>
 ```bash cURL - Assinatura Mensal
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/subscription" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "amount": 29.90,

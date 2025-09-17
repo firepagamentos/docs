@@ -508,7 +508,7 @@ services:
     build: .
     environment:
       - NODE_ENV=development
-      - FIREBANKING_API_KEY=fbk_test_dev_key
+      - FIREBANKING_API_KEY=SUA_CHAVE_DE_API
       - FIREBANKING_BASE_URL=https://api-gateway.firebanking.dev
       - LOG_LEVEL=debug
     ports:
@@ -563,7 +563,7 @@ config:
       arrivalRate: 10
   defaults:
     headers:
-      x-api-key: 'fbk_test_staging_key'
+      x-api-key: 'SUA_CHAVE_DE_API'
 
 scenarios:
   - name: "Criar pagamento"

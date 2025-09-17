@@ -29,19 +29,19 @@ Consulte informações detalhadas de um boleto bancário utilizando o ID da tran
 <CodeGroup>
 ```bash cURL - Por ID Interno
 curl -X GET "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456" \
-  -H "x-api-key: fbk_live_sua_chave_aqui"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 ```bash cURL - Por External ID
 curl -X GET "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123?type=external" \
-  -H "x-api-key: fbk_live_sua_chave_aqui"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 ```javascript JavaScript
 // Consultar por ID interno
 const response = await fetch('https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456', {
   headers: {
-    'x-api-key': 'fbk_live_sua_chave_aqui'
+    'x-api-key': 'SUA_CHAVE_DE_API'
   }
 });
 
@@ -51,7 +51,7 @@ console.log('Status do boleto:', boleto.status);
 // Consultar por external_id
 const responseExternal = await fetch('https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123?type=external', {
   headers: {
-    'x-api-key': 'fbk_live_sua_chave_aqui'
+    'x-api-key': 'SUA_CHAVE_DE_API'
   }
 });
 
@@ -64,7 +64,7 @@ import requests
 # Por ID interno
 response = requests.get(
     'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456',
-    headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
+    headers={'x-api-key': 'SUA_CHAVE_DE_API'}
 )
 
 boleto = response.json()
@@ -74,7 +74,7 @@ print(f'Status: {boleto["status"]}')
 response_external = requests.get(
     'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123',
     params={'type': 'external'},
-    headers={'x-api-key': 'fbk_live_sua_chave_aqui'}
+    headers={'x-api-key': 'SUA_CHAVE_DE_API'}
 )
 
 boleto_external = response_external.json()
@@ -88,7 +88,7 @@ curl_setopt_array($curl, [
     CURLOPT_URL => 'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => [
-        'x-api-key: fbk_live_sua_chave_aqui'
+        'x-api-key: SUA_CHAVE_DE_API'
     ]
 ]);
 

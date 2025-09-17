@@ -45,7 +45,7 @@ O Split de Pagamento PIX permite dividir automaticamente o valor recebido entre 
 <CodeGroup>
 ```bash cURL - Split por Percentual
 curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
-  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 1000,
@@ -81,7 +81,7 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
 
 ```bash cURL - Split Misto
 curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
-  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 500,

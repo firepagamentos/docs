@@ -47,7 +47,7 @@ Realize transferências PIX (cash out) utilizando QR Code estático do benefici�
 <CodeGroup>
 ```bash cURL
 curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw" \
-  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "type": "PIX",
@@ -67,7 +67,7 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw" \
 const pixQrTransfer = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw', {
   method: 'POST',
   headers: {
-    'x-api-key': 'fbk_live_sua_chave_aqui',
+    'x-api-key': 'SUA_CHAVE_DE_API',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
@@ -108,7 +108,7 @@ response = requests.post(
     'https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw',
     json=qr_transfer_data,
     headers={
-        'x-api-key': 'fbk_live_sua_chave_aqui',
+        'x-api-key': 'SUA_CHAVE_DE_API',
         'Content-Type': 'application/json'
     }
 )

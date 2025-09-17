@@ -26,10 +26,8 @@ O FireBanking oferece ambientes separados para teste e produção, garantindo de
 
 ### Tokens da API Sandbox
 
-Tokens de sandbox são prefixados com `fbk_test_` e funcionam apenas no ambiente de teste:
-
 ```bash
-x-api-key: fbk_test_1234567890abcdef...
+x-api-key: SUA_CHAVE_DE_API
 ```
 
 ### Credenciais de Webhook Sandbox
@@ -78,12 +76,14 @@ Em sandbox, para testar os cenários acima, o CVV sempre deve ser um número de 
 Para testar o PIX em sandbox:
 
 **Chaves PIX de Teste:**
+
 - **CPF**: Use qualquer CPF válido (ex: `11144477735`)
 - **Email**: Use emails fictícios (ex: `teste@firebanking.com`)
 - **Telefone**: Use números fictícios (ex: `+5511999999999`)
 - **Chave Aleatória**: Use UUIDs fictícios (ex: `123e4567-e89b-12d3-a456-426614174000`)
 
 **Comportamento de Pagamento:**
+
 - Todos os QR Codes gerados são válidos para teste
 - O pagamento é simulado automaticamente após 5-30 segundos
 - Use valores pequenos para teste (ex: R$ 1,00 a R$ 100,00)
@@ -104,11 +104,13 @@ Para testar o PIX em sandbox:
 Para testar boletos em sandbox:
 
 **Dados do Pagador:**
+
 - Use CPFs/CNPJs válidos mas fictícios
 - Use endereços realistas mas não reais
 - CEPs válidos do Brasil (ex: `01000-000`, `04038-001`)
 
 **Comportamento de Pagamento:**
+
 - Boletos são gerados mas não são registrados no sistema bancário
 - O pagamento é simulado automaticamente após 1-24 horas
 - Use valores entre R$ 10,00 e R$ 5.000,00 para teste
@@ -173,7 +175,7 @@ Use dados de comprador realistas mas fictícios para testes:
 
 ```bash Pagamento Teste
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "purchaseValue": 10000,
@@ -213,7 +215,7 @@ curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \
 
 ```bash Criação de Token Teste
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment/token" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "card": {
@@ -246,7 +248,7 @@ curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment/token" 
 
 ```bash Assinatura Teste
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/subscription" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "basicValue": {
@@ -280,7 +282,7 @@ curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/subscription" \
 
 ```bash Valor Inválido
 curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "purchaseValue": -100,
@@ -303,7 +305,7 @@ curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment" \
 
 ```bash Cobrança PIX Teste
 curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 1000,
@@ -324,7 +326,7 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
 
 ```bash QR Code Dinâmico
 curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 2500,
@@ -344,7 +346,7 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
 
 ```bash Valor PIX Inválido
 curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": -100,
@@ -358,7 +360,7 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
 
 ```bash Boleto Teste
 curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 5000,
@@ -387,7 +389,7 @@ curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
 
 ```bash Boleto com Acréscimos
 curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 10000,
@@ -415,7 +417,7 @@ curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
 
 ```bash Vencimento Inválido
 curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
-  -H "x-api-key: fbk_test_seu_token" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 5000,
@@ -709,16 +711,19 @@ Pronto para começar a testar? Escolha seu método de pagamento e comece a integ
     **Instantâneo • 24/7 • Taxa baixa**
 
     Ideal para começar - mais simples de integrar
+
   </Card>
   <Card title="💳 Cartão de Crédito" href="/guides/integration/credit-card">
     **Parcelamento • Assinaturas • Global**
 
     Para e-commerce e pagamentos recorrentes
+
   </Card>
   <Card title="🏦 Boleto Bancário" href="/guides/integration/bank-slip">
     **Universal • Taxa fixa • Comprovante**
 
     Para valores altos e clientes sem cartão
+
   </Card>
 </CardGroup>
 

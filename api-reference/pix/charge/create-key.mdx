@@ -73,7 +73,7 @@ Crie cobranças PIX utilizando chaves PIX (CPF, CNPJ, email, telefone ou chave a
 <CodeGroup>
 ```bash cURL
 curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
-  -H "x-api-key: fbk_live_sua_chave_aqui" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 250,
@@ -100,7 +100,7 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
 const pixCharge = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment', {
   method: 'POST',
   headers: {
-    'x-api-key': 'fbk_live_sua_chave_aqui',
+    'x-api-key': 'SUA_CHAVE_DE_API',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
@@ -155,7 +155,7 @@ response = requests.post(
     'https://api-gateway.firebanking.com.br/pix/v2/payment',
     json=charge_data,
     headers={
-        'x-api-key': 'fbk_live_sua_chave_aqui',
+        'x-api-key': 'SUA_CHAVE_DE_API',
         'Content-Type': 'application/json'
     }
 )

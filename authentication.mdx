@@ -51,7 +51,7 @@ x-api-key: SUA_CHAVE_DE_API
 <CodeGroup>
 ```bash cURL - Consultar Saldo
 curl -X GET "https://api-gateway.firebanking.com.br/v1/account/balance" \
-  -H "x-api-key: fbk_live_1234567890abcdef..." \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json"
 ```
 
@@ -59,21 +59,21 @@ curl -X GET "https://api-gateway.firebanking.com.br/v1/account/balance" \
 curl --request GET \
   --url https://api-gateway.firebanking.com.br/pix/v2/payment/id \
   --header 'Accept: application/json' \
-  --header 'x-api-key: sua_chave_api_aqui'
+  --header 'x-api-key: SUA_CHAVE_DE_API'
 ```
 
 ```bash cURL - Boleto
 curl --request GET \
   --url https://api-gateway.firebanking.com.br/bank-slip/v1/payment/id \
   --header 'Accept: application/json' \
-  --header 'x-api-key: sua_chave_api_aqui'
+  --header 'x-api-key: SUA_CHAVE_DE_API'
 ```
 
 ```bash cURL - Cartão de Crédito
 curl --request GET \
   --url https://api-gateway.firebanking.com.br/credit-card/v1/payment/id \
   --header 'Accept: application/json' \
-  --header 'x-api-key: sua_chave_api_aqui'
+  --header 'x-api-key: SUA_CHAVE_DE_API'
 ```
 
 </CodeGroup>
@@ -84,7 +84,7 @@ curl --request GET \
 2. **Vá para a aba Headers**
 3. **Adicione novo header**:
    - **Key**: `x-api-key`
-   - **Value**: `sua_chave_api_aqui`
+   - **Value**: `SUA_CHAVE_DE_API`
 4. **Adicione header de conteúdo**:
    - **Key**: `Accept`
    - **Value**: `application/json`
@@ -224,12 +224,9 @@ Sua chave de API pode ser obtida através de:
 
 ### Formatos de Chave
 
-<CardGroup cols={2}>
-  <Card title="Chaves de Sandbox" icon="flask">
-    **Formato**: `fbk_test_...` Para testes e desenvolvimento
-  </Card>
-  <Card title="Chaves de Produção" icon="globe">
-    **Formato**: `fbk_live_...` Apenas para transações ao vivo
+<CardGroup cols={1}>
+  <Card title="Chaves de API" icon="globe">
+    **Formato**: `a9b484fc-90a6-4255-9394-...`
   </Card>
 </CardGroup>
 
@@ -244,6 +241,7 @@ Sua chave de API pode ser obtida através de:
   </Accordion>
 
 {" "}
+
 <Accordion title="Gestão de Chaves">
   - **Revogação imediata** possível via dashboard - **Geração de nova chave**
   revoga a anterior (após transição) - **Rotação periódica** recomendada para
@@ -323,7 +321,7 @@ Para operações sensíveis como saques PIX:
 const apiKey = process.env.FIREBANKING_API_KEY;
 
 // ❌ Ruim - Codificado no fonte
-const apiKey = "fbk_live_1234567890abcdef";
+const apiKey = "b7c859fe-12d4-4a89-8d6f-2f4e8b9c1a3e";
 
 // ✅ Bom - Cabeçalhos seguros
 const headers = {
@@ -406,9 +404,6 @@ try {
 ### Solução de Problemas
 
 <CardGroup cols={2}>
-  <Card title="Verificar Formato da Chave" icon="check">
-    Certifique-se de que a chave comece com `fbk_test_` ou `fbk_live_`
-  </Card>
   <Card title="Verificar Ambiente" icon="server">
     Use chaves de teste com sandbox, chaves live com produção
   </Card>

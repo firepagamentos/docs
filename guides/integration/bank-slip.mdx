@@ -80,7 +80,7 @@ O **Boleto Bancário** é um dos métodos de pagamento mais tradicionais e ampla
 O boleto usa as mesmas credenciais das outras APIs:
 
 ```bash Headers de Autenticação
-x-api-key: fbk_test_1234567890abcdef1234567890abcdef
+x-api-key: SUA_CHAVE_DE_API
 Content-Type: application/json
 ```
 
@@ -91,7 +91,7 @@ Content-Type: application/json
 <CodeGroup>
 ```bash cURL - Emitir Boleto
 curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "amount": 150.75,
@@ -160,7 +160,7 @@ const boletoData = {
 const response = await fetch('https://api-gateway.firebanking.dev/bank-slip/v1/payment', {
   method: 'POST',
   headers: {
-    'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+    'x-api-key': 'SUA_CHAVE_DE_API',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify(boletoData)
@@ -212,7 +212,7 @@ response = requests.post(
     'https://api-gateway.firebanking.dev/bank-slip/v1/payment',
     json=boleto_data,
     headers={
-        'x-api-key': 'fbk_test_SUA_CHAVE_AQUI',
+        'x-api-key': 'SUA_CHAVE_DE_API',
         'Content-Type': 'application/json'
     }
 )
@@ -299,14 +299,14 @@ Por padrão, todo boleto gera automaticamente um PDF:
 <CodeGroup>
 ```bash cURL - Baixar PDF
 curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456/pdf" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   --output boleto.pdf
 ```
 
 ```javascript JavaScript - PDF Base64
 const response = await fetch('https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456/pdf?format=base64', {
   headers: {
-    'x-api-key': 'fbk_test_SUA_CHAVE_AQUI'
+    'x-api-key': 'SUA_CHAVE_DE_API'
   }
 });
 
@@ -342,12 +342,12 @@ Configure layout e informações personalizadas:
 <CodeGroup>
 ```bash cURL - Consulta por ID
 curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
 ```bash cURL - Consulta por External ID
 curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/payment?externalId=boleto-001" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI"
+  -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 </CodeGroup>
 
@@ -402,7 +402,7 @@ Configure notificações automáticas para mudanças de status:
 <CodeGroup>
 ```bash cURL - Configurar Webhook
 curl -X POST "https://api-gateway.firebanking.dev/v1/webhooks/configure" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "url": "https://sua-api.com/webhooks/boleto",
@@ -447,7 +447,7 @@ app.post('/webhooks/boleto', (req, res) => {
 <CodeGroup>
 ```bash cURL - Cancelar Boleto
 curl -X DELETE "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "reason": "Cancelamento solicitado pelo cliente"
@@ -469,7 +469,7 @@ curl -X DELETE "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123de
 <CodeGroup>
 ```bash cURL - Prorrogar Vencimento
 curl -X PATCH "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "newDueDate": "2024-03-15",
@@ -515,7 +515,7 @@ curl -X PATCH "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def
 <CodeGroup>
 ```bash cURL - Simular Pagamento
 curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456/simulate-payment" \\
-  -H "x-api-key: fbk_test_SUA_CHAVE_AQUI" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
     "paidAmount": 145.75,
