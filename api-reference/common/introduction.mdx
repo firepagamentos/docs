@@ -1,0 +1,228 @@
+---
+title: 'APIs Comuns'
+description: 'Endpoints compartilhados para conta, webhooks e sistema da API FireBanking'
+---
+
+## Bem-vindos às APIs Comuns FireBanking
+
+As APIs Comuns fornecem funcionalidades essenciais compartilhadas entre todos os métodos de pagamento da FireBanking. Estes endpoints permitem gerenciar sua conta, configurar webhooks para notificações em tempo real e monitorar o status do sistema.
+
+<CardGroup cols={2}>
+  <Card title="Saldo da Conta" icon="wallet" href="/api-reference/account/balance">
+    Consulte o saldo atual da sua conta FireBanking
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api-reference/webhooks/configure">
+    Configure notificações em tempo real
+  </Card>
+  <Card title="Monitoramento" icon="activity" href="/api-reference/health/check">
+    Verifique o status e saúde da API
+  </Card>
+  <Card title="Retry Webhooks" icon="rotate-ccw" href="/api-reference/webhooks/retry">
+    Reenvie webhooks que falharam
+  </Card>
+</CardGroup>
+
+## Características Principais
+
+### Gestão de Conta
+- **Saldo em tempo real**: Consulte seu saldo disponível instantaneamente
+- **Múltiplas moedas**: Suporte completo para BRL (Real Brasileiro)
+- **Histórico detalhado**: Acesso a movimentações e transações
+- **Limites configuráveis**: Controle de limites por operação
+
+### Webhooks Inteligentes
+- **Entrega garantida**: Sistema de retry automático para webhooks
+- **Múltiplos eventos**: Notificações para pagamentos, cancelamentos e estornos
+- **Assinatura segura**: Verificação de integridade com HMAC
+- **Teste automático**: Validação de endpoints antes da ativação
+
+### Monitoramento Avançado
+- **Health checks**: Verificação automática de status da API
+- **Métricas em tempo real**: Performance e disponibilidade
+- **Status por região**: Monitoramento distribuído
+- **Alertas proativos**: Notificações de incidentes
+
+## Autenticação
+
+Todos os endpoints utilizam autenticação por API Key:
+
+<AccordionGroup>
+  <Accordion title="Header de Autenticação">
+    ```bash
+    x-api-key: SUA_CHAVE_DE_API
+    ```
+
+    Inclua sua chave de API no header `x-api-key` de todas as requisições.
+  </Accordion>
+
+  <Accordion title="Ambientes e Chaves">
+    - **Development**: Use suas chaves de teste que começam com `dev_`
+    - **Production**: Use suas chaves de produção que começam com `prod_`
+    - **Sandbox**: Chaves específicas para ambiente de testes
+  </Accordion>
+</AccordionGroup>
+
+## Ambientes Disponíveis
+
+<CardGroup cols={2}>
+  <Card title="Development" icon="flask">
+    **Base URL**: `https://api-gateway.firebanking.dev`
+    Ambiente para desenvolvimento e testes
+  </Card>
+  <Card title="Produção" icon="globe">
+    **Base URL**: `https://api-gateway.firebanking.com.br`
+    Ambiente de produção com dados reais
+  </Card>
+</CardGroup>
+
+## Funcionalidades por Seção
+
+### Conta
+<AccordionGroup>
+  <Accordion title="Consulta de Saldo">
+    - Saldo disponível em tempo real
+    - Saldo bloqueado (pendente de liquidação)
+    - Histórico de movimentações
+    - Projeção de recebíveis
+  </Accordion>
+
+  <Accordion title="Limites e Configurações">
+    - Limites diários e mensais
+    - Configurações de segurança
+    - Preferências de notificação
+    - Dados da conta
+  </Accordion>
+</AccordionGroup>
+
+### Webhooks
+<AccordionGroup>
+  <Accordion title="Configuração de Endpoints">
+    - URLs de callback personalizáveis
+    - Eventos selecionáveis
+    - Headers customizados
+    - Timeouts configuráveis
+  </Accordion>
+
+  <Accordion title="Gestão de Falhas">
+    - Retry automático inteligente
+    - Backoff exponencial
+    - Dead letter queue
+    - Alertas de falhas
+  </Accordion>
+
+  <Accordion title="Segurança">
+    - Assinatura HMAC-SHA256
+    - Verificação de origem
+    - Rate limiting
+    - Logs de auditoria
+  </Accordion>
+</AccordionGroup>
+
+### Sistema
+<AccordionGroup>
+  <Accordion title="Health Checks">
+    - Status geral da API
+    - Latência por endpoint
+    - Disponibilidade por região
+    - Dependências externas
+  </Accordion>
+
+  <Accordion title="Métricas Operacionais">
+    - Tempo de resposta
+    - Taxa de erro
+    - Throughput
+    - Capacity planning
+  </Accordion>
+</AccordionGroup>
+
+## Padrões de Resposta
+
+### Respostas de Sucesso
+```json Exemplo de Resposta
+{
+  "success": true,
+  "data": {
+    "balance": 15420.50,
+    "currency": "BRL",
+    "last_updated": "2024-01-15T10:30:00Z"
+  },
+  "meta": {
+    "timestamp": "2024-01-15T10:30:05Z",
+    "request_id": "req_abc123"
+  }
+}
+```
+
+### Tratamento de Erros
+```json Exemplo de Erro
+{
+  "error": {
+    "code": "INSUFFICIENT_BALANCE",
+    "message": "Saldo insuficiente para esta operação",
+    "details": {
+      "available": 100.00,
+      "required": 150.00
+    }
+  },
+  "meta": {
+    "timestamp": "2024-01-15T10:30:05Z",
+    "request_id": "req_xyz789"
+  }
+}
+```
+
+## Início Rápido
+
+### 1. Obtenha suas Credenciais
+Configure sua conta e obtenha suas chaves de API no [Dashboard FireBanking](https://app.firebanking.io):
+
+- **API Key**: Para autenticação de requisições
+- **Webhook Secret**: Para validação de webhooks
+- **Ambiente**: Development ou Production
+
+### 2. Teste a Conectividade
+
+```bash Verificar Status da API
+curl -X GET "https://api-gateway.firebanking.dev/health/check" \
+  -H "x-api-key: SUA_CHAVE_DE_API"
+```
+
+### 3. Consulte seu Saldo
+
+```bash Consultar Saldo
+curl -X GET "https://api-gateway.firebanking.dev/account/balance" \
+  -H "x-api-key: SUA_CHAVE_DE_API"
+```
+
+## Limites e Quotas
+
+<Info>
+  **Rate Limiting**: As APIs Comuns implementam rate limiting para garantir estabilidade e fair usage.
+</Info>
+
+| Endpoint | Limite | Janela |
+|----------|---------|---------|
+| `/account/balance` | 60 req/min | Por API Key |
+| `/webhooks/*` | 120 req/min | Por API Key |
+| `/health/check` | 300 req/min | Por IP |
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Consultar Saldo" icon="wallet" href="/api-reference/account/balance">
+    Implemente consulta de saldo em sua aplicação
+  </Card>
+  <Card title="Configurar Webhooks" icon="settings" href="/api-reference/webhooks/configure">
+    Configure notificações automáticas
+  </Card>
+  <Card title="Monitorar Sistema" icon="activity" href="/api-reference/health/check">
+    Implemente health checks na sua infraestrutura
+  </Card>
+  <Card title="Downloads" icon="download" href="/downloads">
+    Baixe coleções para Insomnia e Postman
+  </Card>
+</CardGroup>
+
+<Note>
+  **Dica**: Comece sempre verificando o status da API com `/health/check` antes de implementar outros endpoints.
+</Note>
