@@ -367,35 +367,19 @@ try {
 
 ### Respostas de Erro Comuns
 
-#### Chave Inválida
+#### Chave Inválida ou Ausente
 
 ```json
 {
-  "error": 401,
-  "message": "Chave de API inválida ou expirada",
-  "code": "INVALID_API_KEY"
+  "message": "Forbidden resource",
+  "error": "Forbidden",
+  "statusCode": 403
 }
 ```
 
-#### Permissões Insuficientes
-
-```json
-{
-  "error": 403,
-  "message": "Chave não tem as permissões necessárias",
-  "code": "INSUFFICIENT_PERMISSIONS"
-}
-```
-
-#### Autenticação Ausente
-
-```json
-{
-  "error": 401,
-  "message": "Chave de API necessária",
-  "code": "MISSING_API_KEY"
-}
-```
+<Note>
+  Este é o erro mais comum, retornado quando a chave de API está ausente, inválida ou expirada.
+</Note>
 
 ### Solução de Problemas
 
