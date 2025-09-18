@@ -16,7 +16,7 @@
         "groups": [
           {
             "group": "Início",
-            "pages": ["index", "quickstart", "authentication", "testing"]
+            "pages": ["index", "downloads", "quickstart", "authentication", "testing"]
           },
           {
             "group": "Conceitos Principais",
@@ -47,7 +47,8 @@
             "group": "Visão Geral",
             "pages": [
               "api-reference/credit-card/introduction",
-              "api-reference/credit-card/test-cards"
+              "api-reference/credit-card/test-cards",
+              "downloads"
             ]
           },
           {
@@ -94,7 +95,7 @@
         "groups": [
           {
             "group": "Visão Geral",
-            "pages": ["api-reference/pix/introduction"]
+            "pages": ["api-reference/pix/introduction", "downloads"]
           },
           {
             "group": "PIX Cobrança (Cash In)",
@@ -134,7 +135,7 @@
         "groups": [
           {
             "group": "Visão Geral",
-            "pages": ["api-reference/bank-slip/introduction"]
+            "pages": ["api-reference/bank-slip/introduction", "downloads"]
           },
           {
             "group": "Emissão",
@@ -161,6 +162,10 @@
       {
         "tab": "APIs Comuns",
         "groups": [
+          {
+            "group": "Visão Geral",
+            "pages": ["api-reference/common/introduction", "downloads"]
+          },
           {
             "group": "Conta",
             "pages": ["api-reference/account/balance"]
