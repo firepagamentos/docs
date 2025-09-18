@@ -253,53 +253,6 @@ function suggestPaymentMethod(amount, customerProfile) {
   </Accordion>
 </AccordionGroup>
 
-## Implementação Técnica
-
-### Stack Recomendada
-
-```javascript
-// Exemplo de decisão inteligente de método
-class PaymentMethodSelector {
-  constructor(amount, customerData, businessRules) {
-    this.amount = amount;
-    this.customer = customerData;
-    this.rules = businessRules;
-  }
-  
-  getSuggestedMethods() {
-    const methods = [];
-    
-    // PIX sempre disponível para valores baixos
-    if (this.amount <= 1000.00) { // Até R$ 1.000
-      methods.push({
-        method: 'pix',
-        priority: 1,
-        discount: this.calculatePixDiscount()
-      });
-    }
-    
-    // Cartão para parcelamento
-    if (this.customer.hasGoodCredit && this.amount >= 5000) {
-      methods.push({
-        method: 'credit_card',
-        priority: 2,
-        installments: this.getMaxInstallments()
-      });
-    }
-    
-    // Boleto para valores altos
-    if (this.amount >= 20000) { // Acima de R$ 200
-      methods.push({
-        method: 'boleto',
-        priority: this.amount > 100000 ? 1 : 3,
-        due_days: this.getOptimalDueDays()
-      });
-    }
-    
-    return methods.sort((a, b) => a.priority - b.priority);
-  }
-}
-```
 
 ## Próximos Passos
 
