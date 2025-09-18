@@ -206,19 +206,6 @@ O FireBanking oferece uma **plataforma unificada** para processar diferentes mé
 - ✅ Ofereça envio por email/WhatsApp
 - ✅ Explique onde pagar
 
-### Checkout Inteligente
-
-```javascript
-function suggestPaymentMethod(amount, customerProfile) {
-  if (amount < 5000) { // Até R$ 50
-    return ['pix', 'card'];
-  } else if (amount < 50000) { // R$ 50 - R$ 500
-    return ['pix', 'card', 'boleto'];
-  } else { // Acima de R$ 500
-    return ['boleto', 'pix', 'card'];
-  }
-}
-```
 
 ## Métricas de Performance
 
