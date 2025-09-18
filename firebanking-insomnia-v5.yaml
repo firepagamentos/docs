@@ -1,0 +1,923 @@
+type: collection.insomnia.rest/5.0
+name: API FireBanking
+meta:
+  id: wrk_firebanking_api
+  created: 1642243200000
+  modified: 1642243200000
+  description: "API FireBanking - Processamento de Pagamentos"
+collection:
+  - name: 💳 Cartão de Crédito
+    meta:
+      id: fld_credit_card
+      created: 1642243200000
+      modified: 1642243200000
+      sortKey: -1642243200000
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/credit-card/v1/payment"
+        name: Criar Pagamento
+        meta:
+          id: req_cc_payment
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Criar um novo pagamento com cartão de crédito"
+          sortKey: -1642243200000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "purchaseValue": 100,
+              "installments": 1,
+              "externalId": "card-payment-001",
+              "purchaseTitle": "Pagamento com Cartão",
+              "payment": {
+                "chargeType": "FEE_TO_CUSTOMER",
+                "capture": true,
+                "card": {
+                  "name": "JOSE DAS NEVES TEST",
+                  "number": "5383638854408981",
+                  "expiration": "12/2024",
+                  "securityCode": "220"
+                }
+              },
+              "buyer": {
+                "name": "João da Silva Teste",
+                "document": "11144477735",
+                "email": "joao.teste@exemplo.com",
+                "phone": "11999999999",
+                "countryCode": "+55",
+                "address": {
+                  "country": "BR",
+                  "state": "SP",
+                  "city": "São Paulo",
+                  "district": "Centro",
+                  "street": "Rua das Flores, 123",
+                  "zipCode": "01000000",
+                  "number": "123"
+                }
+              }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/payment/txn_1234567890"
+        name: Consultar Pagamento
+        meta:
+          id: req_cc_get_payment
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Consultar um pagamento específico pelo ID"
+          sortKey: -1642243100000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/payment/txn_1234567890/capture"
+        name: Capturar Pagamento
+        meta:
+          id: req_cc_capture
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Capturar um pagamento pré-autorizado"
+          sortKey: -1642243000000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "amount": 100
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/payment/token"
+        name: Criar Token de Cartão
+        meta:
+          id: req_cc_token
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Tokenizar um cartão para uso futuro"
+          sortKey: -1642242900000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "card": {
+                "name": "JOSE DAS NEVES TEST",
+                "number": "5383638854408981",
+                "expiration": "12/2024",
+                "securityCode": "220"
+              },
+              "buyer": {
+                "document": "11144477735",
+                "name": "João da Silva"
+              }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/payment/txn_1234567890/refund"
+        name: Estornar Pagamento
+        meta:
+          id: req_cc_refund
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Estornar um pagamento completado"
+          sortKey: -1642242800000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "amount": 50
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/payment/txn_1234567890/cancel-capture"
+        name: Cancelar Pré-Autorização
+        meta:
+          id: req_cc_cancel_capture
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Cancelar um pagamento pré-autorizado"
+          sortKey: -1642242700000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/buyer"
+        name: Criar Comprador
+        meta:
+          id: req_cc_buyer_create
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Criar um novo registro de comprador"
+          sortKey: -1642242600000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "name": "João da Silva Teste",
+              "document": "11144477735",
+              "email": "joao.teste@exemplo.com",
+              "phone": "11999999999",
+              "countryCode": "+55",
+              "address": {
+                "country": "BR",
+                "state": "SP",
+                "city": "São Paulo",
+                "district": "Centro",
+                "street": "Rua das Flores, 123",
+                "zipCode": "01000000",
+                "number": "123"
+              }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/buyer"
+        name: Listar Compradores
+        meta:
+          id: req_cc_buyer_list
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Obter uma lista de compradores com filtros opcionais"
+          sortKey: -1642242500000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        parameters:
+          - name: document
+            value: "11144477735"
+            disabled: true
+          - name: page
+            value: "0"
+            disabled: true
+          - name: size
+            value: "10"
+            disabled: true
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/buyer/buyer_uuid_123"
+        name: Obter Comprador por ID
+        meta:
+          id: req_cc_buyer_get
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Recuperar um comprador específico pelo seu UUID"
+          sortKey: -1642242400000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/subscription"
+        name: Criar Assinatura
+        meta:
+          id: req_cc_subscription_create
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Criar uma nova assinatura"
+          sortKey: -1642242300000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "basicValue": {
+                "type": "MONTHLY",
+                "valuePerMonth": 30
+              },
+              "productName": "Plano Premium",
+              "externalId": "subscription-001",
+              "chargeType": "FEE_TO_CUSTOMER",
+              "card": {
+                "name": "JOSE DAS NEVES TEST",
+                "number": "5383638854408981",
+                "expiration": "12/2024",
+                "securityCode": "220"
+              },
+              "buyer": {
+                "name": "João da Silva Teste",
+                "document": "11144477735",
+                "email": "joao.teste@exemplo.com"
+              }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/subscription/subscription_uuid_123"
+        name: Cancelar Assinatura
+        meta:
+          id: req_cc_subscription_cancel
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Cancelar uma assinatura ativa"
+          sortKey: -1642242200000
+        method: DELETE
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/subscription/subscription_uuid_123"
+        name: Atualizar Assinatura
+        meta:
+          id: req_cc_subscription_update
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Atualizar frequência de cobrança ou valor da assinatura"
+          sortKey: -1642242100000
+        method: PATCH
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "basicValue": {
+                "type": "MONTHLY",
+                "valuePerMonth": 50
+              }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+  - name: 📱 PIX
+    meta:
+      id: fld_pix
+      created: 1642243200000
+      modified: 1642243200000
+      sortKey: -1642242000000
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/pix/v2/payment"
+        name: Criar Cobrança PIX
+        meta:
+          id: req_pix_payment
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Criar uma nova cobrança PIX"
+          sortKey: -1642242000000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "amount": 1000,
+              "description": "Cobrança PIX de teste",
+              "externalId": "pix-payment-001",
+              "customer": {
+                "name": "João da Silva Teste",
+                "document": "11144477735",
+                "email": "joao@exemplo.com"
+              },
+              "pixKey": "11144477735",
+              "pixKeyType": "CPF"
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/pix/v2/payment/pix_12345"
+        name: Consultar Cobrança PIX
+        meta:
+          id: req_pix_get
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Consultar uma cobrança PIX pelo ID"
+          sortKey: -1642241900000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        parameters:
+          - name: type
+            value: "internal"
+            disabled: true
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/pix/v2/payment/withdraw"
+        name: Criar Transferência PIX
+        meta:
+          id: req_pix_withdraw
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Realiza transferências PIX para chaves PIX ou contas bancárias"
+          sortKey: -1642241800000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "amount": 100,
+              "description": "Transferência PIX",
+              "externalId": "withdraw-001",
+              "pixKey": "recipient@email.com",
+              "pixKeyType": "EMAIL",
+              "recipient": {
+                "name": "Maria Silva",
+                "document": "12345678901"
+              }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/pix/v2/payment/refund/pix_12345"
+        name: Estornar Transação PIX
+        meta:
+          id: req_pix_refund
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Solicita o estorno de uma transação PIX paga"
+          sortKey: -1642241700000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "amount": 100,
+              "reason": "Solicitação do cliente"
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/pix/v2/transactions"
+        name: Listar Transações PIX
+        meta:
+          id: req_pix_transactions
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Lista todas as transações PIX com filtros avançados"
+          sortKey: -1642241600000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        parameters:
+          - name: page
+            value: "1"
+            disabled: true
+          - name: limit
+            value: "20"
+            disabled: true
+          - name: type
+            value: "all"
+            disabled: true
+          - name: status
+            value: "paid"
+            disabled: true
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+  - name: 🏦 Boleto Bancário
+    meta:
+      id: fld_boleto
+      created: 1642243200000
+      modified: 1642243200000
+      sortKey: -1642241000000
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/bank-slip/v1/payment"
+        name: Criar Boleto
+        meta:
+          id: req_boleto_create
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Criar um novo boleto bancário"
+          sortKey: -1642241000000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "amount": 5000,
+              "dueDate": "2024-12-31",
+              "description": "Cobrança boleto de teste",
+              "externalId": "boleto-001",
+              "payer": {
+                "name": "João da Silva Teste",
+                "document": "11144477735",
+                "email": "joao@exemplo.com",
+                "phone": "11999999999",
+                "address": {
+                  "country": "BR",
+                  "state": "SP",
+                  "city": "São Paulo",
+                  "district": "Centro",
+                  "street": "Rua das Flores",
+                  "zipCode": "01000000",
+                  "number": "123"
+                }
+              }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/bank-slip/v1/payment/boleto_12345"
+        name: Consultar Boleto
+        meta:
+          id: req_boleto_get
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Consultar um boleto específico pelo ID"
+          sortKey: -1642240900000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/bank-slip/v1/payment/boleto_12345/cancel"
+        name: Cancelar Boleto
+        meta:
+          id: req_boleto_cancel
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Cancela um boleto que ainda não foi pago"
+          sortKey: -1642240800000
+        method: PATCH
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/bank-slip/v1/payment/boleto_12345/generate-pdf"
+        name: Gerar PDF do Boleto
+        meta:
+          id: req_boleto_pdf
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Gera e retorna o PDF do boleto para impressão ou envio"
+          sortKey: -1642240700000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+  - name: 🔐 Conta
+    meta:
+      id: fld_account
+      created: 1642243200000
+      modified: 1642243200000
+      sortKey: -1642240000000
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/v1/account/balance"
+        name: Obter Saldo da Conta
+        meta:
+          id: req_account_balance
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Verificar saldo atualizado da conta"
+          sortKey: -1642240000000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+  - name: 🏥 Sistema
+    meta:
+      id: fld_health
+      created: 1642243200000
+      modified: 1642243200000
+      sortKey: -1642239000000
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/credit-card/v1/health"
+        name: Verificação de Saúde
+        meta:
+          id: req_health_check
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Verificar status de saúde da API"
+          sortKey: -1642239000000
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+  - name: 🔔 Webhooks
+    meta:
+      id: fld_webhooks
+      created: 1642243200000
+      modified: 1642243200000
+      sortKey: -1642238000000
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/business/webhook"
+        name: Obter Configuração de Webhooks
+        meta:
+          id: req_webhook_get
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Recupera as URLs de webhook configuradas para cada método de pagamento"
+          sortKey: -1642238000000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/business/webhook"
+        name: Configurar Webhooks
+        meta:
+          id: req_webhook_configure
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Configura URLs de webhook para receber notificações em tempo real"
+          sortKey: -1642237900000
+        method: POST
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "pixWebhookUrl": "https://meusite.com/webhook/pix",
+              "bankSlipWebhookUrl": "https://meusite.com/webhook/boleto",
+              "creditCardWebhookUrl": "https://meusite.com/webhook/cartao",
+              "onboardingWebhookUrl": "https://meusite.com/webhook/onboarding"
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/business/webhook"
+        name: Atualizar Webhooks Parcialmente
+        meta:
+          id: req_webhook_update
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Atualiza uma ou mais URLs de webhook específicas"
+          sortKey: -1642237800000
+        method: PATCH
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "pixWebhookUrl": "https://meusite.com/webhook/pix-updated"
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/business/webhook/pix"
+        name: Remover Webhook Específico
+        meta:
+          id: req_webhook_delete
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Remove a URL de webhook de um produto específico"
+          sortKey: -1642237700000
+        method: DELETE
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_firebanking_default
+    created: 1642243200000
+    modified: 1642243200000
+
+environments:
+  name: Base Environment
+  meta:
+    id: env_firebanking_base
+    created: 1642243200000
+    modified: 1642243200000
+    isPrivate: false
+  subEnvironments:
+    - name: Development
+      meta:
+        id: env_firebanking_development
+        created: 1642243200001
+        modified: 1642243200001
+        isPrivate: false
+        sortKey: 1642243200001
+      data:
+        base_url: https://api-gateway.firebanking.dev
+        api_key: a9b484fc-90a6-4255-9394-e3c1ca0633b9
+    - name: Production
+      meta:
+        id: env_firebanking_production
+        created: 1642243200002
+        modified: 1642243200002
+        isPrivate: false
+        sortKey: 1642243200002
+      data:
+        base_url: https://api-gateway.firebanking.com.br
+        api_key: YOUR_PRODUCTION_API_KEY

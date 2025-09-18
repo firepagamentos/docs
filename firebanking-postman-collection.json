@@ -1,0 +1,787 @@
+{
+  "info": {
+    "name": "API FireBanking",
+    "description": "API FireBanking - Processamento de Pagamentos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "firebanking-api-collection"
+  },
+  "item": [
+    {
+      "name": "💳 Cartão de Crédito",
+      "item": [
+        {
+          "name": "Criar Pagamento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"purchaseValue\": 100,\n  \"installments\": 1,\n  \"externalId\": \"card-payment-001\",\n  \"purchaseTitle\": \"Pagamento com Cartão\",\n  \"payment\": {\n    \"chargeType\": \"FEE_TO_CUSTOMER\",\n    \"capture\": true,\n    \"card\": {\n      \"name\": \"JOSE DAS NEVES TEST\",\n      \"number\": \"5383638854408981\",\n      \"expiration\": \"12/2024\",\n      \"securityCode\": \"220\"\n    }\n  },\n  \"buyer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao.teste@exemplo.com\",\n    \"phone\": \"11999999999\",\n    \"countryCode\": \"+55\",\n    \"address\": {\n      \"country\": \"BR\",\n      \"state\": \"SP\",\n      \"city\": \"São Paulo\",\n      \"district\": \"Centro\",\n      \"street\": \"Rua das Flores, 123\",\n      \"zipCode\": \"01000000\",\n      \"number\": \"123\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/payment",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "payment"]
+            },
+            "description": "Criar um novo pagamento com cartão de crédito"
+          }
+        },
+        {
+          "name": "Consultar Pagamento",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/payment/txn_1234567890",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "payment", "txn_1234567890"]
+            },
+            "description": "Consultar um pagamento específico pelo ID"
+          }
+        },
+        {
+          "name": "Capturar Pagamento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/payment/txn_1234567890/capture",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "payment", "txn_1234567890", "capture"]
+            },
+            "description": "Capturar um pagamento pré-autorizado"
+          }
+        },
+        {
+          "name": "Criar Token de Cartão",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"card\": {\n    \"name\": \"JOSE DAS NEVES TEST\",\n    \"number\": \"5383638854408981\",\n    \"expiration\": \"12/2024\",\n    \"securityCode\": \"220\"\n  },\n  \"buyer\": {\n    \"document\": \"11144477735\",\n    \"name\": \"João da Silva\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/payment/token",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "payment", "token"]
+            },
+            "description": "Tokenizar um cartão para uso futuro"
+          }
+        },
+        {
+          "name": "Estornar Pagamento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/payment/txn_1234567890/refund",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "payment", "txn_1234567890", "refund"]
+            },
+            "description": "Estornar um pagamento completado"
+          }
+        },
+        {
+          "name": "Cancelar Pré-Autorização",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/payment/txn_1234567890/cancel-capture",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "payment", "txn_1234567890", "cancel-capture"]
+            },
+            "description": "Cancelar um pagamento pré-autorizado"
+          }
+        },
+        {
+          "name": "Criar Comprador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"João da Silva Teste\",\n  \"document\": \"11144477735\",\n  \"email\": \"joao.teste@exemplo.com\",\n  \"phone\": \"11999999999\",\n  \"countryCode\": \"+55\",\n  \"address\": {\n    \"country\": \"BR\",\n    \"state\": \"SP\",\n    \"city\": \"São Paulo\",\n    \"district\": \"Centro\",\n    \"street\": \"Rua das Flores, 123\",\n    \"zipCode\": \"01000000\",\n    \"number\": \"123\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/buyer",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "buyer"]
+            },
+            "description": "Criar um novo registro de comprador"
+          }
+        },
+        {
+          "name": "Listar Compradores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/buyer?document=11144477735&page=0&size=10",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "buyer"],
+              "query": [
+                {
+                  "key": "document",
+                  "value": "11144477735",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "0",
+                  "disabled": true
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Obter uma lista de compradores com filtros opcionais"
+          }
+        },
+        {
+          "name": "Obter Comprador por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/buyer/buyer_uuid_123",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "buyer", "buyer_uuid_123"]
+            },
+            "description": "Recuperar um comprador específico pelo seu UUID"
+          }
+        },
+        {
+          "name": "Criar Assinatura",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"basicValue\": {\n    \"type\": \"MONTHLY\",\n    \"valuePerMonth\": 30\n  },\n  \"productName\": \"Plano Premium\",\n  \"externalId\": \"subscription-001\",\n  \"chargeType\": \"FEE_TO_CUSTOMER\",\n  \"card\": {\n    \"name\": \"JOSE DAS NEVES TEST\",\n    \"number\": \"5383638854408981\",\n    \"expiration\": \"12/2024\",\n    \"securityCode\": \"220\"\n  },\n  \"buyer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao.teste@exemplo.com\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/subscription",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "subscription"]
+            },
+            "description": "Criar uma nova assinatura"
+          }
+        },
+        {
+          "name": "Cancelar Assinatura",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/subscription/subscription_uuid_123",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "subscription", "subscription_uuid_123"]
+            },
+            "description": "Cancelar uma assinatura ativa"
+          }
+        },
+        {
+          "name": "Atualizar Assinatura",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"basicValue\": {\n    \"type\": \"MONTHLY\",\n    \"valuePerMonth\": 50\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/subscription/subscription_uuid_123",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "subscription", "subscription_uuid_123"]
+            },
+            "description": "Atualizar frequência de cobrança ou valor da assinatura"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📱 PIX",
+      "item": [
+        {
+          "name": "Criar Cobrança PIX",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"description\": \"Cobrança PIX de teste\",\n  \"externalId\": \"pix-payment-001\",\n  \"customer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao@exemplo.com\"\n  },\n  \"pixKey\": \"11144477735\",\n  \"pixKeyType\": \"CPF\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/pix/v2/payment",
+              "host": ["{{base_url}}"],
+              "path": ["pix", "v2", "payment"]
+            },
+            "description": "Criar uma nova cobrança PIX"
+          }
+        },
+        {
+          "name": "Consultar Cobrança PIX",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pix/v2/payment/pix_12345?type=internal",
+              "host": ["{{base_url}}"],
+              "path": ["pix", "v2", "payment", "pix_12345"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "internal",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Consultar uma cobrança PIX pelo ID"
+          }
+        },
+        {
+          "name": "Criar Transferência PIX",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"description\": \"Transferência PIX\",\n  \"externalId\": \"withdraw-001\",\n  \"pixKey\": \"recipient@email.com\",\n  \"pixKeyType\": \"EMAIL\",\n  \"recipient\": {\n    \"name\": \"Maria Silva\",\n    \"document\": \"12345678901\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/pix/v2/payment/withdraw",
+              "host": ["{{base_url}}"],
+              "path": ["pix", "v2", "payment", "withdraw"]
+            },
+            "description": "Realiza transferências PIX para chaves PIX ou contas bancárias"
+          }
+        },
+        {
+          "name": "Estornar Transação PIX",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"reason\": \"Solicitação do cliente\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/pix/v2/payment/refund/pix_12345",
+              "host": ["{{base_url}}"],
+              "path": ["pix", "v2", "payment", "refund", "pix_12345"]
+            },
+            "description": "Solicita o estorno de uma transação PIX paga"
+          }
+        },
+        {
+          "name": "Listar Transações PIX",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pix/v2/transactions?page=1&limit=20&type=all&status=paid",
+              "host": ["{{base_url}}"],
+              "path": ["pix", "v2", "transactions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "all",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "paid",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lista todas as transações PIX com filtros avançados"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏦 Boleto Bancário",
+      "item": [
+        {
+          "name": "Criar Boleto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000,\n  \"dueDate\": \"2024-12-31\",\n  \"description\": \"Cobrança boleto de teste\",\n  \"externalId\": \"boleto-001\",\n  \"payer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao@exemplo.com\",\n    \"phone\": \"11999999999\",\n    \"address\": {\n      \"country\": \"BR\",\n      \"state\": \"SP\",\n      \"city\": \"São Paulo\",\n      \"district\": \"Centro\",\n      \"street\": \"Rua das Flores\",\n      \"zipCode\": \"01000000\",\n      \"number\": \"123\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/bank-slip/v1/payment",
+              "host": ["{{base_url}}"],
+              "path": ["bank-slip", "v1", "payment"]
+            },
+            "description": "Criar um novo boleto bancário"
+          }
+        },
+        {
+          "name": "Consultar Boleto",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bank-slip/v1/payment/boleto_12345",
+              "host": ["{{base_url}}"],
+              "path": ["bank-slip", "v1", "payment", "boleto_12345"]
+            },
+            "description": "Consultar um boleto específico pelo ID"
+          }
+        },
+        {
+          "name": "Cancelar Boleto",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bank-slip/v1/payment/boleto_12345/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["bank-slip", "v1", "payment", "boleto_12345", "cancel"]
+            },
+            "description": "Cancela um boleto que ainda não foi pago"
+          }
+        },
+        {
+          "name": "Gerar PDF do Boleto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bank-slip/v1/payment/boleto_12345/generate-pdf",
+              "host": ["{{base_url}}"],
+              "path": ["bank-slip", "v1", "payment", "boleto_12345", "generate-pdf"]
+            },
+            "description": "Gera e retorna o PDF do boleto para impressão ou envio"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Conta",
+      "item": [
+        {
+          "name": "Obter Saldo da Conta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/account/balance",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "account", "balance"]
+            },
+            "description": "Verificar saldo atualizado da conta"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Sistema",
+      "item": [
+        {
+          "name": "Verificação de Saúde",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/health",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "health"]
+            },
+            "description": "Verificar status de saúde da API"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔔 Webhooks",
+      "item": [
+        {
+          "name": "Obter Configuração de Webhooks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/business/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["business", "webhook"]
+            },
+            "description": "Recupera as URLs de webhook configuradas para cada método de pagamento"
+          }
+        },
+        {
+          "name": "Configurar Webhooks",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pixWebhookUrl\": \"https://meusite.com/webhook/pix\",\n  \"bankSlipWebhookUrl\": \"https://meusite.com/webhook/boleto\",\n  \"creditCardWebhookUrl\": \"https://meusite.com/webhook/cartao\",\n  \"onboardingWebhookUrl\": \"https://meusite.com/webhook/onboarding\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/business/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["business", "webhook"]
+            },
+            "description": "Configura URLs de webhook para receber notificações em tempo real"
+          }
+        },
+        {
+          "name": "Atualizar Webhooks Parcialmente",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pixWebhookUrl\": \"https://meusite.com/webhook/pix-updated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/business/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["business", "webhook"]
+            },
+            "description": "Atualiza uma ou mais URLs de webhook específicas"
+          }
+        },
+        {
+          "name": "Remover Webhook Específico",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/business/webhook/pix",
+              "host": ["{{base_url}}"],
+              "path": ["business", "webhook", "pix"]
+            },
+            "description": "Remove a URL de webhook de um produto específico"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api-gateway.firebanking.dev",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "a9b484fc-90a6-4255-9394-e3c1ca0633b9",
+      "type": "string"
+    }
+  ]
+}
