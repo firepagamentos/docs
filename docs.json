@@ -16,7 +16,7 @@
         "groups": [
           {
             "group": "Início",
-            "pages": ["index", "downloads", "quickstart", "authentication", "testing"]
+            "pages": ["index", "quickstart", "authentication", "downloads", "testing"]
           },
           {
             "group": "Conceitos Principais",
