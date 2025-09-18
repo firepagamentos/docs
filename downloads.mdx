@@ -1,0 +1,79 @@
+---
+title: "Downloads"
+description: "Baixe as coleções da API FireBanking para seus clientes favoritos"
+---
+
+# Downloads
+
+Baixe as coleções prontas da API FireBanking para importar nos seus clientes de API favoritos e começar a testar imediatamente.
+
+## Coleções Disponíveis
+
+### Insomnia
+
+Baixe a coleção completa para o Insomnia REST Client (formato YAML v5):
+
+<Card title="Coleção Insomnia" icon="download" href="/firebanking-insomnia-v5.yaml" download>
+  **firebanking-insomnia-v5.yaml**
+
+  Inclui todos os 27 endpoints da API organizados por categoria com ambientes de Development e Production pré-configurados.
+</Card>
+
+### Postman
+
+Baixe a coleção completa para o Postman (formato JSON v2.1.0):
+
+<Card title="Coleção Postman" icon="download" href="/firebanking-postman-collection.json" download>
+  **firebanking-postman-collection.json**
+
+  Inclui todos os 27 endpoints da API organizados em pastas por método de pagamento com variáveis de ambiente configuráveis.
+</Card>
+
+## Como Usar
+
+### Importando no Insomnia
+
+1. Abra o Insomnia REST Client
+2. Clique em **Create** → **Import from File**
+3. Selecione o arquivo `firebanking-insomnia-v5.yaml` baixado
+4. Escolha entre os ambientes **Development** ou **Production**
+5. Configure sua chave da API nas variáveis de ambiente
+
+### Importando no Postman
+
+1. Abra o Postman
+2. Clique em **Import** no canto superior esquerdo
+3. Selecione o arquivo `firebanking-postman-collection.json` baixado
+4. Crie um novo ambiente ou configure as variáveis:
+   - `base_url`: URL base da API (`https://api-gateway.firebanking.dev` para desenvolvimento)
+   - `api_key`: Sua chave da API
+
+## Variáveis de Ambiente
+
+Para usar as coleções, configure as seguintes variáveis:
+
+| Variável | Development | Production |
+|----------|-------------|------------|
+| `base_url` | `https://api-gateway.firebanking.dev` | `https://api-gateway.firebanking.com.br` |
+| `api_key` | Sua chave de desenvolvimento | Sua chave de produção |
+
+<Note>
+  Lembre-se de substituir `YOUR_PRODUCTION_API_KEY` pela sua chave real de produção antes de fazer chamadas no ambiente de produção.
+</Note>
+
+## Estrutura das Coleções
+
+As coleções incluem todos os endpoints organizados nas seguintes categorias:
+
+- **Cartão de Crédito**: Pagamentos, tokenização e assinaturas
+- **PIX**: Cobrança (Cash In) e saque (Cash Out)
+- **Boleto Bancário**: Emissão e gestão
+- **Conta**: Consulta de saldo
+- **Sistema**: Health check
+- **Webhooks**: Configuração e testes
+
+## Suporte
+
+Precisa de ajuda? Entre em contato:
+- **Email**: [api-support@firebanking.com](mailto:api-support@firebanking.com)
+- **Documentação**: Navegue pelas seções da API para exemplos detalhados
