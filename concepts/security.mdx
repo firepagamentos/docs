@@ -114,67 +114,6 @@ def load_config():
   **Importante**: A API FireBanking **rejeita** conexões HTTP. Use sempre HTTPS para todas as requisições.
 </Note>
 
-#### Validação de Certificados
-
-<CodeGroup>
-```javascript JavaScript - Configuração Segura
-const https = require('https');
-
-// ✅ Configuração correta
-const agent = new https.Agent({
-  rejectUnauthorized: true, // Valida certificado
-  secureProtocol: 'TLSv1_2_method' // TLS 1.2+
-});
-
-const response = await fetch('https://api-gateway.firebanking.com.br/v1/payment', {
-  method: 'POST',
-  agent: agent,
-  headers: {
-    'x-api-key': process.env.FIREBANKING_API_KEY
-  }
-});
-```
-
-```python Python - Requests Seguro
-import requests
-import ssl
-
-# ✅ Configuração correta
-session = requests.Session()
-session.verify = True  # Valida certificado SSL
-
-# Configuração TLS mínima
-context = ssl.create_default_context()
-context.minimum_version = ssl.TLSVersion.TLSv1_2
-
-response = session.post(
-    'https://api-gateway.firebanking.com.br/v1/payment',
-    headers={'x-api-key': os.getenv('FIREBANKING_API_KEY')},
-    json=payment_data
-)
-```
-
-```php PHP - cURL Seguro
-<?php
-// ✅ Configuração segura
-$curl = curl_init();
-
-curl_setopt_array($curl, [
-    CURLOPT_URL => 'https://api-gateway.firebanking.com.br/v1/payment',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_SSL_VERIFYPEER => true, // Valida certificado
-    CURLOPT_SSL_VERIFYHOST => 2,    // Valida hostname
-    CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2, // TLS 1.2+
-    CURLOPT_HTTPHEADER => [
-        'x-api-key: ' . getenv('FIREBANKING_API_KEY'),
-        'Content-Type: application/json'
-    ]
-]);
-
-$response = curl_exec($curl);
-?>
-```
-</CodeGroup>
 
 
 ## Proteção de Dados Sensíveis
