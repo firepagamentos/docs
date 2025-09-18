@@ -179,13 +179,9 @@ Configure webhooks específicos para cada método:
 
 ```json Exemplo de Resposta de Erro
 {
-  "error": {
-    "code": "INVALID_API_KEY",
-    "message": "Chave de API inválida ou expirada",
-    "details": "Verifique se a chave está correta e ativa",
-    "request_id": "req_1234567890",
-    "timestamp": "2024-01-15T10:30:00Z"
-  }
+  "message": "Forbidden resource",
+  "error": "Forbidden",
+  "statusCode": 403
 }
 ```
 
