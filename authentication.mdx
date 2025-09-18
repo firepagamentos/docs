@@ -410,10 +410,11 @@ Todas as chaves têm os mesmos limites de taxa:
 
 ## Testando Autenticação
 
-### Verificação de Saúde (Sem Autenticação)
+### Teste de Conectividade
 
 ```bash
-curl -X GET "https://api-gateway.firebanking.com.br/v1/health"
+curl -X GET "https://api-gateway.firebanking.com.br/v1/account/balance" \
+  -H "x-api-key: SUA_CHAVE"
 ```
 
 ### Teste de Chave de API

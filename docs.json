@@ -178,10 +178,6 @@
               "api-reference/webhooks/retry"
             ]
           },
-          {
-            "group": "Sistema",
-            "pages": ["api-reference/health/check"]
-          }
         ]
       }
     ],

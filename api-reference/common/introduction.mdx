@@ -14,8 +14,8 @@ As APIs Comuns fornecem funcionalidades essenciais compartilhadas entre todos os
   <Card title="Webhooks" icon="webhook" href="/api-reference/webhooks/configure">
     Configure notificações em tempo real
   </Card>
-  <Card title="Monitoramento" icon="activity" href="/api-reference/health/check">
-    Verifique o status e saúde da API
+  <Card title="Saldo da Conta" icon="wallet" href="/api-reference/account/balance">
+    Verifique o saldo e status da sua conta
   </Card>
   <Card title="Retry Webhooks" icon="rotate-ccw" href="/api-reference/webhooks/retry">
     Reenvie webhooks que falharam
@@ -183,7 +183,7 @@ Configure sua conta e obtenha suas chaves de API no [Dashboard FireBanking](http
 ### 2. Teste a Conectividade
 
 ```bash Verificar Status da API
-curl -X GET "https://api-gateway.firebanking.dev/health/check" \
+curl -X GET "https://api-gateway.firebanking.dev/v1/account/balance" \
   -H "x-api-key: SUA_CHAVE_DE_API"
 ```
 
@@ -204,7 +204,6 @@ curl -X GET "https://api-gateway.firebanking.dev/account/balance" \
 |----------|---------|---------|
 | `/account/balance` | 60 req/min | Por API Key |
 | `/webhooks/*` | 120 req/min | Por API Key |
-| `/health/check` | 300 req/min | Por IP |
 
 ## Próximos Passos
 
@@ -215,8 +214,8 @@ curl -X GET "https://api-gateway.firebanking.dev/account/balance" \
   <Card title="Configurar Webhooks" icon="settings" href="/api-reference/webhooks/configure">
     Configure notificações automáticas
   </Card>
-  <Card title="Monitorar Sistema" icon="activity" href="/api-reference/health/check">
-    Implemente health checks na sua infraestrutura
+  <Card title="Consultar Saldo" icon="wallet" href="/api-reference/account/balance">
+    Consulte o saldo da sua conta FireBanking
   </Card>
   <Card title="Downloads" icon="download" href="/downloads">
     Baixe coleções para Insomnia e Postman
@@ -224,5 +223,5 @@ curl -X GET "https://api-gateway.firebanking.dev/account/balance" \
 </CardGroup>
 
 <Note>
-  **Dica**: Comece sempre verificando o status da API com `/health/check` antes de implementar outros endpoints.
+  **Dica**: Comece sempre verificando a conectividade com `/v1/account/balance` antes de implementar outros endpoints.
 </Note>
