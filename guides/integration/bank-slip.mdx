@@ -98,29 +98,25 @@ curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \\
     "description": "Pagamento de serviços - Janeiro 2024",
     "externalId": "boleto-001",
     "dueDate": "2024-02-15",
-    "fineRate": 2.0,
-    "interestRate": 1.0,
-    "instructions": [
-      "Pagamento via boleto bancário",
-      "Não receber após o vencimento"
-    ],
-    "buyer": {
+    "payer": {
       "name": "João da Silva Santos",
       "document": "11144477735",
-      "email": "joao.santos@exemplo.com",
-      "phone": "11999887766",
-      "address": {
-        "street": "Rua das Flores, 123",
-        "neighborhood": "Centro",
-        "city": "São Paulo",
-        "state": "SP",
-        "zipCode": "01000000"
-      }
+      "city": "São Paulo",
+      "state": "SP",
+      "number": "123",
+      "postalCode": "01000000",
+      "neighborhood": "Centro",
+      "publicArea": "Rua das Flores"
     },
-    "discount": {
-      "type": "FIXED",
-      "value": 5.00,
-      "limitDate": "2024-02-10"
+    "instructions": {
+      "fine": {
+        "type": "PERCENTAGE",
+        "value": 2.0
+      },
+      "interest": {
+        "type": "PERCENTAGE",
+        "value": 1.0
+      }
     }
   }'
 ```
@@ -131,29 +127,25 @@ const boletoData = {
   description: "Pagamento de serviços - Janeiro 2024",
   externalId: "boleto-001",
   dueDate: "2024-02-15",
-  fineRate: 2.0, // 2% de multa após vencimento
-  interestRate: 1.0, // 1% ao mês de juros
-  instructions: [
-    "Pagamento via boleto bancário",
-    "Não receber após o vencimento"
-  ],
-  buyer: {
+  payer: {
     name: "João da Silva Santos",
     document: "11144477735",
-    email: "joao.santos@exemplo.com",
-    phone: "11999887766",
-    address: {
-      street: "Rua das Flores, 123",
-      neighborhood: "Centro",
-      city: "São Paulo",
-      state: "SP",
-      zipCode: "01000000"
-    }
+    city: "São Paulo",
+    state: "SP",
+    number: "123",
+    postalCode: "01000000",
+    neighborhood: "Centro",
+    publicArea: "Rua das Flores"
   },
-  discount: {
-    type: "FIXED",
-    value: 5.00,
-    limitDate: "2024-02-10"
+  instructions: {
+    fine: {
+      type: "PERCENTAGE",
+      value: 2.0 // 2% de multa após vencimento
+    },
+    interest: {
+      type: "PERCENTAGE",
+      value: 1.0 // 1% ao mês de juros
+    }
   }
 };
 
@@ -182,29 +174,25 @@ boleto_data = {
     "description": "Pagamento de serviços - Janeiro 2024",
     "externalId": "boleto-001",
     "dueDate": due_date,
-    "fineRate": 2.0,  # 2% de multa
-    "interestRate": 1.0,  # 1% ao mês de juros
-    "instructions": [
-        "Pagamento via boleto bancário",
-        "Não receber após o vencimento"
-    ],
-    "buyer": {
+    "payer": {
         "name": "João da Silva Santos",
         "document": "11144477735",
-        "email": "joao.santos@exemplo.com",
-        "phone": "11999887766",
-        "address": {
-            "street": "Rua das Flores, 123",
-            "neighborhood": "Centro",
-            "city": "São Paulo",
-            "state": "SP",
-            "zipCode": "01000000"
-        }
+        "city": "São Paulo",
+        "state": "SP",
+        "number": "123",
+        "postalCode": "01000000",
+        "neighborhood": "Centro",
+        "publicArea": "Rua das Flores"
     },
-    "discount": {
-        "type": "FIXED",
-        "value": 5.00,
-        "limitDate": "2024-02-10"
+    "instructions": {
+        "fine": {
+            "type": "PERCENTAGE",
+            "value": 2.0  # 2% de multa
+        },
+        "interest": {
+            "type": "PERCENTAGE",
+            "value": 1.0  # 1% ao mês de juros
+        }
     }
 }
 
@@ -297,27 +285,26 @@ print('Boleto emitido:', boleto)
 Por padrão, todo boleto gera automaticamente um PDF:
 
 <CodeGroup>
-```bash cURL - Baixar PDF
-curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456/pdf" \\
+```bash cURL - Gerar PDF
+curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment/boleto_abc123def456/generate-pdf" \\
   -H "x-api-key: SUA_CHAVE_DE_API" \\
-  --output boleto.pdf
+  -H "Content-Type: application/json"
 ```
 
-```javascript JavaScript - PDF Base64
-const response = await fetch('https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456/pdf?format=base64', {
+```javascript JavaScript - Gerar PDF
+const response = await fetch('https://api-gateway.firebanking.dev/bank-slip/v1/payment/boleto_abc123def456/generate-pdf', {
+  method: 'POST',
   headers: {
-    'x-api-key': 'SUA_CHAVE_DE_API'
+    'x-api-key': 'SUA_CHAVE_DE_API',
+    'Content-Type': 'application/json'
   }
 });
 
 const pdfData = await response.json();
-console.log('PDF Base64:', pdfData.base64);
+console.log('PDF URL:', pdfData.pdfAccessUrl);
 
-// Para baixar no navegador
-const link = document.createElement('a');
-link.href = `data:application/pdf;base64,${pdfData.base64}`;
-link.download = 'boleto.pdf';
-link.click();
+// Para baixar ou abrir o PDF
+window.open(pdfData.pdfAccessUrl, '_blank');
 ```
 </CodeGroup>
 
@@ -341,13 +328,15 @@ Configure layout e informações personalizadas:
 
 <CodeGroup>
 ```bash cURL - Consulta por ID
-curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456" \\
-  -H "x-api-key: SUA_CHAVE_DE_API"
+curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/payment/boleto_abc123def456" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
+  -H "Content-Type: application/json"
 ```
 
 ```bash cURL - Consulta por External ID
-curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/payment?externalId=boleto-001" \\
-  -H "x-api-key: SUA_CHAVE_DE_API"
+curl -X GET "https://api-gateway.firebanking.dev/bank-slip/v1/payment/boleto-001" \\
+  -H "x-api-key: SUA_CHAVE_DE_API" \\
+  -H "Content-Type: application/json"
 ```
 </CodeGroup>
 
@@ -446,12 +435,9 @@ app.post('/webhooks/boleto', (req, res) => {
 
 <CodeGroup>
 ```bash cURL - Cancelar Boleto
-curl -X DELETE "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def456" \\
+curl -X PATCH "https://api-gateway.firebanking.dev/bank-slip/v1/payment/boleto_abc123def456/cancel" \\
   -H "x-api-key: SUA_CHAVE_DE_API" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "reason": "Cancelamento solicitado pelo cliente"
-  }'
+  -H "Content-Type: application/json"
 ```
 
 ```json Resposta Cancelamento
@@ -494,18 +480,15 @@ curl -X PATCH "https://api-gateway.firebanking.dev/bank-slip/v1/boleto_abc123def
 
 ```json Cliente de Teste
 {
-  "buyer": {
+  "payer": {
     "name": "João Testador Boleto",
     "document": "11144477735",
-    "email": "joao.teste@exemplo.com",
-    "phone": "11999887766",
-    "address": {
-      "street": "Rua de Teste, 123",
-      "neighborhood": "Centro",
-      "city": "São Paulo",
-      "state": "SP",
-      "zipCode": "01000000"
-    }
+    "city": "São Paulo",
+    "state": "SP",
+    "number": "123",
+    "postalCode": "01000000",
+    "neighborhood": "Centro",
+    "publicArea": "Rua de Teste"
   }
 }
 ```
