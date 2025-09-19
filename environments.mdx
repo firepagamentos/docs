@@ -1,0 +1,527 @@
+---
+title: 'Ambientes da API'
+description: 'Servidores de desenvolvimento e produção da FireBanking com configurações de headers'
+---
+
+## Ambientes Disponíveis
+
+A API FireBanking oferece dois ambientes para desenvolvimento e produção, cada um com suas próprias URLs base e características específicas.
+
+<CardGroup cols={2}>
+  <Card title="Desenvolvimento" icon="flask">
+    **Base URL**: `https://api-gateway.firebanking.dev`
+
+    Ambiente para testes e desenvolvimento
+  </Card>
+  <Card title="Produção" icon="globe">
+    **Base URL**: `https://api-gateway.firebanking.com.br`
+
+    Ambiente com transações reais
+  </Card>
+</CardGroup>
+
+## Configuração de Headers
+
+Todas as requisições para a API FireBanking devem incluir os headers obrigatórios abaixo:
+
+### Headers Obrigatórios
+
+<AccordionGroup>
+  <Accordion title="x-api-key">
+    ```bash
+    x-api-key: SUA_CHAVE_DE_API
+    ```
+
+    **Descrição**: Chave de autenticação da API
+    - **Desenvolvimento**: Chave que inicia com `dev_`
+    - **Produção**: Chave que inicia com `prod_`
+    - **Obtenção**: Disponível no Dashboard FireBanking
+  </Accordion>
+
+  <Accordion title="Content-Type">
+    ```bash
+    Content-Type: application/json
+    ```
+
+    **Descrição**: Tipo de conteúdo enviado na requisição
+    - **Obrigatório**: Para métodos POST, PATCH, PUT
+    - **Valor**: Sempre `application/json`
+    - **Encoding**: UTF-8
+  </Accordion>
+
+  <Accordion title="Accept">
+    ```bash
+    Accept: application/json
+    ```
+
+    **Descrição**: Tipo de resposta esperada
+    - **Recomendado**: Para todas as requisições
+    - **Valor**: Sempre `application/json`
+    - **Função**: Garante resposta em formato JSON
+  </Accordion>
+</AccordionGroup>
+
+## Ambiente de Desenvolvimento
+
+### Características
+- **URL Base**: `https://api-gateway.firebanking.dev`
+- **Dados**: Simulados e seguros para teste
+- **Transações**: Não há movimentação financeira real
+- **Rate Limits**: Mais flexíveis para desenvolvimento
+- **Logs**: Mais detalhados para debug
+
+### Configuração
+
+<CodeGroup>
+```bash cURL
+curl --request POST \
+  --url 'https://api-gateway.firebanking.dev/pix/v2/payment' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: dev_sua_chave_aqui' \
+  --data '{
+    "transaction": {
+      "value": 10.00,
+      "description": "Teste de desenvolvimento",
+      "externalId": "test-pix-001"
+    },
+    "payer": {
+      "fullName": "João da Silva Teste",
+      "document": "11144477735"
+    }
+  }'
+```
+
+```javascript JavaScript
+const BASE_URL = 'https://api-gateway.firebanking.dev';
+const API_KEY = 'dev_sua_chave_aqui';
+
+const response = await fetch(`${BASE_URL}/pix/v2/payment`, {
+  method: 'POST',
+  headers: {
+    'x-api-key': API_KEY,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  body: JSON.stringify({
+    transaction: {
+      value: 10.00,
+      description: 'Teste de desenvolvimento',
+      externalId: 'test-pix-001'
+    },
+    payer: {
+      fullName: 'João da Silva Teste',
+      document: '11144477735'
+    }
+  })
+});
+```
+
+```python Python
+import requests
+
+BASE_URL = 'https://api-gateway.firebanking.dev'
+API_KEY = 'dev_sua_chave_aqui'
+
+headers = {
+    'x-api-key': API_KEY,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+}
+
+response = requests.post(
+    f'{BASE_URL}/pix/v2/payment',
+    headers=headers,
+    json={
+        'transaction': {
+            'value': 10.00,
+            'description': 'Teste de desenvolvimento',
+            'externalId': 'test-pix-001'
+        },
+        'payer': {
+            'fullName': 'João da Silva Teste',
+            'document': '11144477735'
+        }
+    }
+)
+```
+</CodeGroup>
+
+### Dados de Teste
+
+Para facilitar o desenvolvimento, use estes dados de teste validados:
+
+<AccordionGroup>
+  <Accordion title="Documentos de Teste">
+    **CPF Válido**: `11144477735` (formato: apenas números)
+
+    **CNPJ Válido**: `11222333000181` (formato: apenas números)
+
+    **Chaves PIX de Teste**:
+    - Email: `teste@firebanking.com`
+    - Telefone: `+5511999999999`
+    - CPF: `11144477735`
+    - UUID: `123e4567-e89b-12d3-a456-426614174000`
+  </Accordion>
+
+  <Accordion title="Cartões de Teste">
+    **Aprovado** (final 0, 1, 4): `5186882549895601`
+
+    **Negado** (final 2): `5465415736976082`
+
+    **Expirado** (final 3): `5112970800105403`
+
+    **Timeout** (final 6): `5186882549895606`
+
+    **CVV**: SEMPRE terminado em `0` (ex: `220`, `120`, `340`)
+
+    **Validade**: `12/2025` (qualquer data futura)
+
+    **Nome**: `JOSE DAS NEVES TEST`
+  </Accordion>
+
+  <Accordion title="Endereços de Teste">
+    **CEP**: `01000000` (formato: apenas números)
+
+    **Rua**: `Rua das Flores`
+
+    **Número**: `123`
+
+    **Bairro**: `Centro`
+
+    **Cidade**: `São Paulo`
+
+    **Estado**: `SP`
+
+    **País**: `BR`
+  </Accordion>
+
+  <Accordion title="Dados do Comprador Completo">
+    ```json
+    {
+      "name": "João da Silva Teste",
+      "document": "11144477735",
+      "email": "joao.teste@example.com",
+      "phone": "11999999999",
+      "countryCode": "+55",
+      "address": {
+        "country": "BR",
+        "state": "SP",
+        "city": "São Paulo",
+        "district": "Centro",
+        "street": "Rua das Flores",
+        "zipCode": "01000000",
+        "number": "123"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Ambiente de Produção
+
+### Características
+- **URL Base**: `https://api-gateway.firebanking.com.br`
+- **Dados**: Reais com movimentação financeira
+- **Transações**: Processamento real no sistema bancário
+- **Rate Limits**: Configurados para uso comercial
+- **Segurança**: Máxima proteção e monitoramento
+
+### Configuração
+
+<CodeGroup>
+```bash cURL
+curl --request POST \
+  --url 'https://api-gateway.firebanking.com.br/pix/v2/payment' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: prod_sua_chave_aqui' \
+  --data '{
+    "transaction": {
+      "value": 50.00,
+      "description": "Pagamento real",
+      "externalId": "prod-payment-001"
+    },
+    "payer": {
+      "fullName": "Maria Silva Santos",
+      "document": "11144477735"
+    }
+  }'
+```
+
+```javascript JavaScript
+const BASE_URL = 'https://api-gateway.firebanking.com.br';
+const API_KEY = 'prod_sua_chave_aqui';
+
+const response = await fetch(`${BASE_URL}/pix/v2/payment`, {
+  method: 'POST',
+  headers: {
+    'x-api-key': API_KEY,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  body: JSON.stringify({
+    transaction: {
+      value: 50.00,
+      description: 'Pagamento real',
+      externalId: 'prod-payment-001'
+    },
+    payer: {
+      fullName: 'Maria Silva Santos',
+      document: '11144477735'
+    }
+  })
+});
+```
+
+```python Python
+import requests
+
+BASE_URL = 'https://api-gateway.firebanking.com.br'
+API_KEY = 'prod_sua_chave_aqui'
+
+headers = {
+    'x-api-key': API_KEY,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+}
+
+response = requests.post(
+    f'{BASE_URL}/pix/v2/payment',
+    headers=headers,
+    json={
+        'transaction': {
+            'value': 50.00,
+            'description': 'Pagamento real',
+            'externalId': 'prod-payment-001'
+        },
+        'payer': {
+            'fullName': 'Maria Silva Santos',
+            'document': '11144477735'
+        }
+    }
+)
+```
+</CodeGroup>
+
+### Requisitos de Segurança
+
+<Warning>
+  **ATENÇÃO**: No ambiente de produção, suas chaves de API manipulam dinheiro real. Mantenha-as seguras!
+</Warning>
+
+- **Nunca commit** chaves de produção no código
+- **Use variáveis de ambiente** para armazenar credenciais
+- **Monitore** logs de acesso e uso da API
+- **Implemente** retry policies para falhas de rede
+- **Configure** alertas para transações fora do padrão
+
+## Variáveis de Ambiente
+
+### Configuração Recomendada
+
+Configure variáveis de ambiente para facilitar a troca entre ambientes:
+
+<CodeGroup>
+```bash .env (Desenvolvimento)
+FIREBANKING_BASE_URL=https://api-gateway.firebanking.dev
+FIREBANKING_API_KEY=dev_sua_chave_de_desenvolvimento
+FIREBANKING_ENVIRONMENT=development
+```
+
+```bash .env (Produção)
+FIREBANKING_BASE_URL=https://api-gateway.firebanking.com.br
+FIREBANKING_API_KEY=prod_sua_chave_de_producao
+FIREBANKING_ENVIRONMENT=production
+```
+</CodeGroup>
+
+### Implementação
+
+<CodeGroup>
+```javascript JavaScript (Node.js)
+// config.js
+module.exports = {
+  firebanking: {
+    baseUrl: process.env.FIREBANKING_BASE_URL,
+    apiKey: process.env.FIREBANKING_API_KEY,
+    environment: process.env.FIREBANKING_ENVIRONMENT || 'development'
+  }
+};
+
+// uso na aplicação
+const config = require('./config');
+
+const headers = {
+  'x-api-key': config.firebanking.apiKey,
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+};
+```
+
+```python Python
+import os
+from dataclasses import dataclass
+
+@dataclass
+class FireBankingConfig:
+    base_url: str = os.getenv('FIREBANKING_BASE_URL')
+    api_key: str = os.getenv('FIREBANKING_API_KEY')
+    environment: str = os.getenv('FIREBANKING_ENVIRONMENT', 'development')
+
+    @property
+    def headers(self):
+        return {
+            'x-api-key': self.api_key,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+
+# uso na aplicação
+config = FireBankingConfig()
+```
+
+```php PHP
+<?php
+class FireBankingConfig {
+    public static function getConfig() {
+        return [
+            'base_url' => $_ENV['FIREBANKING_BASE_URL'],
+            'api_key' => $_ENV['FIREBANKING_API_KEY'],
+            'environment' => $_ENV['FIREBANKING_ENVIRONMENT'] ?? 'development'
+        ];
+    }
+
+    public static function getHeaders() {
+        $config = self::getConfig();
+        return [
+            'x-api-key: ' . $config['api_key'],
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ];
+    }
+}
+?>
+```
+</CodeGroup>
+
+## Rate Limits
+
+Os limites de requisições variam entre ambientes:
+
+| Ambiente | Limite Geral | PIX | Cartão | Boleto |
+|----------|--------------|-----|--------|--------|
+| **Desenvolvimento** | 1000 req/min | 500 req/min | 300 req/min | 200 req/min |
+| **Produção** | 10000 req/min | 5000 req/min | 3000 req/min | 2000 req/min |
+
+### Headers de Rate Limit
+
+A API retorna headers informativos sobre seus limites:
+
+```bash
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1620000000
+```
+
+## Monitoramento
+
+### Health Check
+
+Verifique a saúde da API antes de fazer requisições:
+
+<CodeGroup>
+```bash Desenvolvimento
+curl https://api-gateway.firebanking.dev/health
+```
+
+```bash Produção
+curl https://api-gateway.firebanking.com.br/health
+```
+</CodeGroup>
+
+### Status da API
+
+Monitore incidentes e manutenções:
+
+- **Status Page**: [status.firebanking.io](https://status.firebanking.io)
+- **Webhook de Status**: Configure notificações de downtime
+- **Métricas**: Disponíveis no Dashboard FireBanking
+
+## Troubleshooting
+
+### Problemas Comuns
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized">
+    **Problema**: Chave de API inválida ou ausente
+
+    **Solução**:
+    - Verifique se o header `x-api-key` está presente
+    - Confirme se a chave está correta
+    - Verifique se está usando a chave do ambiente correto
+  </Accordion>
+
+  <Accordion title="403 Forbidden">
+    **Problema**: Chave válida mas sem permissão
+
+    **Solução**:
+    - Verifique se a funcionalidade está ativa na sua conta
+    - Confirme se não ultrapassou os rate limits
+    - Entre em contato com o suporte se necessário
+  </Accordion>
+
+  <Accordion title="415 Unsupported Media Type">
+    **Problema**: Header Content-Type ausente ou incorreto
+
+    **Solução**:
+    - Adicione `Content-Type: application/json`
+    - Verifique se o body está em formato JSON válido
+  </Accordion>
+
+  <Accordion title="429 Too Many Requests">
+    **Problema**: Rate limit excedido
+
+    **Solução**:
+    - Implemente backoff exponencial
+    - Distribua requisições ao longo do tempo
+    - Considere upgrade de plano se necessário
+  </Accordion>
+</AccordionGroup>
+
+## Migração para Produção
+
+### Checklist de Preparação
+
+<Steps>
+  <Step title="Teste Completo">
+    Execute todos os cenários em desenvolvimento
+  </Step>
+  <Step title="Configuração de Variáveis">
+    Configure variáveis de ambiente de produção
+  </Step>
+  <Step title="Webhooks de Produção">
+    Configure URLs de webhook para produção
+  </Step>
+  <Step title="Monitoramento">
+    Implemente logs e alertas
+  </Step>
+  <Step title="Backup e Rollback">
+    Prepare plano de contingência
+  </Step>
+</Steps>
+
+### Validação Final
+
+Antes de ir para produção, teste:
+
+- [ ] Autenticação com chaves de produção
+- [ ] Funcionalidades críticas do seu sistema
+- [ ] Webhooks e notificações
+- [ ] Tratamento de erros
+- [ ] Rate limits e timeout
+- [ ] Logs e monitoramento
+
+<Note>
+  **Dica**: Use feature flags para ativar gradualmente o ambiente de produção, permitindo rollback rápido se necessário.
+</Note>
