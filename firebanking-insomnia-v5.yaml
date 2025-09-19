@@ -43,7 +43,7 @@ collection:
                 "card": {
                   "name": "JOSE DAS NEVES TEST",
                   "number": "5383638854408981",
-                  "expiration": "12/2024",
+                  "expiration": "12/2030",
                   "securityCode": "220"
                 }
               },
@@ -511,20 +511,15 @@ collection:
           mimeType: application/json
           text: |
             {
-              "transaction": {
-                "value": 100.00,
-                "description": "Transferência PIX",
-                "externalId": "withdraw-001",
-                "additionalInfo": {
-                  "sellerId": 123
-                }
+              "type": "PIX",
+              "value": 15,
+              "details": {
+                "key": "12312312387",
+                "keyType": "DOCUMENT",
+                "name": "John Marvin",
+                "document": "12312312387"
               },
-              "beneficiary": {
-                "key": "recipient@email.com",
-                "keyType": "EMAIL",
-                "name": "Maria Silva",
-                "document": "12345678901"
-              }
+              "externalId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
             }
         settings:
           renderRequestBody: true
@@ -554,8 +549,8 @@ collection:
           mimeType: application/json
           text: |
             {
-              "amount": 100,
-              "reason": "Solicitação do cliente"
+              "value": 100.00,
+              "description": "Solicitação do cliente"
             }
         settings:
           renderRequestBody: true
@@ -566,40 +561,6 @@ collection:
             store: true
           rebuildPath: true
 
-      - url: "{{ _.base_url }}/pix/v2/transactions"
-        name: Listar Transações PIX
-        meta:
-          id: req_pix_transactions
-          created: 1642243200000
-          modified: 1642243200000
-          isPrivate: false
-          description: "Lista todas as transações PIX com filtros avançados"
-          sortKey: -1642241600000
-        method: GET
-        headers:
-          - name: x-api-key
-            value: "{{ _.api_key }}"
-        parameters:
-          - name: page
-            value: "1"
-            disabled: true
-          - name: limit
-            value: "20"
-            disabled: true
-          - name: type
-            value: "all"
-            disabled: true
-          - name: status
-            value: "paid"
-            disabled: true
-        settings:
-          renderRequestBody: true
-          encodeUrl: true
-          followRedirects: global
-          cookies:
-            send: true
-            store: true
-          rebuildPath: true
 
   - name: 🏦 Boleto Bancário
     meta:
@@ -638,13 +599,12 @@ collection:
                 "email": "joao@exemplo.com",
                 "phone": "11999999999",
                 "address": {
-                  "country": "BR",
-                  "state": "SP",
-                  "city": "São Paulo",
-                  "district": "Centro",
                   "street": "Rua das Flores",
-                  "zipCode": "01000000",
-                  "number": "123"
+                  "number": "123",
+                  "neighborhood": "Centro",
+                  "city": "São Paulo",
+                  "state": "SP",
+                  "zipCode": "01000000"
                 }
               }
             }

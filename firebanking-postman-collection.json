@@ -27,7 +27,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"purchaseValue\": 100,\n  \"installments\": 1,\n  \"externalId\": \"card-payment-001\",\n  \"purchaseTitle\": \"Pagamento com Cartão\",\n  \"payment\": {\n    \"chargeType\": \"FEE_TO_CUSTOMER\",\n    \"capture\": true,\n    \"card\": {\n      \"name\": \"JOSE DAS NEVES TEST\",\n      \"number\": \"5383638854408981\",\n      \"expiration\": \"12/2024\",\n      \"securityCode\": \"220\"\n    }\n  },\n  \"buyer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao.teste@exemplo.com\",\n    \"phone\": \"11999999999\",\n    \"countryCode\": \"+55\",\n    \"address\": {\n      \"country\": \"BR\",\n      \"state\": \"SP\",\n      \"city\": \"São Paulo\",\n      \"district\": \"Centro\",\n      \"street\": \"Rua das Flores, 123\",\n      \"zipCode\": \"01000000\",\n      \"number\": \"123\"\n    }\n  }\n}",
+              "raw": "{\n  \"purchaseValue\": 100,\n  \"installments\": 1,\n  \"externalId\": \"card-payment-001\",\n  \"purchaseTitle\": \"Pagamento com Cartão\",\n  \"payment\": {\n    \"chargeType\": \"FEE_TO_CUSTOMER\",\n    \"capture\": true,\n    \"card\": {\n      \"name\": \"JOSE DAS NEVES TEST\",\n      \"number\": \"5383638854408981\",\n      \"expiration\": \"12/2030\",\n      \"securityCode\": \"220\"\n    }\n  },\n  \"buyer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao.teste@exemplo.com\",\n    \"phone\": \"11999999999\",\n    \"countryCode\": \"+55\",\n    \"address\": {\n      \"country\": \"BR\",\n      \"state\": \"SP\",\n      \"city\": \"São Paulo\",\n      \"district\": \"Centro\",\n      \"street\": \"Rua das Flores, 123\",\n      \"zipCode\": \"01000000\",\n      \"number\": \"123\"\n    }\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -434,7 +434,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"transaction\": {\n    \"value\": 100.00,\n    \"description\": \"Transferência PIX\",\n    \"externalId\": \"withdraw-001\",\n    \"additionalInfo\": {\n      \"sellerId\": 123\n    }\n  },\n  \"beneficiary\": {\n    \"key\": \"recipient@email.com\",\n    \"keyType\": \"EMAIL\",\n    \"name\": \"Maria Silva\",\n    \"document\": \"12345678901\"\n  }\n}",
+              "raw": "{\n  \"type\": \"PIX\",\n  \"value\": 15,\n  \"details\": {\n    \"key\": \"12312312387\",\n    \"keyType\": \"DOCUMENT\",\n    \"name\": \"John Marvin\",\n    \"document\": \"12312312387\"\n  },\n  \"externalId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -467,7 +467,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 100,\n  \"reason\": \"Solicitação do cliente\"\n}",
+              "raw": "{\n  \"value\": 100.00,\n  \"description\": \"Solicitação do cliente\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -480,47 +480,6 @@
               "path": ["pix", "v2", "payment", "refund", "pix_12345"]
             },
             "description": "Solicita o estorno de uma transação PIX paga"
-          }
-        },
-        {
-          "name": "Listar Transações PIX",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "x-api-key",
-                "value": "{{api_key}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/pix/v2/transactions?page=1&limit=20&type=all&status=paid",
-              "host": ["{{base_url}}"],
-              "path": ["pix", "v2", "transactions"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1",
-                  "disabled": true
-                },
-                {
-                  "key": "limit",
-                  "value": "20",
-                  "disabled": true
-                },
-                {
-                  "key": "type",
-                  "value": "all",
-                  "disabled": true
-                },
-                {
-                  "key": "status",
-                  "value": "paid",
-                  "disabled": true
-                }
-              ]
-            },
-            "description": "Lista todas as transações PIX com filtros avançados"
           }
         }
       ]
@@ -546,7 +505,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 5000,\n  \"dueDate\": \"2024-12-31\",\n  \"description\": \"Cobrança boleto de teste\",\n  \"externalId\": \"boleto-001\",\n  \"payer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao@exemplo.com\",\n    \"phone\": \"11999999999\",\n    \"address\": {\n      \"country\": \"BR\",\n      \"state\": \"SP\",\n      \"city\": \"São Paulo\",\n      \"district\": \"Centro\",\n      \"street\": \"Rua das Flores\",\n      \"zipCode\": \"01000000\",\n      \"number\": \"123\"\n    }\n  }\n}",
+              "raw": "{\n  \"amount\": 5000,\n  \"dueDate\": \"2024-12-31\",\n  \"description\": \"Cobrança boleto de teste\",\n  \"externalId\": \"boleto-001\",\n  \"payer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao@exemplo.com\",\n    \"phone\": \"11999999999\",\n    \"address\": {\n      \"street\": \"Rua das Flores\",\n      \"number\": \"123\",\n      \"neighborhood\": \"Centro\",\n      \"city\": \"São Paulo\",\n      \"state\": \"SP\",\n      \"zipCode\": \"01000000\"\n    }\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
