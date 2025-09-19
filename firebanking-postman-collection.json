@@ -505,7 +505,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 5000,\n  \"dueDate\": \"2024-12-31\",\n  \"description\": \"Cobrança boleto de teste\",\n  \"externalId\": \"boleto-001\",\n  \"payer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao@exemplo.com\",\n    \"phone\": \"11999999999\",\n    \"address\": {\n      \"street\": \"Rua das Flores\",\n      \"number\": \"123\",\n      \"neighborhood\": \"Centro\",\n      \"city\": \"São Paulo\",\n      \"state\": \"SP\",\n      \"zipCode\": \"01000000\"\n    }\n  }\n}",
+              "raw": "{\n  \"amount\": 1899.75,\n  \"payer\": {\n    \"name\": \"CARLOS EDUARDO MENDES\",\n    \"document\": \"315.472.689-01\",\n    \"city\": \"SÃO PAULO\",\n    \"state\": \"SP\",\n    \"number\": \"1024\",\n    \"postalCode\": \"04119001\",\n    \"neighborhood\": \"VILA MARIANA\",\n    \"publicArea\": \"RUA DOMINGOS DE MORAIS\"\n  },\n  \"dueDate\": \"2025-04-15\",\n  \"description\": \"Pagamento referente à mensalidade do serviço contratado\",\n  \"externalId\": \"a7c1e3b5-8f42-45d6-9b3c-1d5f98a0d123\",\n  \"instructions\": {\n    \"interest\": {\n      \"type\": \"PERCENTAGE\",\n      \"value\": 10\n    },\n    \"fine\": {\n      \"type\": \"PERCENTAGE\",\n      \"value\": 0.20\n    }\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -548,6 +548,16 @@
                 "key": "x-api-key",
                 "value": "{{api_key}}",
                 "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "url": {
@@ -566,6 +576,16 @@
               {
                 "key": "x-api-key",
                 "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
                 "type": "text"
               }
             ],

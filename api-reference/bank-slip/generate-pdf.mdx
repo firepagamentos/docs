@@ -18,32 +18,16 @@ Gere o arquivo PDF de um boleto bancário registrado. Este endpoint retorna uma 
   ID do boleto ou `externalId` para gerar o PDF
 </ParamField>
 
-## Parâmetros de Query
-
-<ParamField query="type" type="string">
-  Tipo de busca: `internal` (padrão) ou `external`
-</ParamField>
-
-<ParamField query="format" type="string">
-  Formato do retorno: `url` (padrão) ou `base64`
-</ParamField>
 
 ## Exemplo de Requisição
 
 <CodeGroup>
-```bash cURL - Retornar URL
-curl -X POST "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/generate-pdf" \
-  -H "x-api-key: SUA_CHAVE_DE_API"
-```
-
-```bash cURL - Por External ID
-curl -X POST "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123/generate-pdf?type=external" \
-  -H "x-api-key: SUA_CHAVE_DE_API"
-```
-
-```bash cURL - Retornar Base64
-curl -X POST "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/generate-pdf?format=base64" \
-  -H "x-api-key: SUA_CHAVE_DE_API"
+```bash cURL
+curl --request POST \
+  --url 'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/<id>/generate-pdf' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: <sua-chave-api>'
 ```
 
 ```javascript JavaScript
@@ -57,7 +41,7 @@ async function generateBoletoPDF(boletoId) {
   });
 
   const result = await response.json();
-  return result.pdf_url;
+  return result.pdfAccessUrl;
 }
 
 // Baixar PDF diretamente
@@ -84,14 +68,12 @@ async function openBoletoPDF(boletoId) {
 
 ```python Python
 import requests
-import base64
 
-def generate_boleto_pdf(boleto_id, format_type='url'):
-    """Gera PDF do boleto e retorna URL ou base64"""
+def generate_boleto_pdf(boleto_id):
+    """Gera PDF do boleto e retorna URL de acesso"""
 
     response = requests.post(
         f'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/{boleto_id}/generate-pdf',
-        params={'format': format_type},
         headers={'x-api-key': 'SUA_CHAVE_DE_API'}
     )
 
@@ -103,28 +85,30 @@ def generate_boleto_pdf(boleto_id, format_type='url'):
 def download_boleto_pdf(boleto_id, filename='boleto.pdf'):
     """Baixa PDF do boleto"""
 
-    # Gerar base64 do PDF
-    result = generate_boleto_pdf(boleto_id, 'base64')
-    pdf_content = base64.b64decode(result['pdf_base64'])
+    # Gerar URL do PDF
+    result = generate_boleto_pdf(boleto_id)
+    pdf_url = result['pdfAccessUrl']
 
-    # Salvar arquivo
+    # Baixar arquivo
+    pdf_response = requests.get(pdf_url)
+
     with open(filename, 'wb') as f:
-        f.write(pdf_content)
+        f.write(pdf_response.content)
 
     print(f'PDF salvo como {filename}')
 
 # Uso
 pdf_data = generate_boleto_pdf('bol_1234567890123456')
-print(f'PDF disponível em: {pdf_data["pdf_url"]}')
+print(f'PDF disponível em: {pdf_data["pdfAccessUrl"]}')
 ```
 
 ```php PHP
 <?php
-function generateBoletoPDF($boletoId, $format = 'url') {
+function generateBoletoPDF($boletoId) {
     $curl = curl_init();
 
     curl_setopt_array($curl, [
-        CURLOPT_URL => "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/{$boletoId}/generate-pdf?format={$format}",
+        CURLOPT_URL => "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/{$boletoId}/generate-pdf",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
         CURLOPT_HTTPHEADER => [
@@ -139,11 +123,12 @@ function generateBoletoPDF($boletoId, $format = 'url') {
 }
 
 function downloadBoletoPDF($boletoId, $filename = 'boleto.pdf') {
-    // Gerar base64 do PDF
-    $result = generateBoletoPDF($boletoId, 'base64');
-    $pdfContent = base64_decode($result['pdf_base64']);
+    // Gerar URL do PDF
+    $result = generateBoletoPDF($boletoId);
+    $pdfUrl = $result['pdfAccessUrl'];
 
-    // Salvar arquivo
+    // Baixar arquivo
+    $pdfContent = file_get_contents($pdfUrl);
     file_put_contents($filename, $pdfContent);
 
     return $filename;
@@ -151,7 +136,7 @@ function downloadBoletoPDF($boletoId, $filename = 'boleto.pdf') {
 
 // Uso
 $pdfData = generateBoletoPDF('bol_1234567890123456');
-echo "PDF disponível em: " . $pdfData['pdf_url'];
+echo "PDF disponível em: " . $pdfData['pdfAccessUrl'];
 ?>
 ```
 </CodeGroup>
@@ -159,43 +144,9 @@ echo "PDF disponível em: " . $pdfData['pdf_url'];
 ## Exemplo de Resposta
 
 <ResponseExample>
-```json 200 OK - URL do PDF
+```json 200 OK
 {
-  "pdf_url": "https://cdn.firebanking.com/boletos/bol_1234567890123456.pdf?token=abc123&expires=1705593600",
-  "expires_at": "2024-01-18T18:00:00Z",
-  "file_size": 245760,
-  "generated_at": "2024-01-15T17:30:00Z"
-}
-```
-
-```json 200 OK - Base64 do PDF
-{
-  "pdf_base64": "JVBERi0xLjQKJYCAgICAgICAgICAgICAgICAgICAgICAgICAgCg...",
-  "file_size": 245760,
-  "mime_type": "application/pdf",
-  "generated_at": "2024-01-15T17:30:00Z"
-}
-```
-
-```json 404 Not Found
-{
-  "error": {
-    "code": "BOLETO_NOT_FOUND",
-    "message": "Boleto não encontrado",
-    "details": "Nenhum boleto foi encontrado com o ID fornecido",
-    "request_id": "req_123456789"
-  }
-}
-```
-
-```json 422 Unprocessable Entity
-{
-  "error": {
-    "code": "BOLETO_NOT_GENERATED",
-    "message": "PDF não pode ser gerado",
-    "details": "Boleto deve estar registrado para gerar PDF",
-    "request_id": "req_123456789"
-  }
+  "pdfAccessUrl": "https://s3.us-east-1.amazonaws.com/dev...."
 }
 ```
 </ResponseExample>

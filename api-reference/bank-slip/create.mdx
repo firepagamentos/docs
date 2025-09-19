@@ -14,7 +14,7 @@ Crie um boleto bancário registrado para recebimento de pagamentos. O boleto ser
   Valor do boleto em reais (ex: 100.00, 25.50). Mínimo: 2.50
 </ParamField>
 
-<ParamField body="due_date" type="string" required>
+<ParamField body="dueDate" type="string" required>
   Data de vencimento do boleto (formato: YYYY-MM-DD). Máximo 90 dias após emissão
 </ParamField>
 
@@ -22,68 +22,66 @@ Crie um boleto bancário registrado para recebimento de pagamentos. O boleto ser
   Descrição da cobrança (máximo 200 caracteres)
 </ParamField>
 
-<ParamField body="external_id" type="string" required>
+<ParamField body="externalId" type="string" required>
   Identificador único da transação em seu sistema
 </ParamField>
 
-<ParamField body="buyer" type="object" required>
+<ParamField body="payer" type="object" required>
   Dados completos do pagador
-  <Expandable title="buyer">
-    <ParamField body="buyer.name" type="string" required>
+  <Expandable title="payer">
+    <ParamField body="payer.name" type="string" required>
       Nome completo do pagador (pessoa física) ou razão social (pessoa jurídica)
     </ParamField>
-    <ParamField body="buyer.document" type="string" required>
+    <ParamField body="payer.document" type="string" required>
       CPF ou CNPJ do pagador (apenas números, 11 ou 14 dígitos)
     </ParamField>
-    <ParamField body="buyer.email" type="string" required>
-      Email válido para envio do boleto
+    <ParamField body="payer.city" type="string" required>
+      Cidade do pagador
     </ParamField>
-    <ParamField body="buyer.phone" type="string">
-      Telefone do pagador (apenas números com DDD)
+    <ParamField body="payer.state" type="string" required>
+      Estado (sigla com 2 caracteres, ex: SP)
     </ParamField>
-    <ParamField body="buyer.address" type="object" required>
-      Endereço completo do pagador
-      <Expandable title="address">
-        <ParamField body="buyer.address.street" type="string" required>
-          Logradouro (rua, avenida, etc.)
-        </ParamField>
-        <ParamField body="buyer.address.number" type="string" required>
-          Número do endereço
-        </ParamField>
-        <ParamField body="buyer.address.complement" type="string">
-          Complemento (apartamento, bloco, etc.)
-        </ParamField>
-        <ParamField body="buyer.address.district" type="string" required>
-          Bairro
-        </ParamField>
-        <ParamField body="buyer.address.city" type="string" required>
-          Cidade
-        </ParamField>
-        <ParamField body="buyer.address.state" type="string" required>
-          Estado (sigla com 2 caracteres, ex: SP)
-        </ParamField>
-        <ParamField body="buyer.address.zip_code" type="string" required>
-          CEP (apenas números, 8 dígitos)
-        </ParamField>
-      </Expandable>
+    <ParamField body="payer.number" type="string" required>
+      Número do endereço
+    </ParamField>
+    <ParamField body="payer.postalCode" type="string" required>
+      CEP (apenas números, 8 dígitos)
+    </ParamField>
+    <ParamField body="payer.neighborhood" type="string" required>
+      Bairro
+    </ParamField>
+    <ParamField body="payer.publicArea" type="string" required>
+      Logradouro (rua, avenida, etc.)
     </ParamField>
   </Expandable>
 </ParamField>
 
-<ParamField body="fine_amount" type="integer">
-  Multa em reais para pagamento após vencimento. Padrão: 2% do valor
-</ParamField>
-
-<ParamField body="interest_amount" type="integer">
-  Juros diários em reais após vencimento. Padrão: 0,033% ao dia
-</ParamField>
-
-<ParamField body="callback_url" type="string">
-  URL para receber webhooks específicos deste boleto
-</ParamField>
-
-<ParamField body="instructions" type="array">
-  Array com até 4 linhas de instruções para o pagador (80 caracteres por linha)
+<ParamField body="instructions" type="object">
+  Configurações de multa e juros para pagamento após vencimento
+  <Expandable title="instructions">
+    <ParamField body="instructions.interest" type="object">
+      Configuração de juros
+      <Expandable title="interest">
+        <ParamField body="instructions.interest.type" type="string" required>
+          Tipo de juros: "PERCENTAGE" ou "FIXED"
+        </ParamField>
+        <ParamField body="instructions.interest.value" type="number" required>
+          Valor do juros (percentual ou valor fixo)
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField body="instructions.fine" type="object">
+      Configuração de multa
+      <Expandable title="fine">
+        <ParamField body="instructions.fine.type" type="string" required>
+          Tipo de multa: "PERCENTAGE" ou "FIXED"
+        </ParamField>
+        <ParamField body="instructions.fine.value" type="number" required>
+          Valor da multa (percentual ou valor fixo)
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
 </ParamField>
 
 <ParamField body="metadata" type="object">
@@ -98,76 +96,58 @@ curl -X POST "https://api-gateway.firebanking.com.br/bank-slip/v1/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 250,
-    "due_date": "2024-02-15",
-    "description": "Mensalidade Academia FitLife - Janeiro/2024",
-    "external_id": "mensalidade-2024-01-joao",
-    "buyer": {
-      "name": "João Silva Santos",
-      "document": "12345678901",
-      "email": "joao@email.com",
-      "phone": "11999999999",
-      "address": {
-        "street": "Rua das Flores",
-        "number": "123",
-        "complement": "Apto 45",
-        "district": "Centro",
-        "city": "São Paulo",
+    "amount": 1899.75,
+    "payer": {
+        "name": "CARLOS EDUARDO MENDES",
+        "document": "315.472.689-01",
+        "city": "SÃO PAULO",
         "state": "SP",
-        "zip_code": "01000000"
-      }
+        "number": "1024",
+        "postalCode": "04119001",
+        "neighborhood": "VILA MARIANA",
+        "publicArea": "RUA DOMINGOS DE MORAIS"
     },
-    "fine_amount": 5,
-    "interest_amount": 0.83,
-    "callback_url": "https://meusite.com/webhooks/boleto",
-    "instructions": [
-      "Pagamento referente à mensalidade de Janeiro/2024",
-      "Após vencimento será cobrada multa de 2%",
-      "Em caso de dúvidas: contato@academia.com",
-      "Desconto de 5% para pagamento antecipado"
-    ],
-    "metadata": {
-      "cliente_id": "12345",
-      "plano": "premium",
-      "mes_referencia": "2024-01"
+    "dueDate": "2025-04-15",
+    "description": "Pagamento referente à mensalidade do serviço contratado",
+    "externalId": "a7c1e3b5-8f42-45d6-9b3c-1d5f98a0d123",
+    "instructions": {
+        "interest": {
+            "type": "PERCENTAGE",
+            "value": 10
+        },
+        "fine": {
+            "type": "PERCENTAGE",
+            "value": 0.20
+        }
     }
   }'
 ```
 
 ```javascript JavaScript
 const boletoData = {
-  amount: 250, // R$ 250,00
-  due_date: '2024-02-15',
-  description: 'Mensalidade Academia FitLife - Janeiro/2024',
-  external_id: 'mensalidade-2024-01-joao',
-  buyer: {
-    name: 'João Silva Santos',
-    document: '12345678901',
-    email: 'joao@email.com',
-    phone: '11999999999',
-    address: {
-      street: 'Rua das Flores',
-      number: '123',
-      complement: 'Apto 45',
-      district: 'Centro',
-      city: 'São Paulo',
-      state: 'SP',
-      zip_code: '01000000'
-    }
+  amount: 1899.75,
+  payer: {
+    name: "CARLOS EDUARDO MENDES",
+    document: "315.472.689-01",
+    city: "SÃO PAULO",
+    state: "SP",
+    number: "1024",
+    postalCode: "04119001",
+    neighborhood: "VILA MARIANA",
+    publicArea: "RUA DOMINGOS DE MORAIS"
   },
-  fine_amount: 5, // R$ 5,00 de multa
-  interest_amount: 0.83, // R$ 0,83 de juros por dia
-  callback_url: 'https://meusite.com/webhooks/boleto',
-  instructions: [
-    'Pagamento referente à mensalidade de Janeiro/2024',
-    'Após vencimento será cobrada multa de 2%',
-    'Em caso de dúvidas: contato@academia.com',
-    'Desconto de 5% para pagamento antecipado'
-  ],
-  metadata: {
-    cliente_id: '12345',
-    plano: 'premium',
-    mes_referencia: '2024-01'
+  dueDate: "2025-04-15",
+  description: "Pagamento referente à mensalidade do serviço contratado",
+  externalId: "a7c1e3b5-8f42-45d6-9b3c-1d5f98a0d123",
+  instructions: {
+    interest: {
+      type: "PERCENTAGE",
+      value: 10
+    },
+    fine: {
+      type: "PERCENTAGE",
+      value: 0.20
+    }
   }
 };
 
@@ -186,44 +166,31 @@ console.log('Boleto criado:', boleto);
 
 ```python Python
 import requests
-from datetime import datetime, timedelta
-
-# Data de vencimento: 15 dias a partir de hoje
-due_date = (datetime.now() + timedelta(days=15)).strftime('%Y-%m-%d')
 
 boleto_data = {
-    "amount": 250,  # R$ 250,00
-    "due_date": due_date,
-    "description": "Mensalidade Academia FitLife - Janeiro/2024",
-    "external_id": "mensalidade-2024-01-joao",
-    "buyer": {
-        "name": "João Silva Santos",
-        "document": "12345678901",
-        "email": "joao@email.com",
-        "phone": "11999999999",
-        "address": {
-            "street": "Rua das Flores",
-            "number": "123",
-            "complement": "Apto 45",
-            "district": "Centro",
-            "city": "São Paulo",
-            "state": "SP",
-            "zip_code": "01000000"
-        }
+    "amount": 1899.75,
+    "payer": {
+        "name": "CARLOS EDUARDO MENDES",
+        "document": "315.472.689-01",
+        "city": "SÃO PAULO",
+        "state": "SP",
+        "number": "1024",
+        "postalCode": "04119001",
+        "neighborhood": "VILA MARIANA",
+        "publicArea": "RUA DOMINGOS DE MORAIS"
     },
-    "fine_amount": 5,  # R$ 5,00 de multa
-    "interest_amount": 0.83,  # R$ 0,83 de juros por dia
-    "callback_url": "https://meusite.com/webhooks/boleto",
-    "instructions": [
-        "Pagamento referente à mensalidade de Janeiro/2024",
-        "Após vencimento será cobrada multa de 2%",
-        "Em caso de dúvidas: contato@academia.com",
-        "Desconto de 5% para pagamento antecipado"
-    ],
-    "metadata": {
-        "cliente_id": "12345",
-        "plano": "premium",
-        "mes_referencia": "2024-01"
+    "dueDate": "2025-04-15",
+    "description": "Pagamento referente à mensalidade do serviço contratado",
+    "externalId": "a7c1e3b5-8f42-45d6-9b3c-1d5f98a0d123",
+    "instructions": {
+        "interest": {
+            "type": "PERCENTAGE",
+            "value": 10
+        },
+        "fine": {
+            "type": "PERCENTAGE",
+            "value": 0.20
+        }
     }
 }
 
@@ -242,42 +209,30 @@ print('Boleto criado:', boleto)
 
 ```php PHP
 <?php
-// Data de vencimento: 15 dias a partir de hoje
-$dueDate = date('Y-m-d', strtotime('+15 days'));
-
 $boletoData = [
-    'amount' => 250, // R$ 250,00
-    'due_date' => $dueDate,
-    'description' => 'Mensalidade Academia FitLife - Janeiro/2024',
-    'external_id' => 'mensalidade-2024-01-joao',
-    'buyer' => [
-        'name' => 'João Silva Santos',
-        'document' => '12345678901',
-        'email' => 'joao@email.com',
-        'phone' => '11999999999',
-        'address' => [
-            'street' => 'Rua das Flores',
-            'number' => '123',
-            'complement' => 'Apto 45',
-            'district' => 'Centro',
-            'city' => 'São Paulo',
-            'state' => 'SP',
-            'zip_code' => '01000000'
-        ]
+    'amount' => 1899.75,
+    'payer' => [
+        'name' => 'CARLOS EDUARDO MENDES',
+        'document' => '315.472.689-01',
+        'city' => 'SÃO PAULO',
+        'state' => 'SP',
+        'number' => '1024',
+        'postalCode' => '04119001',
+        'neighborhood' => 'VILA MARIANA',
+        'publicArea' => 'RUA DOMINGOS DE MORAIS'
     ],
-    'fine_amount' => 5, // R$ 5,00 de multa
-    'interest_amount' => 0.83, // R$ 0,83 de juros por dia
-    'callback_url' => 'https://meusite.com/webhooks/boleto',
+    'dueDate' => '2025-04-15',
+    'description' => 'Pagamento referente à mensalidade do serviço contratado',
+    'externalId' => 'a7c1e3b5-8f42-45d6-9b3c-1d5f98a0d123',
     'instructions' => [
-        'Pagamento referente à mensalidade de Janeiro/2024',
-        'Após vencimento será cobrada multa de 2%',
-        'Em caso de dúvidas: contato@academia.com',
-        'Desconto de 5% para pagamento antecipado'
-    ],
-    'metadata' => [
-        'cliente_id' => '12345',
-        'plano' => 'premium',
-        'mes_referencia' => '2024-01'
+        'interest' => [
+            'type' => 'PERCENTAGE',
+            'value' => 10
+        ],
+        'fine' => [
+            'type' => 'PERCENTAGE',
+            'value' => 0.20
+        ]
     ]
 ];
 
@@ -305,55 +260,7 @@ echo 'Boleto criado: ' . print_r($boleto, true);
 <ResponseExample>
 ```json 201 Created
 {
-  "id": "bol_1234567890123456",
-  "external_id": "mensalidade-2024-01-joao",
-  "status": "registered",
-  "amount": 250,
-  "currency": "BRL",
-  "description": "Mensalidade Academia FitLife - Janeiro/2024",
-  "due_date": "2024-02-15",
-  "fine_amount": 5,
-  "interest_amount": 0.83,
-  "barcode": "03399876543210000002500001234567890123456789012",
-  "digitable_line": "03399.87654 32100.000002 50000.123456 7 89012345678901",
-  "our_number": "12345678901",
-  "document_number": "DOC123456",
-  "buyer": {
-    "name": "João Silva Santos",
-    "document": "***.***.***-01",
-    "email": "joao@email.com",
-    "phone": "(11) 9****-9999",
-    "address": {
-      "street": "Rua das Flores",
-      "number": "123",
-      "complement": "Apto 45",
-      "district": "Centro",
-      "city": "São Paulo",
-      "state": "SP",
-      "zip_code": "01000-000"
-    }
-  },
-  "bank": {
-    "name": "Banco FireBanking",
-    "code": "033",
-    "agency": "0001",
-    "account": "123456-7"
-  },
-  "pdf_url": "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/pdf",
-  "payment_link": "https://pay.firebanking.com/boleto/bol_1234567890123456",
-  "instructions": [
-    "Pagamento referente à mensalidade de Janeiro/2024",
-    "Após vencimento será cobrada multa de 2%",
-    "Em caso de dúvidas: contato@academia.com",
-    "Desconto de 5% para pagamento antecipado"
-  ],
-  "registered_at": "2024-01-15T10:30:00Z",
-  "expires_at": "2024-05-15T23:59:59Z",
-  "metadata": {
-    "cliente_id": "12345",
-    "plano": "premium",
-    "mes_referencia": "2024-01"
-  }
+    "id": "3f73ad66-04cb-4c2d-9520-e41e41c576cc"
 }
 ```
 
@@ -384,68 +291,6 @@ echo 'Boleto criado: ' . print_r($boleto, true);
 
 <ResponseField name="id" type="string">
   ID único do boleto no FireBanking
-</ResponseField>
-
-<ResponseField name="external_id" type="string">
-  Seu identificador único da transação
-</ResponseField>
-
-<ResponseField name="status" type="string">
-  Status atual: `registered`, `paid`, `expired`, `cancelled`
-</ResponseField>
-
-<ResponseField name="amount" type="integer">
-  Valor original do boleto em reais
-</ResponseField>
-
-<ResponseField name="barcode" type="string">
-  Código de barras do boleto para pagamento
-</ResponseField>
-
-<ResponseField name="digitable_line" type="string">
-  Linha digitável para pagamento via internet banking
-</ResponseField>
-
-<ResponseField name="our_number" type="string">
-  Nosso número bancário para identificação
-</ResponseField>
-
-<ResponseField name="document_number" type="string">
-  Número do documento bancário
-</ResponseField>
-
-<ResponseField name="bank" type="object">
-  Dados do banco emissor
-  <Expandable title="bank">
-    <ResponseField name="bank.name" type="string">
-      Nome do banco emissor
-    </ResponseField>
-    <ResponseField name="bank.code" type="string">
-      Código do banco (3 dígitos)
-    </ResponseField>
-    <ResponseField name="bank.agency" type="string">
-      Agência bancária
-    </ResponseField>
-    <ResponseField name="bank.account" type="string">
-      Conta bancária com dígito
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="pdf_url" type="string">
-  URL para download do PDF do boleto
-</ResponseField>
-
-<ResponseField name="payment_link" type="string">
-  Link direto para visualização/pagamento online
-</ResponseField>
-
-<ResponseField name="registered_at" type="string">
-  Data/hora de registro no banco
-</ResponseField>
-
-<ResponseField name="expires_at" type="string">
-  Data/hora limite para pagamento (90 dias após vencimento)
 </ResponseField>
 
 ## Implementação Frontend

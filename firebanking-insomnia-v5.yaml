@@ -479,10 +479,6 @@ collection:
         headers:
           - name: x-api-key
             value: "{{ _.api_key }}"
-        parameters:
-          - name: type
-            value: "internal"
-            disabled: true
         settings:
           renderRequestBody: true
           encodeUrl: true
@@ -589,22 +585,28 @@ collection:
           mimeType: application/json
           text: |
             {
-              "amount": 5000,
-              "dueDate": "2024-12-31",
-              "description": "Cobrança boleto de teste",
-              "externalId": "boleto-001",
+              "amount": 1899.75,
               "payer": {
-                "name": "João da Silva Teste",
-                "document": "11144477735",
-                "email": "joao@exemplo.com",
-                "phone": "11999999999",
-                "address": {
-                  "street": "Rua das Flores",
-                  "number": "123",
-                  "neighborhood": "Centro",
-                  "city": "São Paulo",
-                  "state": "SP",
-                  "zipCode": "01000000"
+                "name": "CARLOS EDUARDO MENDES",
+                "document": "315.472.689-01",
+                "city": "SÃO PAULO",
+                "state": "SP",
+                "number": "1024",
+                "postalCode": "04119001",
+                "neighborhood": "VILA MARIANA",
+                "publicArea": "RUA DOMINGOS DE MORAIS"
+              },
+              "dueDate": "2025-04-15",
+              "description": "Pagamento referente à mensalidade do serviço contratado",
+              "externalId": "a7c1e3b5-8f42-45d6-9b3c-1d5f98a0d123",
+              "instructions": {
+                "interest": {
+                  "type": "PERCENTAGE",
+                  "value": 10
+                },
+                "fine": {
+                  "type": "PERCENTAGE",
+                  "value": 0.20
                 }
               }
             }
@@ -652,6 +654,10 @@ collection:
         headers:
           - name: x-api-key
             value: "{{ _.api_key }}"
+          - name: Accept
+            value: application/json
+          - name: Content-Type
+            value: application/json
         settings:
           renderRequestBody: true
           encodeUrl: true
@@ -674,6 +680,10 @@ collection:
         headers:
           - name: x-api-key
             value: "{{ _.api_key }}"
+          - name: Accept
+            value: application/json
+          - name: Content-Type
+            value: application/json
         settings:
           renderRequestBody: true
           encodeUrl: true

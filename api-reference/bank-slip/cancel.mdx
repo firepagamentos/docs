@@ -18,45 +18,16 @@ Cancele um boleto bancário que ainda não foi pago. O cancelamento é irrevers�
   ID do boleto ou `externalId` para cancelar
 </ParamField>
 
-## Parâmetros de Query
-
-<ParamField query="type" type="string">
-  Tipo de busca: `internal` (padrão) ou `external`
-</ParamField>
-
-## Parâmetros do Body
-
-<ParamField body="reason" type="string">
-  Motivo do cancelamento (máximo 200 caracteres)
-</ParamField>
-
-<ParamField body="metadata" type="object">
-  Dados adicionais sobre o cancelamento
-</ParamField>
 
 ## Exemplo de Requisição
 
 <CodeGroup>
-```bash cURL - Cancelamento Simples
-curl -X PATCH "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/cancel" \
-  -H "x-api-key: SUA_CHAVE_DE_API" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reason": "Pedido cancelado pelo cliente"
-  }'
-```
-
-```bash cURL - Por External ID
-curl -X PATCH "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123/cancel?type=external" \
-  -H "x-api-key: SUA_CHAVE_DE_API" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reason": "Produto em falta no estoque",
-    "metadata": {
-      "cancelled_by": "system",
-      "original_status": "awaiting_stock"
-    }
-  }'
+```bash cURL
+curl --request PATCH \
+  --url 'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/<id>/cancel' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: <sua-chave-api>'
 ```
 
 ```javascript JavaScript
@@ -194,57 +165,8 @@ try {
 ## Exemplo de Resposta
 
 <ResponseExample>
-```json 200 OK - Cancelamento Realizado
-{
-  "id": "bol_1234567890123456",
-  "external_id": "pedido-123",
-  "status": "cancelled",
-  "amount": 250.00,
-  "currency": "BRL",
-  "description": "Mensalidade Academia FitLife - Janeiro/2024",
-  "due_date": "2024-02-15",
-  "cancellation": {
-    "cancelled_at": "2024-01-16T10:30:00Z",
-    "reason": "Pedido cancelado pelo cliente",
-    "cancelled_by": "api_user",
-    "metadata": {
-      "cancelled_by": "system",
-      "original_status": "awaiting_stock"
-    }
-  },
-  "buyer": {
-    "name": "João Silva Santos",
-    "document": "***.***.***-01",
-    "email": "joao@email.com"
-  },
-  "registered_at": "2024-01-15T10:30:00Z",
-  "metadata": {
-    "cliente_id": "12345",
-    "plano": "premium"
-  }
-}
-```
-
-```json 400 Bad Request - Boleto Não Pode Ser Cancelado
-{
-  "error": {
-    "code": "BOLETO_CANNOT_BE_CANCELLED",
-    "message": "Boleto não pode ser cancelado",
-    "details": "Apenas boletos com status 'registered' podem ser cancelados. Status atual: paid",
-    "request_id": "req_123456789"
-  }
-}
-```
-
-```json 404 Not Found
-{
-  "error": {
-    "code": "BOLETO_NOT_FOUND",
-    "message": "Boleto não encontrado",
-    "details": "Nenhum boleto foi encontrado com o ID fornecido",
-    "request_id": "req_123456789"
-  }
-}
+```json 204 No Content
+A rota retorna um status HTTP 204 No Content, indicando que a solicitação foi bem-sucedida, mas não há conteúdo a ser retornado.
 ```
 </ResponseExample>
 

@@ -31,7 +31,7 @@
         "tags": ["Pagamento"],
         "summary": "Criar Pagamento",
         "description": "Criar um novo pagamento com dados do cartão ou token do cartão",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -79,7 +79,7 @@
         "tags": ["Pagamento"],
         "summary": "Listar Pagamentos",
         "description": "Obter uma lista de pagamentos com paginação",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "offset",
@@ -131,7 +131,7 @@
         "tags": ["Pagamento"],
         "summary": "Criar Token de Cartão",
         "description": "Criar um token reutilizável e seguro para um cartão de crédito",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -171,7 +171,7 @@
         "tags": ["Pagamento"],
         "summary": "Obter Tokens de Cartão por Comprador",
         "description": "Recuperar todos os tokens de cartão para um comprador específico",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "buyerUuid",
@@ -206,7 +206,7 @@
         "tags": ["Pagamento"],
         "summary": "Obter Pagamento por ID",
         "description": "Recuperar um pagamento específico pelo seu ID",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "paymentId",
@@ -237,7 +237,7 @@
         "tags": ["Pagamento"],
         "summary": "Capturar Pagamento",
         "description": "Capturar um pagamento pré-autorizado",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "paymentId",
@@ -268,7 +268,7 @@
         "tags": ["Pagamento"],
         "summary": "Estornar Pagamento",
         "description": "Estornar um pagamento completado",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "paymentId",
@@ -299,7 +299,7 @@
         "tags": ["Pagamento"],
         "summary": "Cancelar Pré-Autorização",
         "description": "Cancelar um pagamento pré-autorizado",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "paymentId",
@@ -330,7 +330,7 @@
         "tags": ["Comprador"],
         "summary": "Criar Comprador",
         "description": "Criar um novo registro de comprador",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -358,7 +358,7 @@
         "tags": ["Comprador"],
         "summary": "Listar Compradores",
         "description": "Obter uma lista de compradores com filtros opcionais",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "document",
@@ -428,7 +428,7 @@
         "tags": ["Comprador"],
         "summary": "Obter Comprador por ID",
         "description": "Recuperar um comprador específico pelo seu UUID",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "buyerUuid",
@@ -480,7 +480,7 @@
         "tags": ["Assinatura"],
         "summary": "Criar Assinatura",
         "description": "Criar uma nova assinatura",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -510,7 +510,7 @@
         "tags": ["Assinatura"],
         "summary": "Cancelar Assinatura",
         "description": "Cancelar uma assinatura ativa",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "subscriptionId",
@@ -540,7 +540,7 @@
         "tags": ["Assinatura"],
         "summary": "Atualizar Assinatura",
         "description": "Atualizar frequência de cobrança ou valor da assinatura",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "subscriptionId",
@@ -582,7 +582,7 @@
         "tags": ["Conta"],
         "summary": "Obter Saldo da Conta",
         "description": "Verificar saldo atualizado da conta com informações detalhadas sobre saldo total, bloqueado e disponível",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "responses": {
           "200": {
             "description": "Saldo da conta recuperado com sucesso",
@@ -663,7 +663,7 @@
         "tags": ["Webhooks"],
         "summary": "Webhook Genérico de Provedor",
         "description": "Endpoint de webhook genérico para eventos de provedor",
-        "security": [{"basicAuth": []}],
+        "security": [{ "basicAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -686,7 +686,7 @@
         "tags": ["Interno"],
         "summary": "Obter Saldo do Barte",
         "description": "Obter saldo para um vendedor Barte (uso interno)",
-        "security": [{"basicAuth": []}],
+        "security": [{ "basicAuth": [] }],
         "parameters": [
           {
             "name": "sellerId",
@@ -717,7 +717,7 @@
         "tags": ["Interno"],
         "summary": "Solicitar Resgate do Barte",
         "description": "Solicitar um resgate para um vendedor Barte (uso interno)",
-        "security": [{"basicAuth": []}],
+        "security": [{ "basicAuth": [] }],
         "parameters": [
           {
             "name": "sellerId",
@@ -758,7 +758,7 @@
         "tags": ["Interno"],
         "summary": "Criar Pagamento Interno",
         "description": "Criar pagamento usando chave de API interna",
-        "security": [{"internalToken": []}],
+        "security": [{ "internalToken": [] }],
         "parameters": [
           {
             "name": "businessId",
@@ -800,7 +800,7 @@
         "summary": "Criar PIX QR Code",
         "operationId": "createPixQrCode",
         "description": "Cria uma cobrança PIX com QR Code dinâmico",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -850,7 +850,7 @@
         "tags": ["PIX"],
         "summary": "Consultar Transação PIX",
         "description": "Consulta o status e detalhes de uma transação PIX",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -891,7 +891,7 @@
         "tags": ["PIX"],
         "summary": "Criar Transferência PIX",
         "description": "Realiza transferências PIX para chaves PIX ou contas bancárias",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -931,7 +931,7 @@
         "tags": ["PIX"],
         "summary": "Estornar Transação PIX",
         "description": "Solicita o estorno de uma transação PIX paga",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -982,7 +982,7 @@
         "tags": ["Boleto"],
         "summary": "Criar Boleto",
         "description": "Cria um novo boleto bancário com dados do pagador e prazo de vencimento",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -994,7 +994,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Boleto criado com sucesso",
             "content": {
               "application/json": {
@@ -1032,7 +1032,7 @@
         "tags": ["Boleto"],
         "summary": "Consultar Boleto",
         "description": "Consulta o status e detalhes de um boleto pelo ID",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1073,7 +1073,7 @@
         "tags": ["Boleto"],
         "summary": "Cancelar Boleto",
         "description": "Cancela um boleto que ainda não foi pago",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1086,18 +1086,21 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Boleto cancelado com sucesso",
+          "204": {
+            "description": "Boleto cancelado com sucesso - sem conteúdo retornado"
+          },
+          "400": {
+            "description": "Boleto não pode ser cancelado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BoletoCancelResponse"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
-          "400": {
-            "description": "Boleto não pode ser cancelado",
+          "404": {
+            "description": "Boleto não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -1114,7 +1117,7 @@
         "tags": ["Boleto"],
         "summary": "Gerar PDF do Boleto",
         "description": "Gera e retorna o PDF do boleto para impressão ou envio",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1155,7 +1158,7 @@
         "tags": ["Webhooks"],
         "summary": "Obter Configuração de Webhooks",
         "description": "Recupera as URLs de webhook configuradas para cada método de pagamento",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "responses": {
           "200": {
             "description": "Configuração de webhooks obtida com sucesso",
@@ -1183,7 +1186,7 @@
         "tags": ["Webhooks"],
         "summary": "Configurar Webhooks",
         "description": "Configura URLs de webhook para receber notificações em tempo real",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -1231,7 +1234,7 @@
         "tags": ["Webhooks"],
         "summary": "Atualizar Webhooks Parcialmente",
         "description": "Atualiza uma ou mais URLs de webhook específicas",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -1299,7 +1302,7 @@
         "tags": ["Webhooks"],
         "summary": "Remover Webhook Específico",
         "description": "Remove a URL de webhook de um produto específico",
-        "security": [{"apiKeyAuth": []}],
+        "security": [{ "apiKeyAuth": [] }],
         "parameters": [
           {
             "name": "product",
@@ -1451,7 +1454,14 @@
       },
       "Buyer": {
         "type": "object",
-        "required": ["name", "document", "email", "phone", "countryCode", "address"],
+        "required": [
+          "name",
+          "document",
+          "email",
+          "phone",
+          "countryCode",
+          "address"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -1547,7 +1557,15 @@
       },
       "Address": {
         "type": "object",
-        "required": ["country", "state", "city", "district", "street", "zipCode", "number"],
+        "required": [
+          "country",
+          "state",
+          "city",
+          "district",
+          "street",
+          "zipCode",
+          "number"
+        ],
         "properties": {
           "country": {
             "type": "string",
@@ -2074,7 +2092,7 @@
                 },
                 "amount": {
                   "type": "number",
-                  "example": 50.00
+                  "example": 50.0
                 },
                 "percentage": {
                   "type": "number",
@@ -2245,7 +2263,13 @@
           },
           "status": {
             "type": "string",
-            "enum": ["WAITING_PAYMENT", "PAID", "EXPIRED", "CANCELLED", "REFUNDED"],
+            "enum": [
+              "WAITING_PAYMENT",
+              "PAID",
+              "EXPIRED",
+              "CANCELLED",
+              "REFUNDED"
+            ],
             "description": "Status atual da transação",
             "example": "WAITING_PAYMENT"
           },
@@ -2278,7 +2302,15 @@
             "example": "https://pay.firebanking.com.br/cd722e93-032f-45e1-b638-87a2490dcea7"
           }
         },
-        "required": ["transactionId", "status", "pixQrCode", "pixCode", "generateTime", "expirationDate", "paymentLink"]
+        "required": [
+          "transactionId",
+          "status",
+          "pixQrCode",
+          "pixCode",
+          "generateTime",
+          "expirationDate",
+          "paymentLink"
+        ]
       },
       "PixWithdrawResponse": {
         "type": "object",
@@ -2342,7 +2374,14 @@
               },
               "status": {
                 "type": "string",
-                "enum": ["WAITING_PAYMENT", "PAID", "WITHDRAW_PAID", "EXPIRED", "CANCELLED", "REFUNDED"],
+                "enum": [
+                  "WAITING_PAYMENT",
+                  "PAID",
+                  "WITHDRAW_PAID",
+                  "EXPIRED",
+                  "CANCELLED",
+                  "REFUNDED"
+                ],
                 "description": "Status atual da transação"
               },
               "value": {
@@ -2563,7 +2602,7 @@
           "amount": {
             "type": "number",
             "description": "Valor do boleto em reais",
-            "example": 150.75,
+            "example": 1899.75,
             "minimum": 0.01
           },
           "dueDate": {
@@ -2578,17 +2617,56 @@
           "externalId": {
             "type": "string",
             "description": "Identificador único do boleto em seu sistema",
-            "example": "boleto-12345"
+            "example": "a7c1e3b5-8f42-45d6-9b3c-1d5f98a0d123"
           },
           "description": {
             "type": "string",
             "description": "Descrição do boleto/finalidade do pagamento",
-            "example": "Mensalidade do curso"
+            "example": "Pagamento referente à mensalidade do serviço contratado"
           },
           "instructions": {
-            "type": "string",
-            "description": "Instruções para pagamento (multa, juros, etc.)",
-            "example": "Após vencimento multa de 2% + juros de 1% ao mês"
+            "type": "object",
+            "description": "Configurações de multa e juros",
+            "properties": {
+              "interest": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["PERCENTAGE", "FIXED"],
+                    "description": "Tipo de juros"
+                  },
+                  "value": {
+                    "type": "number",
+                    "description": "Valor do juros"
+                  }
+                }
+              },
+              "fine": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["PERCENTAGE", "FIXED"],
+                    "description": "Tipo de multa"
+                  },
+                  "value": {
+                    "type": "number",
+                    "description": "Valor da multa"
+                  }
+                }
+              }
+            },
+            "example": {
+              "interest": {
+                "type": "PERCENTAGE",
+                "value": 10
+              },
+              "fine": {
+                "type": "PERCENTAGE",
+                "value": 0.2
+              }
+            }
           },
           "callback_url": {
             "type": "string",
@@ -2606,203 +2684,239 @@
       },
       "BoletoPayer": {
         "type": "object",
-        "required": ["name", "document", "address"],
+        "required": [
+          "name",
+          "document",
+          "city",
+          "state",
+          "number",
+          "postalCode",
+          "neighborhood",
+          "publicArea"
+        ],
         "properties": {
           "name": {
             "type": "string",
             "description": "Nome completo do pagador",
-            "example": "Carlos Eduardo Mendes"
+            "example": "CARLOS EDUARDO MENDES"
           },
           "document": {
             "type": "string",
-            "description": "CPF ou CNPJ do pagador (apenas números)",
-            "example": "12345678901"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "Email do pagador",
-            "example": "carlos@email.com"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Telefone do pagador",
-            "example": "11999999999"
-          },
-          "address": {
-            "$ref": "#/components/schemas/BoletoAddress"
-          }
-        }
-      },
-      "BoletoAddress": {
-        "type": "object",
-        "required": ["street", "number", "neighborhood", "city", "state", "zipCode"],
-        "properties": {
-          "street": {
-            "type": "string",
-            "description": "Logradouro/rua",
-            "example": "Rua das Palmeiras"
-          },
-          "number": {
-            "type": "string",
-            "description": "Número",
-            "example": "123"
-          },
-          "complement": {
-            "type": "string",
-            "description": "Complemento",
-            "example": "Apto 45"
-          },
-          "neighborhood": {
-            "type": "string",
-            "description": "Bairro",
-            "example": "Centro"
+            "description": "CPF ou CNPJ do pagador",
+            "example": "315.472.689-01"
           },
           "city": {
             "type": "string",
             "description": "Cidade",
-            "example": "São Paulo"
+            "example": "SÃO PAULO"
           },
           "state": {
             "type": "string",
             "description": "Estado (UF)",
             "example": "SP"
           },
-          "zipCode": {
+          "number": {
             "type": "string",
-            "description": "CEP (apenas números)",
-            "example": "01000000"
+            "description": "Número do endereço",
+            "example": "1024"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "CEP",
+            "example": "04119001"
+          },
+          "neighborhood": {
+            "type": "string",
+            "description": "Bairro",
+            "example": "VILA MARIANA"
+          },
+          "publicArea": {
+            "type": "string",
+            "description": "Logradouro/rua",
+            "example": "RUA DOMINGOS DE MORAIS"
           }
         }
       },
       "BoletoResponse": {
         "type": "object",
+        "required": ["id"],
         "properties": {
           "id": {
             "type": "string",
             "description": "ID único do boleto no FireBanking",
             "example": "3f73ad66-04cb-4c2d-9520-e41e41c576cc"
-          },
-          "externalId": {
-            "type": "string",
-            "description": "Seu identificador único do boleto"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["pending", "confirmed", "paid", "expired", "cancelled"],
-            "description": "Status atual do boleto"
-          },
-          "amount": {
-            "type": "number",
-            "description": "Valor do boleto em reais"
-          },
-          "dueDate": {
-            "type": "string",
-            "format": "date",
-            "description": "Data de vencimento"
-          },
-          "barCode": {
-            "type": "string",
-            "description": "Código de barras do boleto"
-          },
-          "digitableLine": {
-            "type": "string",
-            "description": "Linha digitável do boleto"
-          },
-          "pdfUrl": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL para download do PDF do boleto"
-          },
-          "paymentLink": {
-            "type": "string",
-            "format": "uri",
-            "description": "Link para pagamento online"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Data de criação do boleto"
-          },
-          "confirmed_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Data de confirmação/registro no banco"
-          },
-          "metadata": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
           }
         }
       },
       "BoletoDetailsResponse": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
-          "externalId": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["pending", "confirmed", "paid", "expired", "cancelled"]
-          },
           "amount": {
-            "type": "number"
+            "type": "string",
+            "description": "Valor do boleto em reais",
+            "example": "850.75"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do boleto",
+            "example": "Pagamento referente à fatura de serviços prestados no mês de março"
           },
           "dueDate": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "description": "Data de vencimento",
+            "example": "2025-04-10"
           },
-          "description": {
-            "type": "string"
+          "externalId": {
+            "type": "string",
+            "description": "Seu identificador único do boleto",
+            "example": "EXT987654321"
+          },
+          "id": {
+            "type": "string",
+            "description": "ID único do boleto no FireBanking",
+            "example": "a7b8c9d0-1234-5678-abcd-efghijklmnop"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de pagamento",
+            "example": "2023-08-15T09:30:00.000Z"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "CONFIRMED", "PAID", "EXPIRED", "CANCELLED"],
+            "description": "Status atual do boleto",
+            "example": "PAID"
+          },
+          "barcode": {
+            "type": "string",
+            "description": "Código de barras do boleto",
+            "example": "34198103400001850700125005310145678965430000"
+          },
+          "slipLine": {
+            "type": "string",
+            "description": "Linha digitável do boleto",
+            "example": "34191090090518507634567890000003810290000850750"
+          },
+          "issuingBank": {
+            "type": "string",
+            "description": "Banco emissor do boleto",
+            "example": "bradesco"
+          },
+          "pixCode": {
+            "type": "string",
+            "description": "Código PIX do boleto",
+            "example": "00020101021226980014br.gov.bcb.pix2576qrcode-h.pix.celcoin.com.br/pixqrcode/v2/cobv/9e30b4fcb8ef234b1c5a7e9f6dff62214000053039865802BR5924Servicos Exemplares Ltda6007SaoPaulo62070503***6304DEFG"
+          },
+          "transactions": {
+            "type": "array",
+            "description": "Lista de transações relacionadas ao boleto",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "ID da transação",
+                  "example": "b8d7e6a5-1234-5678-abcd-9876543210fe"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["PENDING", "WAITING_PAYMENT", "PAID", "CANCELLED"],
+                  "description": "Status da transação",
+                  "example": "PENDING"
+                }
+              }
+            }
           },
           "instructions": {
-            "type": "string"
-          },
-          "payer": {
-            "$ref": "#/components/schemas/BoletoPayer"
-          },
-          "barCode": {
-            "type": "string"
-          },
-          "digitableLine": {
-            "type": "string"
+            "type": "object",
+            "description": "Instruções de multa e juros",
+            "properties": {
+              "fine": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["PERCENTAGE", "FIXED"],
+                    "description": "Tipo de multa",
+                    "example": "PERCENTAGE"
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "Valor da multa",
+                    "example": "0.5"
+                  }
+                }
+              },
+              "interest": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["PERCENTAGE", "FIXED"],
+                    "description": "Tipo de juros",
+                    "example": "PERCENTAGE"
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "Valor dos juros",
+                    "example": "12"
+                  }
+                }
+              }
+            }
           },
           "pdfUrl": {
             "type": "string",
-            "format": "uri"
+            "format": "uri",
+            "description": "URL para download do PDF do boleto",
+            "example": "https://s3.us-east-1.amazonaws.com/dev..."
           },
-          "paymentLink": {
-            "type": "string",
-            "format": "uri"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "confirmed_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "paid_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "cancelled_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "payment_info": {
-            "$ref": "#/components/schemas/BoletoPaymentInfo"
-          },
-          "metadata": {
+          "payer": {
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
+            "description": "Dados do pagador",
+            "properties": {
+              "city": {
+                "type": "string",
+                "description": "Cidade",
+                "example": "SAO PAULO"
+              },
+              "name": {
+                "type": "string",
+                "description": "Nome do pagador",
+                "example": "JULIANO PEREIRA SILVA"
+              },
+              "document": {
+                "type": "string",
+                "description": "Documento do pagador",
+                "example": "12345678901"
+              },
+              "neighborhood": {
+                "type": "string",
+                "description": "Bairro",
+                "example": "PONTE GRANDE"
+              },
+              "number": {
+                "type": "string",
+                "description": "Número do endereço",
+                "example": "2500"
+              },
+              "postalCode": {
+                "type": "string",
+                "description": "CEP",
+                "example": "03367010"
+              },
+              "publicArea": {
+                "type": "string",
+                "description": "Logradouro",
+                "example": "AV. RIO DAS PEDRAS"
+              },
+              "state": {
+                "type": "string",
+                "description": "Estado",
+                "example": "SP"
+              }
             }
           }
         }
@@ -2833,19 +2947,11 @@
       "BoletoPdfResponse": {
         "type": "object",
         "properties": {
-          "pdfUrl": {
+          "pdfAccessUrl": {
             "type": "string",
             "format": "uri",
-            "description": "URL para download do PDF do boleto"
-          },
-          "pdfBase64": {
-            "type": "string",
-            "description": "Conteúdo do PDF em base64"
-          },
-          "expires_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Data de expiração do link de download"
+            "description": "URL para download do PDF do boleto",
+            "example": "https://s3.us-east-1.amazonaws.com/dev..."
           }
         }
       },

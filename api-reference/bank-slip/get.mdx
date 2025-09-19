@@ -18,23 +18,24 @@ Consulte informações detalhadas de um boleto bancário utilizando o ID da tran
   ID do boleto ou `externalId` fornecido na criação
 </ParamField>
 
-## Parâmetros de Query
-
-<ParamField query="type" type="string">
-  Tipo de busca: `internal` (padrão) ou `external`
-</ParamField>
 
 ## Exemplo de Requisição
 
 <CodeGroup>
 ```bash cURL - Por ID Interno
-curl -X GET "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456" \
-  -H "x-api-key: SUA_CHAVE_DE_API"
+curl --request GET \
+  --url 'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/<id>' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: <sua-chave-api>'
 ```
 
 ```bash cURL - Por External ID
-curl -X GET "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123?type=external" \
-  -H "x-api-key: SUA_CHAVE_DE_API"
+curl --request GET \
+  --url 'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/<externalId>' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: <sua-chave-api>'
 ```
 
 ```javascript JavaScript
@@ -49,7 +50,7 @@ const boleto = await response.json();
 console.log('Status do boleto:', boleto.status);
 
 // Consultar por external_id
-const responseExternal = await fetch('https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123?type=external', {
+const responseExternal = await fetch('https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123', {
   headers: {
     'x-api-key': 'SUA_CHAVE_DE_API'
   }
@@ -73,7 +74,6 @@ print(f'Status: {boleto["status"]}')
 # Por external_id
 response_external = requests.get(
     'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123',
-    params={'type': 'external'},
     headers={'x-api-key': 'SUA_CHAVE_DE_API'}
 )
 
@@ -97,7 +97,7 @@ $boleto = json_decode($response, true);
 echo 'Status: ' . $boleto['status'];
 
 // Por external_id
-curl_setopt($curl, CURLOPT_URL, 'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123?type=external');
+curl_setopt($curl, CURLOPT_URL, 'https://api-gateway.firebanking.com.br/bank-slip/v1/payment/pedido-123');
 $response_external = curl_exec($curl);
 curl_close($curl);
 ?>
@@ -107,126 +107,54 @@ curl_close($curl);
 ## Exemplo de Resposta
 
 <ResponseExample>
-```json 200 OK - Boleto Registrado
+```json 200 OK
 {
-  "id": "bol_1234567890123456",
-  "external_id": "pedido-123",
-  "status": "registered",
-  "amount": 250.00,
-  "currency": "BRL",
-  "description": "Mensalidade Academia FitLife - Janeiro/2024",
-  "due_date": "2024-02-15",
-  "fine_amount": 5.00,
-  "interest_amount": 0.83,
-  "barcode": "03399876543210000025000001234567890123456789012",
-  "digitable_line": "03399.87654 32100.000025 00000.123456 7 89012345678901",
-  "our_number": "12345678901",
-  "document_number": "DOC123456",
-  "buyer": {
-    "name": "João Silva Santos",
-    "document": "***.***.***-01",
-    "email": "joao@email.com",
-    "phone": "(11) 9****-9999",
-    "address": {
-      "street": "Rua das Flores",
-      "number": "123",
-      "complement": "Apto 45",
-      "district": "Centro",
-      "city": "São Paulo",
-      "state": "SP",
-      "zip_code": "01000-000"
+    "amount": "850.75",
+    "description": "Pagamento referente à fatura de serviços prestados no mês de março",
+    "dueDate": "2025-04-10",
+    "externalId": "EXT987654321",
+    "id": "a7b8c9d0-1234-5678-abcd-efghijklmnop",
+    "paymentDate": "2023-08-15T09:30:00.000Z",
+    "status": "PAID",
+    "barcode": "34198103400001850700125005310145678965430000",
+    "slipLine": "34191090090518507634567890000003810290000850750",
+    "issuingBank": "bradesco",
+    "pixCode": "00020101021226980014br.gov.bcb.pix2576qrcode-h.pix.celcoin.com.br/pixqrcode/v2/cobv/9e30b4fcb8ef234b1c5a7e9f6dff62214000053039865802BR5924Servicos Exemplares Ltda6007SaoPaulo62070503***6304DEFG",
+    "transactions": [
+        {
+            "id": "b8d7e6a5-1234-5678-abcd-9876543210fe",
+            "status": "PENDING"
+        },
+        {
+            "id": "d4f5e6a7-89b0-1234-cdef-1234567890ab",
+            "status": "WAITING_PAYMENT"
+        },
+        {
+            "id": "a1b2c3d4-5678-1234-e567-8901234567cd",
+            "status": "PAID"
+        }
+    ],
+    "instructions": {
+        "fine": {
+            "type": "PERCENTAGE",
+            "value": "0.5"
+        },
+        "interest": {
+            "type": "PERCENTAGE",
+            "value": "12"
+        }
+    },
+    "pdfUrl": "https://s3.us-east-1.amazonaws.com/dev...",
+    "payer": {
+        "city": "SAO PAULO",
+        "name": "JULIANO PEREIRA SILVA",
+        "document": "12345678901",
+        "neighborhood": "PONTE GRANDE",
+        "number": "2500",
+        "postalCode": "03367010",
+        "publicArea": "AV. RIO DAS PEDRAS",
+        "state": "SP"
     }
-  },
-  "bank": {
-    "name": "Banco FireBanking",
-    "code": "033",
-    "agency": "0001",
-    "account": "123456-7"
-  },
-  "pdf_url": "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/pdf",
-  "payment_link": "https://pay.firebanking.com/boleto/bol_1234567890123456",
-  "instructions": [
-    "Pagamento referente à mensalidade de Janeiro/2024",
-    "Após vencimento será cobrada multa de 2%"
-  ],
-  "registered_at": "2024-01-15T10:30:00Z",
-  "expires_at": "2024-05-15T23:59:59Z",
-  "metadata": {
-    "cliente_id": "12345",
-    "plano": "premium"
-  }
-}
-```
-
-```json 200 OK - Boleto Pago
-{
-  "id": "bol_1234567890123456",
-  "external_id": "pedido-123",
-  "status": "paid",
-  "amount": 250.00,
-  "paid_amount": 255.83,
-  "currency": "BRL",
-  "description": "Mensalidade Academia FitLife - Janeiro/2024",
-  "due_date": "2024-02-15",
-  "paid_at": "2024-02-16T14:30:15Z",
-  "payment_info": {
-    "bank_paid": "341",
-    "bank_name": "Itaú Unibanco",
-    "channel": "internet_banking",
-    "auth_code": "123456"
-  },
-  "fees": {
-    "fine": 5.00,
-    "interest": 0.83,
-    "total_fees": 5.83
-  },
-  "buyer": {
-    "name": "João Silva Santos",
-    "document": "***.***.***-01",
-    "email": "joao@email.com"
-  },
-  "reconciliation": {
-    "settlement_date": "2024-02-17",
-    "net_amount": 244.17,
-    "firebanking_fee": 3.00
-  },
-  "metadata": {
-    "cliente_id": "12345",
-    "plano": "premium"
-  }
-}
-```
-
-```json 200 OK - Boleto Expirado
-{
-  "id": "bol_1234567890123456",
-  "external_id": "pedido-123",
-  "status": "expired",
-  "amount": 250.00,
-  "currency": "BRL",
-  "description": "Mensalidade Academia FitLife - Janeiro/2024",
-  "due_date": "2024-02-15",
-  "expired_at": "2024-05-15T23:59:59Z",
-  "buyer": {
-    "name": "João Silva Santos",
-    "document": "***.***.***-01",
-    "email": "joao@email.com"
-  },
-  "metadata": {
-    "cliente_id": "12345",
-    "plano": "premium"
-  }
-}
-```
-
-```json 404 Not Found
-{
-  "error": {
-    "code": "BOLETO_NOT_FOUND",
-    "message": "Boleto não encontrado",
-    "details": "Nenhum boleto foi encontrado com o ID fornecido",
-    "request_id": "req_123456789"
-  }
 }
 ```
 </ResponseExample>
