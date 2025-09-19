@@ -32,21 +32,25 @@ Solicite o estorno (refund) de uma transação PIX que foi paga com sucesso. O e
 
 <CodeGroup>
 ```bash cURL - Estorno Total
-curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment/refund/pix_12345678901234567890" \
-  -H "x-api-key: SUA_CHAVE_DE_API" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "description": "Produto não entregue"
+curl --request POST \
+  --url https://api-gateway.firebanking.com.br/pix/v2/payment/refund/<id> \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: <sua-chave-api>' \
+  --data '{
+    "description": "Sua descrição"
   }'
 ```
 
 ```bash cURL - Estorno Parcial
-curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment/refund/pix_12345678901234567890" \
-  -H "x-api-key: SUA_CHAVE_DE_API" \
-  -H "Content-Type: application/json" \
-  -d '{
+curl --request POST \
+  --url https://api-gateway.firebanking.com.br/pix/v2/payment/refund/<id> \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: <sua-chave-api>' \
+  --data '{
     "value": 50.20,
-    "description": "Estorno parcial por desconto"
+    "description": "Sua descrição"
   }'
 ```
 </CodeGroup>
@@ -56,13 +60,7 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment/refund/pix_1
 <ResponseExample>
 ```json 200 OK
 {
-  "transactionId": "refund_123456789012345",
-  "originalTransactionId": "pix_12345678901234567890",
-  "status": "REFUND_PROCESSING",
-  "refundValue": 15000,
-  "originalValue": 15000,
-  "description": "Produto não entregue",
-  "created_at": "2024-01-15T17:00:00Z"
+  "transactionId": "75906707-8c31-479c-b354-aa805c4cefbc"
 }
 ```
 

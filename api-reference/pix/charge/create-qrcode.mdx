@@ -8,53 +8,6 @@ description: "Gera QR Code PIX dinâmico para recebimento de pagamentos"
 
 Crie um PIX com QR Code dinâmico para receber pagamentos. O QR Code gerado é único para cada transação e pode ser usado uma única vez.
 
-## Parâmetros da Requisição
-
-<ParamField body="amount" type="integer" required>
-  Valor da cobrança em reais (ex: 100.00, 25.50)
-</ParamField>
-
-<ParamField body="description" type="string" required>
-  Descrição da cobrança (máximo 140 caracteres)
-</ParamField>
-
-<ParamField body="externalId" type="string" required>
-  Identificador único da transação em seu sistema
-</ParamField>
-
-<ParamField body="expiration" type="string">
-  Data de expiração da cobrança (ISO 8601). Padrão: 24 horas
-</ParamField>
-
-<ParamField body="buyer" type="object">
-  Dados do pagador (opcional para QR Code)
-  <Expandable title="buyer">
-    <ParamField body="buyer.name" type="string">
-      Nome completo do pagador
-    </ParamField>
-    <ParamField body="buyer.document" type="string">
-      CPF ou CNPJ do pagador (apenas números)
-    </ParamField>
-    <ParamField body="buyer.email" type="string">
-      Email do pagador para notificações
-    </ParamField>
-    <ParamField body="buyer.phone" type="string">
-      Telefone do pagador
-    </ParamField>
-  </Expandable>
-</ParamField>
-
-<ParamField body="callback_url" type="string">
-  URL para receber webhooks específicos desta transação
-</ParamField>
-
-<ParamField body="return_url" type="string">
-  URL para redirecionamento após pagamento (apps mobile)
-</ParamField>
-
-<ParamField body="metadata" type="object">
-  Dados adicionais da transação (chave-valor)
-</ParamField>
 
 ## Exemplo de Requisição
 
@@ -64,18 +17,21 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 150,
-    "description": "Compra na loja virtual",
-    "externalId": "pedido-12345",
-    "expiration": "2024-12-31T23:59:59Z",
-    "buyer": {
-      "name": "Maria Silva Santos",
-      "document": "12345678901",
-      "email": "maria@email.com",
-      "phone": "11999999999"
+    "transaction": {
+      "value": 0.15,
+      "description": "Cobrança de teste",
+      "expirationTime": 300,
+      "externalId": "uuid-123",
+      "additionalInfo": {
+        "sellerId": 123,
+        "whatsAppPhone": "37988996655"
+      }
+    },
+    "payer": {
+      "fullName": "John Marvin",
+      "document": "12312312387"
     },
     "callback_url": "https://meusite.com/webhooks/pix",
-    "return_url": "meuapp://payment/success",
     "metadata": {
       "pedido_id": "12345",
       "vendedor": "Loja ABC"
@@ -93,15 +49,19 @@ const pixPayment = await fetch(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      amount: 150, // R$ 150,00
-      description: "Compra na loja virtual",
-      externalId: "pedido-12345",
-      expiration: "2024-12-31T23:59:59Z",
-      buyer: {
-        name: "Maria Silva Santos",
-        document: "12345678901",
-        email: "maria@email.com",
-        phone: "11999999999",
+      transaction: {
+        value: 0.15,
+        description: "Cobrança de teste",
+        expirationTime: 300,
+        externalId: "uuid-123",
+        additionalInfo: {
+          sellerId: 123,
+          whatsAppPhone: "37988996655"
+        }
+      },
+      payer: {
+        fullName: "John Marvin",
+        document: "12312312387"
       },
       callback_url: "https://meusite.com/webhooks/pix",
       metadata: {
@@ -120,15 +80,19 @@ console.log("PIX criado:", result);
 import requests
 
 pix_data = {
-    "amount": 150,  # R$ 150,00
-    "description": "Compra na loja virtual",
-    "externalId": "pedido-12345",
-    "expiration": "2024-12-31T23:59:59Z",
-    "buyer": {
-        "name": "Maria Silva Santos",
-        "document": "12345678901",
-        "email": "maria@email.com",
-        "phone": "11999999999"
+    "transaction": {
+        "value": 0.15,
+        "description": "Cobrança de teste",
+        "expirationTime": 300,
+        "externalId": "uuid-123",
+        "additionalInfo": {
+            "sellerId": 123,
+            "whatsAppPhone": "37988996655"
+        }
+    },
+    "payer": {
+        "fullName": "John Marvin",
+        "document": "12312312387"
     },
     "callback_url": "https://meusite.com/webhooks/pix",
     "metadata": {
@@ -153,15 +117,19 @@ print('PIX criado:', result)
 ```php PHP
 <?php
 $pixData = [
-    'amount' => 150, // R$ 150,00
-    'description' => 'Compra na loja virtual',
-    'externalId' => 'pedido-12345',
-    'expiration' => '2024-12-31T23:59:59Z',
-    'buyer' => [
-        'name' => 'Maria Silva Santos',
-        'document' => '12345678901',
-        'email' => 'maria@email.com',
-        'phone' => '11999999999'
+    'transaction' => [
+        'value' => 0.15,
+        'description' => 'Cobrança de teste',
+        'expirationTime' => 300,
+        'externalId' => 'uuid-123',
+        'additionalInfo' => [
+            'sellerId' => 123,
+            'whatsAppPhone' => '37988996655'
+        ]
+    ],
+    'payer' => [
+        'fullName' => 'John Marvin',
+        'document' => '12312312387'
     ],
     'callback_url' => 'https://meusite.com/webhooks/pix',
     'metadata' => [
@@ -190,114 +158,6 @@ echo 'PIX criado: ' . print_r($result, true);
 
 </CodeGroup>
 
-## Exemplo de Resposta
-
-<ResponseExample>
-```json 200 OK
-{
-  "id": "pix_12345678901234567890",
-  "externalId": "pedido-12345",
-  "status": "pending",
-  "amount": 15000,
-  "currency": "BRL",
-  "description": "Compra na loja virtual",
-  "qrCode": {
-    "text": "00020101021226830014br.gov.bcb.pix2561api-gateway.firebanking.com.br/pix/v2/12345678901234567890520400005303986540515.005802BR5925Loja Virtual FireBanking6009SAO PAULO62070503***630445E3",
-    "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICA...",
-    "expires_at": "2024-12-31T23:59:59Z"
-  },
-  "pixKey": "12345678-1234-1234-1234-123456789012",
-  "buyer": {
-    "name": "Maria Silva Santos",
-    "document": "***.***.***-01",
-    "email": "maria@email.com",
-    "phone": "(11) 9****-9999"
-  },
-  "paymentLink": "https://pay.firebanking.com/pix/12345678901234567890",
-  "expires_at": "2024-12-31T23:59:59Z",
-  "created_at": "2024-01-15T10:30:00Z",
-  "metadata": {
-    "pedido_id": "12345",
-    "vendedor": "Loja ABC"
-  }
-}
-```
-
-```json 400 Bad Request
-{
-  "error": {
-    "code": "INVALID_AMOUNT",
-    "message": "O valor deve ser maior que R$ 0,01 e menor que R$ 20.000,00",
-    "details": "Valor recebido: 0 reais",
-    "request_id": "req_123456789"
-  }
-}
-```
-
-```json 401 Unauthorized
-{
-  "error": {
-    "code": "INVALID_API_KEY",
-    "message": "Chave de API inválida ou expirada",
-    "request_id": "req_123456789"
-  }
-}
-```
-
-</ResponseExample>
-
-## Campos de Resposta
-
-<ResponseField name="id" type="string">
-  ID único da transação PIX no FireBanking
-</ResponseField>
-
-<ResponseField name="externalId" type="string">
-  Seu identificador único da transação
-</ResponseField>
-
-<ResponseField name="status" type="string">
-  Status atual da transação: `pending`, `paid`, `expired`, `cancelled`
-</ResponseField>
-
-<ResponseField name="amount" type="integer">
-  Valor da cobrança em reais
-</ResponseField>
-
-<ResponseField name="currency" type="string">
-  Código da moeda (sempre `BRL`)
-</ResponseField>
-
-<ResponseField name="qrCode" type="object">
-  Dados do QR Code PIX
-  <Expandable title="qrCode">
-    <ResponseField name="qrCode.text" type="string">
-      Código PIX Copia e Cola (string para pagamento)
-    </ResponseField>
-    <ResponseField name="qrCode.image" type="string">
-      QR Code em formato base64 (PNG)
-    </ResponseField>
-    <ResponseField name="qrCode.expires_at" type="string">
-      Data/hora de expiração do QR Code
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="pixKey" type="string">
-  Chave PIX gerada para esta transação (opcional)
-</ResponseField>
-
-<ResponseField name="paymentLink" type="string">
-  Link direto para pagamento (ideal para WhatsApp/email)
-</ResponseField>
-
-<ResponseField name="expires_at" type="string">
-  Data/hora de expiração da cobrança
-</ResponseField>
-
-<ResponseField name="created_at" type="string">
-  Data/hora de criação da transação
-</ResponseField>
 
 ## Implementação Frontend
 
@@ -318,14 +178,10 @@ echo 'PIX criado: ' . print_r($result, true);
 
 <script>
   function showPixPayment(pixData) {
-    document.getElementById("qr-image").src = pixData.qrCode.image;
-    document.getElementById("pix-code").value = pixData.qrCode.text;
-    document.getElementById("amount").textContent =
-      pixData.amount.toLocaleString("pt-BR", {
-        minimumFractionDigits: 2,
-      });
+    document.getElementById("qr-image").src = `data:image/png;base64,${pixData.pixQrCode}`;
+    document.getElementById("pix-code").value = pixData.pixCode;
     document.getElementById("expires").textContent = new Date(
-      pixData.expires_at
+      pixData.expirationDate
     ).toLocaleString("pt-BR");
   }
 
@@ -354,11 +210,11 @@ async function checkPaymentStatus(pixId) {
 
     const payment = await response.json();
 
-    if (payment.status === "paid") {
+    if (payment.status === "PAID") {
       // Pagamento confirmado!
       showSuccess("Pagamento recebido com sucesso!");
       window.location.href = "/pedido-confirmado";
-    } else if (payment.status === "expired") {
+    } else if (payment.status === "EXPIRED") {
       // PIX expirou
       showError("PIX expirou. Gere um novo código.");
     }
@@ -371,8 +227,8 @@ async function checkPaymentStatus(pixId) {
 
 // Verificar a cada 5 segundos
 const statusInterval = setInterval(() => {
-  checkPaymentStatus("pix_12345678901234567890").then((status) => {
-    if (status === "paid" || status === "expired") {
+  checkPaymentStatus("cd722e93-032f-45e1-b638-87a2490dcea7").then((status) => {
+    if (status === "PAID" || status === "EXPIRED") {
       clearInterval(statusInterval);
     }
   });
@@ -440,9 +296,6 @@ Quando o PIX for pago, você receberá um webhook:
 ## Próximos Passos
 
 <CardGroup cols={2}>
-  <Card title="PIX por Chave" href="/api-reference/pix/charge/create-key">
-    Crie cobranças usando chaves PIX
-  </Card>
   <Card title="Consultar PIX" href="/api-reference/pix/charge/get">
     Verifique status e histórico de transações
   </Card>

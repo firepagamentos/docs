@@ -9,7 +9,7 @@ description: 'Consulte o status e detalhes de uma cobrança PIX pelo ID da trans
 Consulte informações detalhadas de uma cobrança PIX utilizando o ID da transação. Este endpoint retorna dados completos sobre o status, valores, participantes e metadados da transação.
 
 <Info>
-  Você pode buscar tanto pelo `id` interno quanto pelo `externalId` fornecido na criação da cobrança.
+  A API aceita tanto o `id` interno da transação quanto o `externalId` fornecido na criação da cobrança. A identificação é feita automaticamente.
 </Info>
 
 ## Parâmetros da URL
@@ -18,13 +18,6 @@ Consulte informações detalhadas de uma cobrança PIX utilizando o ID da transa
   ID da transação PIX ou `externalId` fornecido na criação
 </ParamField>
 
-## Parâmetros de Query
-
-<ParamField query="type" type="string">
-  Tipo de busca: `internal` (padrão) ou `external`
-  - `internal`: Busca pelo ID interno do FireBanking
-  - `external`: Busca pelo externalId fornecido na criação
-</ParamField>
 
 ## Exemplo de Requisição
 
@@ -36,7 +29,7 @@ curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/pix_123456789
 ```
 
 ```bash cURL - ID Externo
-curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/pedido-12345?type=external" \
+curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/pedido-12345" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json"
 ```
@@ -54,7 +47,7 @@ const payment = await response.json();
 console.log('Status da cobrança:', payment.status);
 
 // Buscar por ID externo
-const responseExternal = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment/pedido-12345?type=external', {
+const responseExternal = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment/pedido-12345', {
   headers: {
     'x-api-key': 'SUA_CHAVE_DE_API',
     'Content-Type': 'application/json'
@@ -82,7 +75,6 @@ print(f"Status: {payment['status']}")
 # Buscar por ID externo
 response_external = requests.get(
     'https://api-gateway.firebanking.com.br/pix/v2/payment/pedido-12345',
-    params={'type': 'external'},
     headers={
         'x-api-key': 'SUA_CHAVE_DE_API',
         'Content-Type': 'application/json'
@@ -96,99 +88,132 @@ payment_external = response_external.json()
 ## Exemplo de Resposta
 
 <ResponseExample>
-```json 200 OK - Cobrança Pendente
+```json 200 OK - Cobrança Pendente (WAITING_PAYMENT)
 {
-  "id": "pix_12345678901234567890",
-  "externalId": "pedido-12345",
-  "status": "waiting_payment",
-  "type": "cash_in",
-  "amount": 150,
-  "currency": "BRL",
-  "description": "Compra na loja virtual",
-  "qrCode": {
-    "text": "00020101021226830014br.gov.bcb.pix...",
-    "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADI...",
-    "expires_at": "2024-12-31T23:59:59Z"
-  },
-  "pixKey": "12345678-1234-1234-1234-123456789012",
-  "buyer": {
-    "name": "Maria Silva Santos",
-    "document": "***.***.***-01",
-    "email": "maria@email.com",
-    "phone": "(11) 9****-9999"
-  },
-  "paymentLink": "https://pay.firebanking.com/pix/12345678901234567890",
-  "expires_at": "2024-12-31T23:59:59Z",
-  "created_at": "2024-01-15T10:30:00Z",
-  "updated_at": "2024-01-15T10:30:00Z",
-  "metadata": {
-    "pedido_id": "12345",
-    "vendedor": "Loja ABC"
-  },
-  "fees": {
-    "total": 0,
-    "fixed": 0,
-    "percentage": 0
-  }
-}
-```
-
-```json 200 OK - Cobrança Paga
-{
-  "id": "pix_12345678901234567890",
-  "externalId": "pedido-12345",
-  "status": "paid",
-  "type": "cash_in",
-  "amount": 150,
-  "currency": "BRL",
-  "description": "Compra na loja virtual",
-  "buyer": {
-    "name": "Maria Silva Santos",
-    "document": "***.***.***-01",
-    "email": "maria@email.com",
-    "phone": "(11) 9****-9999"
-  },
-  "payer": {
-    "name": "João Costa Silva",
-    "document": "***.***.***-98",
-    "bank": {
-      "name": "Banco do Brasil",
-      "ispb": "00000000"
+  "id": "997d58ca-bdfb-481d-93cd-7401e68cc0ea",
+  "externalId": "your-external-id",
+  "businessId": "6864503fed937a987efcc5f3",
+  "endToEndId": null,
+  "operation": {
+    "provider": "providerName",
+    "type": "PAYMENT",
+    "status": "WAITING_PAYMENT",
+    "value": 0.15,
+    "fee": 0.1,
+    "finalValue": 0.05,
+    "refundValue": 0,
+    "description": "Cobrança de teste",
+    "additionalInfo": {
+      "sellerId": "123",
+      "whatsAppPhone": "37988996655"
     }
   },
-  "paid_at": "2024-01-15T10:45:30Z",
-  "created_at": "2024-01-15T10:30:00Z",
-  "updated_at": "2024-01-15T10:45:30Z",
-  "metadata": {
-    "pedido_id": "12345",
-    "vendedor": "Loja ABC"
+  "negotiator": {
+    "fullName": "John Marvin",
+    "document": "***123667**"
   },
-  "fees": {
-    "total": 0,
-    "fixed": 0,
-    "percentage": 0
-  }
+  "payer": null,
+  "receiver": null,
+  "createdAt": "2025-06-28T18:16:09.069Z",
+  "updatedAt": "2025-06-28T18:16:09.069Z"
 }
 ```
 
-```json 200 OK - Cobrança Expirada
+```json 200 OK - Cobrança Paga (PAID)
 {
-  "id": "pix_12345678901234567890",
-  "externalId": "pedido-12345",
-  "status": "expired",
-  "type": "cash_in",
-  "amount": 150,
-  "currency": "BRL",
-  "description": "Compra na loja virtual",
-  "buyer": {
-    "name": "Maria Silva Santos",
-    "document": "***.***.***-01",
-    "email": "maria@email.com"
+  "id": "997d58ca-bdfb-481d-93cd-7401e68cc0ea",
+  "externalId": "your-external-id",
+  "businessId": "6864503fed937a987efcc5f3",
+  "endToEndId": "E22896431202507012304VqlYVvBPxYp",
+  "operation": {
+    "provider": "providerName",
+    "type": "PAYMENT",
+    "status": "PAID",
+    "value": 0.15,
+    "fee": 0.1,
+    "finalValue": 0.05,
+    "refundValue": 0,
+    "description": "Cobrança de teste",
+    "additionalInfo": {
+      "sellerId": "123",
+      "whatsAppPhone": "37988996655"
+    }
   },
-  "expires_at": "2024-01-15T11:30:00Z",
-  "expired_at": "2024-01-15T11:30:00Z",
-  "created_at": "2024-01-15T10:30:00Z",
-  "updated_at": "2024-01-15T11:30:00Z"
+  "negotiator": {
+    "fullName": "John Marvin",
+    "document": "***123667**"
+  },
+  "payer": {
+    "fullName": "John Lenon",
+    "document": "***123667**"
+  },
+  "receiver": null,
+  "createdAt": "2025-06-28T18:16:09.069Z",
+  "updatedAt": "2025-06-28T18:16:09.069Z"
+}
+```
+
+```json 200 OK - Transferência PIX (WITHDRAW_PAID)
+{
+  "id": "997d58ca-bdfb-481d-93cd-7401e68cc0ea",
+  "externalId": "your-external-id",
+  "businessId": "6864503fed937a987efcc5f3",
+  "endToEndId": "E22896431202507012304VqlYVvBPxYp",
+  "operation": {
+    "provider": "providerName",
+    "type": "WITHDRAW",
+    "status": "WITHDRAW_PAID",
+    "value": 0.15,
+    "fee": 0.1,
+    "finalValue": 0.25,
+    "refundValue": 0,
+    "description": "Cobrança de teste",
+    "additionalInfo": {
+      "sellerId": "123",
+      "whatsAppPhone": "37988996655"
+    }
+  },
+  "negotiator": {
+    "fullName": "John Marvin",
+    "document": "***123667**"
+  },
+  "payer": null,
+  "receiver": {
+    "name": "José Maria da Silva",
+    "document": "**********",
+    "bankName": "Banco C6 S.A.",
+    "pixKey": "12312312387",
+    "pixKeyType": "DOCUMENT"
+  },
+  "createdAt": "2025-06-28T18:16:09.069Z",
+  "updatedAt": "2025-06-28T18:16:09.069Z"
+}
+```
+
+```json 200 OK - Cobrança Expirada (EXPIRED)
+{
+  "id": "997d58ca-bdfb-481d-93cd-7401e68cc0ea",
+  "externalId": "your-external-id",
+  "businessId": "6864503fed937a987efcc5f3",
+  "endToEndId": null,
+  "operation": {
+    "provider": "providerName",
+    "type": "PAYMENT",
+    "status": "EXPIRED",
+    "value": 0.15,
+    "fee": 0.1,
+    "finalValue": 0.05,
+    "refundValue": 0,
+    "description": "Cobrança de teste"
+  },
+  "negotiator": {
+    "fullName": "John Marvin",
+    "document": "***123667**"
+  },
+  "payer": null,
+  "receiver": null,
+  "createdAt": "2025-06-28T18:16:09.069Z",
+  "updatedAt": "2025-06-28T18:16:09.069Z"
 }
 ```
 
@@ -211,52 +236,64 @@ payment_external = response_external.json()
 </ResponseField>
 
 <ResponseField name="externalId" type="string">
-  Seu identificador único da transação
+  ID externo fornecido na criação da transação
 </ResponseField>
 
-<ResponseField name="status" type="string">
-  Status atual da transação:
-  - `waiting_payment` - Aguardando pagamento
-  - `paid` - Pago com sucesso
-  - `expired` - Expirado
-  - `cancelled` - Cancelado
-  - `refund_in` - Reembolsado
+<ResponseField name="businessId" type="string">
+  ID da empresa/negócio no FireBanking
 </ResponseField>
 
-<ResponseField name="type" type="string">
-  Tipo da operação: `cash_in` (cobrança) ou `cash_out` (saque)
+<ResponseField name="endToEndId" type="string">
+  Identificador fim-a-fim da transação PIX (apenas para transações processadas)
 </ResponseField>
 
-<ResponseField name="amount" type="integer">
-  Valor da transação em reais (formato decimal)
-</ResponseField>
-
-<ResponseField name="qrCode" type="object">
-  Dados do QR Code (apenas para cobranças pendentes)
-  <Expandable title="qrCode">
-    <ResponseField name="qrCode.text" type="string">
-      Código PIX Copia e Cola
+<ResponseField name="operation" type="object">
+  Dados da operação PIX
+  <Expandable title="operation">
+    <ResponseField name="operation.provider" type="string">
+      Provedor de pagamento utilizado
     </ResponseField>
-    <ResponseField name="qrCode.image" type="string">
-      QR Code em base64 (PNG)
+    <ResponseField name="operation.type" type="string">
+      Tipo da operação: `PAYMENT` (cobrança) ou `WITHDRAW` (transferência)
     </ResponseField>
-    <ResponseField name="qrCode.expires_at" type="string">
-      Expiração do QR Code
+    <ResponseField name="operation.status" type="string">
+      Status atual da transação:
+      - `WAITING_PAYMENT` - Aguardando pagamento
+      - `PAID` - Pago com sucesso
+      - `WITHDRAW_PAID` - Transferência realizada
+      - `EXPIRED` - Expirado
+      - `CANCELLED` - Cancelado
+      - `REFUNDED` - Reembolsado
+    </ResponseField>
+    <ResponseField name="operation.value" type="number">
+      Valor da transação em reais
+    </ResponseField>
+    <ResponseField name="operation.fee" type="number">
+      Taxa cobrada pela transação
+    </ResponseField>
+    <ResponseField name="operation.finalValue" type="number">
+      Valor final líquido da transação
+    </ResponseField>
+    <ResponseField name="operation.refundValue" type="number">
+      Valor do estorno (se aplicável)
+    </ResponseField>
+    <ResponseField name="operation.description" type="string">
+      Descrição da transação
+    </ResponseField>
+    <ResponseField name="operation.additionalInfo" type="object">
+      Informações adicionais da transação
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-<ResponseField name="buyer" type="object">
-  Dados do comprador/beneficiário
-  <Expandable title="buyer">
-    <ResponseField name="buyer.name" type="string">
-      Nome do comprador
+<ResponseField name="negotiator" type="object">
+  Dados do solicitante da transação
+  <Expandable title="negotiator">
+    <ResponseField name="negotiator.fullName" type="string">
+      Nome completo do solicitante
     </ResponseField>
-    <ResponseField name="buyer.document" type="string">
-      CPF/CNPJ mascarado
-    </ResponseField>
-    <ResponseField name="buyer.email" type="string">
-      Email do comprador
+    <ResponseField name="negotiator.document" type="string">
+      CPF/CNPJ mascarado do solicitante
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -264,39 +301,42 @@ payment_external = response_external.json()
 <ResponseField name="payer" type="object">
   Dados do pagador (apenas para transações pagas)
   <Expandable title="payer">
-    <ResponseField name="payer.name" type="string">
-      Nome do pagador
+    <ResponseField name="payer.fullName" type="string">
+      Nome completo do pagador
     </ResponseField>
     <ResponseField name="payer.document" type="string">
       CPF/CNPJ mascarado do pagador
     </ResponseField>
-    <ResponseField name="payer.bank" type="object">
-      Dados do banco do pagador
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="receiver" type="object">
+  Dados do recebedor (apenas para transferências)
+  <Expandable title="receiver">
+    <ResponseField name="receiver.name" type="string">
+      Nome do recebedor
+    </ResponseField>
+    <ResponseField name="receiver.document" type="string">
+      CPF/CNPJ mascarado do recebedor
+    </ResponseField>
+    <ResponseField name="receiver.bankName" type="string">
+      Nome do banco do recebedor
+    </ResponseField>
+    <ResponseField name="receiver.pixKey" type="string">
+      Chave PIX do recebedor
+    </ResponseField>
+    <ResponseField name="receiver.pixKeyType" type="string">
+      Tipo da chave PIX (DOCUMENT, EMAIL, PHONE, RANDOM)
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-<ResponseField name="paid_at" type="string">
-  Data/hora do pagamento (apenas para transações pagas)
+<ResponseField name="createdAt" type="string">
+  Data/hora de criação da transação (ISO 8601)
 </ResponseField>
 
-<ResponseField name="expires_at" type="string">
-  Data/hora de expiração da cobrança
-</ResponseField>
-
-<ResponseField name="fees" type="object">
-  Taxas aplicadas à transação
-  <Expandable title="fees">
-    <ResponseField name="fees.total" type="integer">
-      Taxa total em reais (formato decimal)
-    </ResponseField>
-    <ResponseField name="fees.fixed" type="integer">
-      Taxa fixa em reais (formato decimal)
-    </ResponseField>
-    <ResponseField name="fees.percentage" type="number">
-      Taxa percentual aplicada
-    </ResponseField>
-  </Expandable>
+<ResponseField name="updatedAt" type="string">
+  Data/hora da última atualização da transação (ISO 8601)
 </ResponseField>
 
 ## Status da Transação
@@ -304,35 +344,35 @@ payment_external = response_external.json()
 ### Estados Possíveis
 
 <AccordionGroup>
-  <Accordion title="waiting_payment">
+  <Accordion title="WAITING_PAYMENT">
     - **Descrição**: Cobrança criada, aguardando pagamento
     - **QR Code**: Disponível e válido
     - **Ações**: Cliente pode pagar, você pode cancelar
-    - **Próximo status**: `paid`, `expired`, `cancelled`
+    - **Próximo status**: `PAID`, `EXPIRED`, `CANCELLED`
   </Accordion>
 
-  <Accordion title="paid">
+  <Accordion title="PAID">
     - **Descrição**: Pagamento recebido com sucesso
     - **Dados extras**: Informações do pagador
     - **Ações**: Pode ser estornado (até 90 dias)
-    - **Próximo status**: `refund_in` (se estornado)
+    - **Próximo status**: `REFUNDED` (se estornado)
   </Accordion>
 
-  <Accordion title="expired">
+  <Accordion title="EXPIRED">
     - **Descrição**: Cobrança expirou sem pagamento
     - **QR Code**: Inválido
     - **Ações**: Pode criar nova cobrança
     - **Status final**: Não muda mais
   </Accordion>
 
-  <Accordion title="cancelled">
+  <Accordion title="CANCELLED">
     - **Descrição**: Cobrança cancelada manualmente
     - **QR Code**: Inválido
     - **Ações**: Pode criar nova cobrança
     - **Status final**: Não muda mais
   </Accordion>
 
-  <Accordion title="refund_in">
+  <Accordion title="REFUNDED">
     - **Descrição**: Transação estornada
     - **Valor**: Devolvido ao pagador original
     - **Ações**: Estorno processado
@@ -353,16 +393,16 @@ async function verificarPagamento(transactionId) {
 
   const payment = await response.json();
 
-  switch (payment.status) {
-    case 'paid':
+  switch (payment.operation.status) {
+    case 'PAID':
       console.log('Pagamento confirmado!');
       processarPedido(payment);
       break;
-    case 'expired':
+    case 'EXPIRED':
       console.log('Cobrança expirou');
-      gerarNovaCobranca(payment.externalId);
+      gerarNovaCobranca(payment.id);
       break;
-    case 'waiting_payment':
+    case 'WAITING_PAYMENT':
       console.log('Aguardando pagamento...');
       break;
   }
@@ -375,10 +415,10 @@ function iniciarMonitoramento(transactionId) {
   const interval = setInterval(async () => {
     const payment = await consultarCobranca(transactionId);
 
-    if (payment.status === 'paid') {
+    if (payment.operation.status === 'PAID') {
       clearInterval(interval);
       confirmarPagamento(payment);
-    } else if (payment.status === 'expired') {
+    } else if (payment.operation.status === 'EXPIRED') {
       clearInterval(interval);
       notificarExpiracao(payment);
     }
@@ -396,7 +436,6 @@ function iniciarMonitoramento(transactionId) {
 | `TRANSACTION_NOT_FOUND` | Transação não encontrada com o ID fornecido |
 | `INVALID_TRANSACTION_ID` | Format do ID da transação inválido |
 | `UNAUTHORIZED_ACCESS` | Transação não pertence à sua conta |
-| `INVALID_QUERY_TYPE` | Tipo de busca inválido (deve ser 'internal' ou 'external') |
 
 ## Boas Práticas
 

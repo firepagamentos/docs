@@ -25,17 +25,14 @@ O Split de Pagamento PIX permite dividir automaticamente o valor recebido entre 
 <ParamField body="splits" type="array" required>
   Array com configuração de cada beneficiário
   <Expandable title="splits">
-    <ParamField body="splits[].recipient_id" type="string" required>
-      ID do beneficiário (previamente cadastrado)
+    <ParamField body="splits[].walletId" type="string" required>
+      ID da carteira do beneficiário
     </ParamField>
-    <ParamField body="splits[].type" type="string" required>
-      Tipo de divisão: `percentage` ou `fixed_amount`
+    <ParamField body="splits[].amount" type="number">
+      Valor fixo em reais para o beneficiário
     </ParamField>
-    <ParamField body="splits[].value" type="number" required>
-      Valor (% para percentage, R$ para fixed_amount)
-    </ParamField>
-    <ParamField body="splits[].description" type="string">
-      Descrição da participação
+    <ParamField body="splits[].percentage" type="number">
+      Percentual do valor total para o beneficiário
     </ParamField>
   </Expandable>
 </ParamField>
@@ -48,32 +45,28 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 1000,
-    "description": "Venda marketplace",
-    "externalId": "marketplace-001",
-    "buyer": {
-      "name": "João Silva",
-      "document": "12345678901",
-      "email": "joao@email.com"
+    "transaction": {
+      "value": 1000.00,
+      "description": "Venda marketplace",
+      "externalId": "marketplace-001",
+      "expirationTime": 300
+    },
+    "payer": {
+      "fullName": "João Silva",
+      "document": "12345678901"
     },
     "splits": [
       {
-        "recipient_id": "vendor_123",
-        "type": "percentage",
-        "value": 85,
-        "description": "Vendedor principal"
+        "walletId": "vendor_123",
+        "percentage": 85
       },
       {
-        "recipient_id": "platform_fee",
-        "type": "percentage",
-        "value": 10,
-        "description": "Taxa da plataforma"
+        "walletId": "platform_fee",
+        "percentage": 10
       },
       {
-        "recipient_id": "shipping_partner",
-        "type": "percentage",
-        "value": 5,
-        "description": "Parceiro de entrega"
+        "walletId": "shipping_partner",
+        "percentage": 5
       }
     ]
   }'
@@ -84,32 +77,28 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 500,
-    "description": "Serviço profissional",
-    "externalId": "service-456",
-    "buyer": {
-      "name": "Maria Santos",
-      "document": "98765432100",
-      "email": "maria@email.com"
+    "transaction": {
+      "value": 500.00,
+      "description": "Serviço profissional",
+      "externalId": "service-456",
+      "expirationTime": 300
+    },
+    "payer": {
+      "fullName": "Maria Santos",
+      "document": "98765432100"
     },
     "splits": [
       {
-        "recipient_id": "professional_001",
-        "type": "fixed_amount",
-        "value": 400,
-        "description": "Profissional executor"
+        "walletId": "professional_001",
+        "amount": 400.00
       },
       {
-        "recipient_id": "platform_commission",
-        "type": "fixed_amount",
-        "value": 50,
-        "description": "Comissão da plataforma"
+        "walletId": "platform_commission",
+        "amount": 50.00
       },
       {
-        "recipient_id": "support_fund",
-        "type": "fixed_amount",
-        "value": 50,
-        "description": "Fundo de suporte"
+        "walletId": "support_fund",
+        "amount": 50.00
       }
     ]
   }'
@@ -122,45 +111,45 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
 ```json 200 OK - Split Configurado
 {
   "id": "pix_split_123456789",
-  "externalId": "marketplace-001",
+  "transaction": {
+    "value": 1000.00,
+    "description": "Venda marketplace",
+    "externalId": "marketplace-001",
+    "expirationTime": 300
+  },
+  "payer": {
+    "fullName": "João Silva",
+    "document": "***.***.***-01"
+  },
   "status": "waiting_payment",
-  "amount": 100000,
-  "currency": "BRL",
-  "description": "Venda marketplace",
   "qrCode": {
     "text": "00020101021226830014br.gov.bcb.pix...",
     "image": "data:image/png;base64,iVBORw0KGgo..."
   },
   "splits": [
     {
-      "recipient_id": "vendor_123",
-      "type": "percentage",
-      "value": 85,
-      "calculated_amount": 85000,
-      "description": "Vendedor principal",
+      "walletId": "vendor_123",
+      "percentage": 85,
+      "calculated_amount": 850.00,
       "status": "pending"
     },
     {
-      "recipient_id": "platform_fee",
-      "type": "percentage",
-      "value": 10,
-      "calculated_amount": 10000,
-      "description": "Taxa da plataforma",
+      "walletId": "platform_fee",
+      "percentage": 10,
+      "calculated_amount": 100.00,
       "status": "pending"
     },
     {
-      "recipient_id": "shipping_partner",
-      "type": "percentage",
-      "value": 5,
-      "calculated_amount": 5000,
-      "description": "Parceiro de entrega",
+      "walletId": "shipping_partner",
+      "percentage": 5,
+      "calculated_amount": 50.00,
       "status": "pending"
     }
   ],
   "split_summary": {
     "total_splits": 3,
-    "total_amount": 100000,
-    "split_amount": 100000,
+    "total_amount": 1000.00,
+    "split_amount": 1000.00,
     "remaining_amount": 0
   },
   "created_at": "2024-01-15T18:00:00Z"
@@ -211,8 +200,8 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
 ### Por Percentual
 ```json
 {
-  "type": "percentage",
-  "value": 15.5  // 15.5% do valor total
+  "walletId": "wallet_123",
+  "percentage": 15.5  // 15.5% do valor total
 }
 ```
 - **Vantagem**: Proporcional ao valor
@@ -222,8 +211,8 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
 ### Valor Fixo
 ```json
 {
-  "type": "fixed_amount",
-  "value": 25.00  // R$ 25,00 fixos
+  "walletId": "wallet_456",
+  "amount": 25.00  // R$ 25,00 fixos
 }
 ```
 - **Vantagem**: Valor garantido
@@ -234,12 +223,12 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
 ```json
 "splits": [
   {
-    "type": "fixed_amount",
-    "value": 50.00
+    "walletId": "wallet_123",
+    "amount": 50.00
   },
   {
-    "type": "percentage",
-    "value": 10
+    "walletId": "wallet_456",
+    "percentage": 10
   }
 ]
 ```
@@ -259,8 +248,8 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
     ```json
     // Valor total: R$ 1.000,00
     "splits": [
-      { "type": "percentage", "value": 80 },  // R$ 800,00
-      { "type": "percentage", "value": 20 }   // R$ 200,00
+      { "walletId": "wallet_1", "percentage": 80 },  // R$ 800,00
+      { "walletId": "wallet_2", "percentage": 20 }   // R$ 200,00
     ]
     // Total: 100% ✅
     ```
@@ -270,8 +259,8 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
     ```json
     // Valor total: R$ 500,00
     "splits": [
-      { "type": "fixed_amount", "value": 400 }, // R$ 400,00
-      { "type": "fixed_amount", "value": 100 }  // R$ 100,00
+      { "walletId": "wallet_1", "amount": 400 }, // R$ 400,00
+      { "walletId": "wallet_2", "amount": 100 }  // R$ 100,00
     ]
     // Total: R$ 500,00 ✅
     ```
@@ -280,8 +269,8 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
   <Accordion title="❌ Inválido - Excede 100%">
     ```json
     "splits": [
-      { "type": "percentage", "value": 60 },
-      { "type": "percentage", "value": 50 }
+      { "walletId": "wallet_1", "percentage": 60 },
+      { "walletId": "wallet_2", "percentage": 50 }
     ]
     // Total: 110% ❌
     ```
@@ -291,8 +280,8 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
     ```json
     // Valor total: R$ 100,00
     "splits": [
-      { "type": "fixed_amount", "value": 80 },
-      { "type": "fixed_amount", "value": 30 }
+      { "walletId": "wallet_1", "amount": 80 },
+      { "walletId": "wallet_2", "amount": 30 }
     ]
     // Total: R$ 110,00 > R$ 100,00 ❌
     ```
