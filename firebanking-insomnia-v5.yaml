@@ -777,32 +777,6 @@ collection:
             store: true
           rebuildPath: true
 
-  - name: 🏥 Sistema
-    meta:
-      id: fld_health
-      created: 1642243200000
-      modified: 1642243200000
-      sortKey: -1642239000000
-      description: ""
-    children:
-      - url: "{{ _.base_url }}/credit-card/v1/health"
-        name: Verificação de Saúde
-        meta:
-          id: req_health_check
-          created: 1642243200000
-          modified: 1642243200000
-          isPrivate: false
-          description: "Verificar status de saúde da API"
-          sortKey: -1642239000000
-        method: GET
-        settings:
-          renderRequestBody: true
-          encodeUrl: true
-          followRedirects: global
-          cookies:
-            send: true
-            store: true
-          rebuildPath: true
 
   - name: 🔔 Webhooks
     meta:

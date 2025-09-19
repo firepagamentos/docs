@@ -679,24 +679,6 @@
       ]
     },
     {
-      "name": "🏥 Sistema",
-      "item": [
-        {
-          "name": "Verificação de Saúde",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/credit-card/v1/health",
-              "host": ["{{base_url}}"],
-              "path": ["credit-card", "v1", "health"]
-            },
-            "description": "Verificar status de saúde da API"
-          }
-        }
-      ]
-    },
-    {
       "name": "🔔 Webhooks",
       "item": [
         {
