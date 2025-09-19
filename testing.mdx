@@ -112,13 +112,19 @@ Para testar boletos em sandbox:
 
 ```json Boleto de Teste
 {
-  "amount": 50, // R$ 50,00
+  "amount": 50.00,
   "dueDate": "2024-12-31",
   "description": "Cobrança de teste boleto",
+  "externalId": "test-boleto-001",
   "payer": {
     "name": "João da Silva Teste",
     "document": "11144477735",
-    "email": "joao.teste@example.com"
+    "city": "São Paulo",
+    "state": "SP",
+    "number": "123",
+    "postalCode": "01000000",
+    "neighborhood": "Centro",
+    "publicArea": "Rua das Flores"
   }
 }
 ```
@@ -358,24 +364,19 @@ curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 5000,
+    "amount": 50.00,
     "dueDate": "2024-12-31",
     "description": "Cobrança boleto de teste",
     "externalId": "test-boleto-001",
     "payer": {
       "name": "João da Silva Teste",
       "document": "11144477735",
-      "email": "joao.teste@example.com",
-      "phone": "11999999999",
-      "address": {
-        "zipCode": "01000000",
-        "street": "Rua das Flores",
-        "number": "123",
-        "district": "Centro",
-        "city": "São Paulo",
-        "state": "SP",
-        "country": "BR"
-      }
+      "city": "São Paulo",
+      "state": "SP",
+      "number": "123",
+      "postalCode": "01000000",
+      "neighborhood": "Centro",
+      "publicArea": "Rua das Flores"
     }
   }'
 ```
@@ -387,21 +388,29 @@ curl -X POST "https://api-gateway.firebanking.dev/bank-slip/v1/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 10000,
-    "dueDate": "2024-01-15",
+    "amount": 100.00,
+    "dueDate": "2025-01-15",
     "description": "Boleto com multa e juros",
-    "fine": {
-      "amount": 200,
-      "type": "FIXED"
-    },
-    "interest": {
-      "amount": 100,
-      "type": "MONTHLY_PERCENTAGE"
+    "externalId": "test-boleto-with-fees-001",
+    "instructions": {
+      "fine": {
+        "type": "PERCENTAGE",
+        "value": 2.0
+      },
+      "interest": {
+        "type": "PERCENTAGE",
+        "value": 0.033
+      }
     },
     "payer": {
       "name": "Empresa Teste LTDA",
       "document": "11222333000181",
-      "email": "contato@empresateste.com"
+      "city": "São Paulo",
+      "state": "SP",
+      "number": "456",
+      "postalCode": "01000000",
+      "neighborhood": "Centro",
+      "publicArea": "Avenida Paulista"
     }
   }'
 ```
