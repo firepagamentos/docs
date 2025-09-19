@@ -320,6 +320,61 @@
           }
         },
         {
+          "name": "Listar Pagamentos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/payment?offset=0&limit=10&count=true",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "payment"],
+              "query": [
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "disabled": true
+                },
+                {
+                  "key": "count",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Recuperar uma lista paginada de pagamentos com filtros"
+          }
+        },
+        {
+          "name": "Obter Tokens por Comprador",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-card/v1/payment/token/buyer_uuid_123",
+              "host": ["{{base_url}}"],
+              "path": ["credit-card", "v1", "payment", "token", "buyer_uuid_123"]
+            },
+            "description": "Recuperar todos os tokens de cartão salvos para um comprador"
+          }
+        },
+        {
           "name": "Atualizar Assinatura",
           "request": {
             "method": "PATCH",
@@ -727,25 +782,6 @@
               "path": ["business", "webhook"]
             },
             "description": "Atualiza uma ou mais URLs de webhook específicas"
-          }
-        },
-        {
-          "name": "Remover Webhook Específico",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "x-api-key",
-                "value": "{{api_key}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/business/webhook/pix",
-              "host": ["{{base_url}}"],
-              "path": ["business", "webhook", "pix"]
-            },
-            "description": "Remove a URL de webhook de um produto específico"
           }
         }
       ]

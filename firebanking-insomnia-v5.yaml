@@ -382,6 +382,60 @@ collection:
             store: true
           rebuildPath: true
 
+      - url: "{{ _.base_url }}/credit-card/v1/payment"
+        name: Listar Pagamentos
+        meta:
+          id: req_cc_payment_list
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Recuperar uma lista paginada de pagamentos com filtros"
+          sortKey: -1642242150000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        parameters:
+          - name: offset
+            value: "0"
+            disabled: true
+          - name: limit
+            value: "10"
+            disabled: true
+          - name: count
+            value: "true"
+            disabled: true
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
+      - url: "{{ _.base_url }}/credit-card/v1/payment/token/buyer_uuid_123"
+        name: Obter Tokens por Comprador
+        meta:
+          id: req_cc_token_list
+          created: 1642243200000
+          modified: 1642243200000
+          isPrivate: false
+          description: "Recuperar todos os tokens de cartão salvos para um comprador"
+          sortKey: -1642242140000
+        method: GET
+        headers:
+          - name: x-api-key
+            value: "{{ _.api_key }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+
       - url: "{{ _.base_url }}/credit-card/v1/subscription/subscription_uuid_123"
         name: Atualizar Assinatura
         meta:
@@ -843,27 +897,6 @@ collection:
             store: true
           rebuildPath: true
 
-      - url: "{{ _.base_url }}/business/webhook/pix"
-        name: Remover Webhook Específico
-        meta:
-          id: req_webhook_delete
-          created: 1642243200000
-          modified: 1642243200000
-          isPrivate: false
-          description: "Remove a URL de webhook de um produto específico"
-          sortKey: -1642237700000
-        method: DELETE
-        headers:
-          - name: x-api-key
-            value: "{{ _.api_key }}"
-        settings:
-          renderRequestBody: true
-          encodeUrl: true
-          followRedirects: global
-          cookies:
-            send: true
-            store: true
-          rebuildPath: true
 
 cookieJar:
   name: Default Jar
