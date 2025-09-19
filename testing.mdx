@@ -80,10 +80,15 @@ Para testar o PIX em sandbox:
 
 ```json PIX de Teste
 {
-  "pixKey": "11144477735",
-  "pixKeyType": "CPF",
-  "amount": 10, // R$ 10,00
-  "description": "Cobrança de teste PIX"
+  "transaction": {
+    "value": 10.00,
+    "description": "Cobrança de teste PIX",
+    "externalId": "test-pix-001"
+  },
+  "payer": {
+    "fullName": "João da Silva Teste",
+    "document": "11144477735"
+  }
 }
 ```
 
@@ -296,17 +301,15 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 1000,
-    "description": "Cobrança PIX de teste",
-    "externalId": "test-pix-001",
-    "customer": {
-      "name": "João da Silva Teste",
-      "document": "11144477735",
-      "email": "joao.teste@example.com",
-      "phone": "11999999999"
+    "transaction": {
+      "value": 10.00,
+      "description": "Cobrança PIX de teste",
+      "externalId": "test-pix-001"
     },
-    "pixKey": "11144477735",
-    "pixKeyType": "CPF"
+    "payer": {
+      "fullName": "João da Silva Teste",
+      "document": "11144477735"
+    }
   }'
 ```
 
@@ -317,13 +320,15 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 2500,
-    "description": "QR Code dinâmico teste",
-    "expiresIn": 3600,
-    "customer": {
-      "name": "Maria Silva Teste",
-      "document": "22255588844",
-      "email": "maria.teste@example.com"
+    "transaction": {
+      "value": 25.00,
+      "description": "QR Code dinâmico teste",
+      "expirationTime": 3600,
+      "externalId": "test-qr-dynamic-001"
+    },
+    "payer": {
+      "fullName": "Maria Silva Teste",
+      "document": "22255588844"
     }
   }'
 ```
@@ -337,8 +342,10 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": -100,
-    "description": "Teste valor negativo"
+    "transaction": {
+      "value": -1.00,
+      "description": "Teste valor negativo"
+    }
   }'
 ```
 
