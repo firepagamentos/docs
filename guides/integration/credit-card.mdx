@@ -301,7 +301,7 @@ echo 'Pagamento criado: ' . print_r($payment, true);
 | chargeType        | Descrição               | Quem Paga a Taxa |
 | ----------------- | ----------------------- | ---------------- |
 | `FEE_TO_CUSTOMER` | Taxa cobrada do cliente | Cliente          |
-| `FEE_TO_MERCHANT` | Taxa cobrada do lojista | Lojista          |
+| `FEE_TO_SELLER` | Taxa cobrada do vendedor | Vendedor          |
 
 ### Captura Imediata vs Pré-autorização
 
@@ -366,7 +366,7 @@ Salve dados de cartão de forma segura para pagamentos futuros:
 
 <CodeGroup>
 ```bash cURL - Criar Token
-curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/token" \\
+curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/payment/token" \\
   -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -555,14 +555,22 @@ curl -X POST "https://api-gateway.firebanking.dev/credit-card/v1/subscription" \
   -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "amount": 29.90,
-    "interval": "MONTHLY",
-    "description": "Assinatura Premium",
-    "token": "fbk_token_abc123def456",
-    "buyer": {
-      "document": "11144477735",
-      "email": "joao@exemplo.com"
+    "basicValue": {
+      "type": "MONTHLY",
+      "valuePerMonth": 29.90
     },
+    "payment": {
+      "method": "CREDIT_CARD",
+      "cardToken": "fbk_token_abc123def456"
+    },
+    "buyer": {
+      "name": "João da Silva",
+      "document": "11144477735",
+      "email": "joao@exemplo.com",
+      "phone": "11999999999",
+      "countryCode": "+55"
+    },
+    "description": "Assinatura Premium",
     "startDate": "2024-02-01"
   }'
 ```
