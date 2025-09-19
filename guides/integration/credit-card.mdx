@@ -358,37 +358,6 @@ Use estes cartões específicos no ambiente de sandbox:
 }
 ```
 
-## Parcelamento
-
-### Configuração de Parcelas
-
-<CodeGroup>
-```json 3x sem juros
-{
-  "purchaseValue": 300,
-  "installments": 3,
-  "installmentType": "MERCHANT_INTEREST_FREE"
-}
-```
-
-```json 6x com juros (cliente)
-{
-  "purchaseValue": 600,
-  "installments": 6,
-  "installmentType": "CUSTOMER_INTEREST",
-  "interestRate": 2.5
-}
-```
-
-</CodeGroup>
-
-### Tipos de Parcelamento
-
-| Tipo                     | Descrição                   | Quem Paga Juros |
-| ------------------------ | --------------------------- | --------------- |
-| `MERCHANT_INTEREST_FREE` | Sem juros (lojista absorve) | Lojista         |
-| `CUSTOMER_INTEREST`      | Com juros para o cliente    | Cliente         |
-
 ## Tokenização
 
 Salve dados de cartão de forma segura para pagamentos futuros:
