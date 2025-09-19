@@ -117,23 +117,6 @@ Muitas empresas oferecem **múltiplos métodos** na mesma checkout para maximiza
   </Step>
 </Steps>
 
-### Exemplo de Priorização
-
-```json Configuração Recomendada
-{
-  "payment_methods": {
-    "primary": "credit_card",
-    "secondary": "pix",
-    "fallback": "bank_slip"
-  },
-  "rules": {
-    "high_value": ["pix", "credit_card", "bank_slip"],
-    "low_value": ["credit_card", "pix"],
-    "corporate": ["pix", "bank_slip", "credit_card"]
-  }
-}
-```
-
 ## Valores Monetários
 
 <Warning>
