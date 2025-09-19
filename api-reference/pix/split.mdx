@@ -110,49 +110,13 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
 <ResponseExample>
 ```json 200 OK - Split Configurado
 {
-  "id": "pix_split_123456789",
-  "transaction": {
-    "value": 1000.00,
-    "description": "Venda marketplace",
-    "externalId": "marketplace-001",
-    "expirationTime": 300
-  },
-  "payer": {
-    "fullName": "João Silva",
-    "document": "***.***.***-01"
-  },
-  "status": "waiting_payment",
-  "qrCode": {
-    "text": "00020101021226830014br.gov.bcb.pix...",
-    "image": "data:image/png;base64,iVBORw0KGgo..."
-  },
-  "splits": [
-    {
-      "walletId": "vendor_123",
-      "percentage": 85,
-      "calculated_amount": 850.00,
-      "status": "pending"
-    },
-    {
-      "walletId": "platform_fee",
-      "percentage": 10,
-      "calculated_amount": 100.00,
-      "status": "pending"
-    },
-    {
-      "walletId": "shipping_partner",
-      "percentage": 5,
-      "calculated_amount": 50.00,
-      "status": "pending"
-    }
-  ],
-  "split_summary": {
-    "total_splits": 3,
-    "total_amount": 1000.00,
-    "split_amount": 1000.00,
-    "remaining_amount": 0
-  },
-  "created_at": "2024-01-15T18:00:00Z"
+  "transactionId": "cd722e93-032f-45e1-b638-87a2490dcea7",
+  "status": "WAITING_PAYMENT",
+  "pixQrCode": "iVBORw0KGgoAAAANSUhEUgAABbQAAAW0CAYAAAAeooXXAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAIABJREFUeJzs2kGu5DqSRNFmI/a/ZfbwVw7+Q2XLM2UWfs4CBKdIKQIXOvfe+z8AAAAAABDuf98eAAAAAAAA...",
+  "pixCode": "00020101021226880014br.gov.bcb.pix2566qrcode-h.firebanking.com.br/QR/cob/EEA7B851BBAFFB546073CE80810F56AA0F95204000053039865802BR5925VICTOR NERY TEIXEIRA CONS6009Sao Paulo610905726-10062070503***630498E0",
+  "generateTime": "2024-04-14T02:58:04.997Z",
+  "expirationDate": "2024-04-15T02:58:04.997Z",
+  "paymentLink": "https://pay.firebanking.com.br/cd722e93-032f-45e1-b638-87a2490dcea7"
 }
 ```
 
