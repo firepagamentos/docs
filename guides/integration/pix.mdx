@@ -203,13 +203,14 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \\
   -H "x-api-key: SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "amount": 250.00,
-    "description": "Pagamento via chave PIX",
-    "externalId": "pix-key-001",
-    "pixKey": "joao@empresa.com",
-    "pixKeyType": "EMAIL",
-    "buyer": {
-      "name": "Maria Santos",
+    "transaction": {
+      "value": 250.00,
+      "description": "Pagamento via chave PIX",
+      "externalId": "pix-key-001",
+      "expirationTime": 300
+    },
+    "payer": {
+      "fullName": "Maria Santos",
       "document": "22255588846"
     }
   }'
@@ -217,26 +218,27 @@ curl -X POST "https://api-gateway.firebanking.dev/pix/v2/payment" \\
 
 ```json Resposta Chave PIX
 {
-  "chargeId": "pix_charge_def456",
-  "externalId": "pix-key-001",
+  "transactionId": "cd722e93-032f-45e1-b638-87a2490dcea7",
   "status": "WAITING_PAYMENT",
-  "amount": 250.00,
-  "pixKey": "joao@empresa.com",
-  "pixKeyType": "EMAIL",
-  "created_at": "2024-01-15T10:30:00Z"
+  "pixQrCode": "iVBORw0KGgoAAAANSUhEUgAABbQAAAW0CAYAAAAeooXX...",
+  "pixCode": "00020101021226880014br.gov.bcb.pix2566qrcode-h.firebanking...",
+  "generateTime": "2024-04-14T02:58:04.997Z",
+  "expirationDate": "2024-04-15T02:58:04.997Z",
+  "paymentLink": "https://pay.firebanking.com.br/cd722e93-032f-45e1-b638-87a2490dcea7"
 }
 ```
 </CodeGroup>
 
 ### Tipos de Chave PIX
 
+
 | Tipo | Formato | Exemplo |
 |------|---------|---------|
-| `CPF` | 11 dígitos | `12345678901` |
-| `CNPJ` | 14 dígitos | `12345678000123` |
+| `DOCUMENT` | CPF (11 dígitos) | `12345678901` |
+| `DOCUMENT` | CNPJ (14 dígitos) | `12345678000123` |
 | `EMAIL` | Email válido | `usuario@exemplo.com` |
 | `PHONE` | +55 + DDD + número | `+5511999887766` |
-| `RANDOM` | UUID v4 | `123e4567-e89b-12d3-a456-426614174000` |
+| `RANDOM_KEY` | UUID v4 | `123e4567-e89b-12d3-a456-426614174000` |
 
 ## Consultando Status
 

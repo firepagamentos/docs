@@ -375,7 +375,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 1000,\n  \"description\": \"Cobrança PIX de teste\",\n  \"externalId\": \"pix-payment-001\",\n  \"customer\": {\n    \"name\": \"João da Silva Teste\",\n    \"document\": \"11144477735\",\n    \"email\": \"joao@exemplo.com\"\n  },\n  \"pixKey\": \"11144477735\",\n  \"pixKeyType\": \"CPF\"\n}",
+              "raw": "{\n  \"transaction\": {\n    \"value\": 0.15,\n    \"description\": \"Cobrança de teste\",\n    \"expirationTime\": 300,\n    \"externalId\": \"uuid-123\",\n    \"additionalInfo\": {\n      \"sellerId\": 123,\n      \"whatsAppPhone\": \"37988996655\"\n    }\n  },\n  \"payer\": {\n    \"fullName\": \"John Marvin\",\n    \"document\": \"12312312387\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -434,7 +434,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 100,\n  \"description\": \"Transferência PIX\",\n  \"externalId\": \"withdraw-001\",\n  \"pixKey\": \"recipient@email.com\",\n  \"pixKeyType\": \"EMAIL\",\n  \"recipient\": {\n    \"name\": \"Maria Silva\",\n    \"document\": \"12345678901\"\n  }\n}",
+              "raw": "{\n  \"transaction\": {\n    \"value\": 100.00,\n    \"description\": \"Transferência PIX\",\n    \"externalId\": \"withdraw-001\",\n    \"additionalInfo\": {\n      \"sellerId\": 123\n    }\n  },\n  \"beneficiary\": {\n    \"key\": \"recipient@email.com\",\n    \"keyType\": \"EMAIL\",\n    \"name\": \"Maria Silva\",\n    \"document\": \"12345678901\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"

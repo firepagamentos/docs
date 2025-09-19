@@ -442,16 +442,20 @@ collection:
           mimeType: application/json
           text: |
             {
-              "amount": 1000,
-              "description": "Cobrança PIX de teste",
-              "externalId": "pix-payment-001",
-              "customer": {
-                "name": "João da Silva Teste",
-                "document": "11144477735",
-                "email": "joao@exemplo.com"
+              "transaction": {
+                "value": 0.15,
+                "description": "Cobrança de teste",
+                "expirationTime": 300,
+                "externalId": "uuid-123",
+                "additionalInfo": {
+                  "sellerId": 123,
+                  "whatsAppPhone": "37988996655"
+                }
               },
-              "pixKey": "11144477735",
-              "pixKeyType": "CPF"
+              "payer": {
+                "fullName": "John Marvin",
+                "document": "12312312387"
+              }
             }
         settings:
           renderRequestBody: true
@@ -507,12 +511,17 @@ collection:
           mimeType: application/json
           text: |
             {
-              "amount": 100,
-              "description": "Transferência PIX",
-              "externalId": "withdraw-001",
-              "pixKey": "recipient@email.com",
-              "pixKeyType": "EMAIL",
-              "recipient": {
+              "transaction": {
+                "value": 100.00,
+                "description": "Transferência PIX",
+                "externalId": "withdraw-001",
+                "additionalInfo": {
+                  "sellerId": 123
+                }
+              },
+              "beneficiary": {
+                "key": "recipient@email.com",
+                "keyType": "EMAIL",
                 "name": "Maria Silva",
                 "document": "12345678901"
               }
