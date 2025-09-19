@@ -230,55 +230,6 @@ Use este guia para escolher rapidamente o melhor método de pagamento baseado na
   </Accordion>
 </AccordionGroup>
 
-## Otimização por Ticket Médio
-
-### Micro Transações `(R$ 1-20)`
-
-```
-Exemplo: Doações, conteúdo digital, recarga de créditos
-
-✅ PIX (90%): Taxa baixa, confirmação instantânea
-❌ Cartão (10%): Taxa alta percentualmente  
-❌ Boleto (0%): Taxa fixa inviabiliza
-```
-
-**Implementação**:
-```javascript
-if (amount < 2000) { // Até R$ 20
-  return ['pix']; // Apenas PIX disponível
-}
-```
-
-### Pequenas Transações `(R$ 20-100)`
-
-```
-Exemplo: Fast food, delivery, apps, assinaturas básicas
-
-✅ PIX (60%): Melhor custo-benefício
-✅ Cartão (40%): Parcelamento 2-3x
-❌ Boleto (0%): Taxa ainda alta proporcionalmente
-```
-
-### Transações Médias `(R$ 100-500)`
-
-```
-Exemplo: Roupas, eletrônicos básicos, cursos
-
-✅ Cartão (45%): Parcelamento atrativo
-✅ PIX (35%): Desconto à vista
-✅ Boleto (20%): Alternativa válida
-```
-
-### Grandes Transações `(R$ 500+)`
-
-```
-Exemplo: Eletrodomésticos, viagens, consultoria
-
-✅ Boleto (40%): Menor custo operacional
-✅ Cartão (35%): Parcelamento longo
-✅ PIX (25%): Confirmação instantânea
-```
-
 ## Matriz de Decisão
 
 ### Ferramenta de Escolha Rápida
@@ -295,74 +246,6 @@ Exemplo: Eletrodomésticos, viagens, consultoria
 | **Cliente Jovem** | ⭐⭐⭐ | ⭐⭐ | ⭐ |
 | **Cliente Sênior** | ⭐ | ⭐⭐ | ⭐⭐⭐ |
 | **B2B** | ⭐⭐ | ⭐ | ⭐⭐⭐ |
-
-## Implementação Prática
-
-### Algoritmo de Sugestão
-
-```javascript
-function suggestPaymentMethod(transactionData) {
-  const { amount, customerAge, isB2B, urgency } = transactionData;
-  const suggestions = [];
-  
-  // Regra 1: Valor baixo sempre PIX
-  if (amount < 5000) {
-    suggestions.push({ method: 'pix', priority: 1, reason: 'Melhor custo para valor baixo' });
-  }
-  
-  // Regra 2: Parcelamento sempre cartão
-  if (amount > 10000) {
-    suggestions.push({ 
-      method: 'card', 
-      priority: 2, 
-      reason: 'Parcelamento disponível',
-      installments: Math.min(Math.floor(amount / 3000), 12)
-    });
-  }
-  
-  // Regra 3: Valor alto ou B2B sugere boleto
-  if (amount > 50000 || isB2B) {
-    suggestions.push({ 
-      method: 'boleto', 
-      priority: isB2B ? 1 : 3,
-      reason: 'Menor custo operacional' 
-    });
-  }
-  
-  // Regra 4: Urgência favorece PIX
-  if (urgency === 'high') {
-    suggestions.forEach(s => {
-      if (s.method === 'pix') s.priority -= 1;
-    });
-  }
-  
-  return suggestions.sort((a, b) => a.priority - b.priority);
-}
-```
-
-### Interface Adaptativa
-
-```css
-/* Destaque visual baseado na recomendação */
-.payment-method.recommended {
-  border: 2px solid #00C851;
-  background: linear-gradient(135deg, #f8fff8 0%, #f0fff0 100%);
-  position: relative;
-}
-
-.payment-method.recommended::before {
-  content: "⭐ Recomendado";
-  position: absolute;
-  top: -10px;
-  right: 10px;
-  background: #00C851;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-}
-```
 
 ## Métricas e Otimização Contínua
 
