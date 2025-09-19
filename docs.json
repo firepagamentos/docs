@@ -187,11 +187,6 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Suporte",
-          "href": "mailto:api-support@firebanking.com",
-          "icon": "envelope"
-        },
-        {
           "anchor": "Dashboard",
           "href": "https://app.firebanking.io",
           "icon": "chart-line"
@@ -216,23 +211,12 @@
     "dark": "https://link-pagamento.firebanking.dev/logo-fire/logo-white.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Suporte",
-        "href": "mailto:api-support@firebanking.com"
-      }
-    ],
+    "links": [],
     "primary": {
       "type": "button",
       "label": "Dashboard",
       "href": "https://app.firebanking.io"
     }
   },
-  "footer": {
-    "socials": {
-      "website": "https://firebanking.com",
-      "github": "https://github.com/firebanking",
-      "linkedin": "https://linkedin.com/company/firebanking"
-    }
-  }
+  "footer": {}
 }
