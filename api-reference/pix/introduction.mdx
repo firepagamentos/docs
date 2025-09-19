@@ -170,13 +170,14 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
   -H "x-api-key: SUA_CHAVE_DE_API" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 100,
-    "description": "Primeira cobrança PIX",
-    "externalId": "pedido-001",
-    "buyer": {
-      "name": "João da Silva",
-      "document": "12345678901",
-      "email": "joao@email.com"
+    "transaction": {
+      "value": 100.00,
+      "description": "Primeira cobrança PIX",
+      "externalId": "pedido-001"
+    },
+    "payer": {
+      "fullName": "João da Silva",
+      "document": "12345678901"
     }
   }'
 ```
