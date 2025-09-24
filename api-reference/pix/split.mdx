@@ -281,33 +281,6 @@ Os beneficiários do split são definidos diretamente no payload da cobrança PI
   Os beneficiários são configurados no momento da criação da cobrança, não existindo endpoint separado para gerenciamento.
 </Info>
 
-## Webhook de Split
-
-Após a execução do split, você receberá webhooks detalhados:
-
-```json
-{
-  "event": "pix.split_completed",
-  "pix_id": "pix_split_123456789",
-  "timestamp": "2024-01-15T18:15:50Z",
-  "data": {
-    "total_amount": 100000,
-    "total_transfers": 3,
-    "successful_transfers": 3,
-    "failed_transfers": 0,
-    "splits": [
-      {
-        "recipient_id": "vendor_123",
-        "amount": 85000,
-        "status": "transferred",
-        "transfer_id": "split_transfer_001"
-      }
-      // ... outros splits
-    ]
-  }
-}
-```
-
 ## Casos de Uso
 
 ### Marketplace E-commerce
