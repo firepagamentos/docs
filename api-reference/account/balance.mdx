@@ -37,7 +37,8 @@ curl --request GET \
   "id": "6642d54caff30523094a6584c",
   "totalBalance": 4.02,
   "blockedBalance": 1.26,
-  "availableBalance": 2.76
+  "availableBalance": 2.76,
+  "consultedAt": "2024-01-15T10:30:45.123Z"
 }
 ```
 
@@ -57,6 +58,10 @@ curl --request GET \
 
 <ResponseField name="availableBalance" type="number" required>
   Saldo disponível para novas transações
+</ResponseField>
+
+<ResponseField name="consultedAt" type="string" required>
+  Timestamp ISO 8601 de quando o saldo foi consultado
 </ResponseField>
 
 ## Cálculo do Saldo
@@ -141,8 +146,9 @@ Configure webhooks para receber notificações sobre mudanças de saldo:
 
 ```bash Configurar Webhook
 curl --request POST \
-  --url https://api.firebanking.com.br/business/webhook \
+  --url https://api-gateway.firebanking.com.br/v1/account/webhook \
   --header 'x-api-key: sua_chave_api' \
+  --header 'Content-Type: application/json' \
   --data '{
     "pixWebhookUrl": "https://meusite.com/webhooks/pix"
   }'
@@ -158,6 +164,70 @@ Todos os valores são em **reais** com decimais:
 <Tip>
   Para exibição, formate os valores de acordo com as convenções monetárias brasileiras (R$ 4,02).
 </Tip>
+
+## Timestamp de Consulta
+
+### Campo consultedAt
+
+O campo `consultedAt` fornece o momento exato em que o saldo foi consultado:
+
+```json
+{
+  "consultedAt": "2024-01-15T10:30:45.123Z"
+}
+```
+
+**Características:**
+- **Formato ISO 8601** com timezone UTC
+- **Precisão de milissegundos** para controle granular
+- **Único por requisição** - cada consulta tem seu timestamp
+
+### Casos de Uso do Timestamp
+
+<CardGroup cols={2}>
+  <Card title="Cache Inteligente" icon="database">
+    Use o timestamp para decidir quando atualizar cache local
+  </Card>
+  <Card title="Auditoria" icon="clipboard-list">
+    Rastreie quando cada consulta de saldo foi realizada
+  </Card>
+  <Card title="Sincronização" icon="sync">
+    Compare timestamps entre sistemas para detectar defasagem
+  </Card>
+  <Card title="Debugging" icon="bug">
+    Identifique exatamente quando problemas de saldo ocorreram
+  </Card>
+</CardGroup>
+
+### Implementação de Cache
+
+```javascript Cache com Timestamp
+class BalanceCache {
+  constructor(maxAge = 30000) { // 30 segundos
+    this.cache = null;
+    this.maxAge = maxAge;
+  }
+
+  async getBalance() {
+    if (this.isValid()) {
+      return this.cache;
+    }
+
+    const balance = await this.fetchFromAPI();
+    this.cache = balance;
+    return balance;
+  }
+
+  isValid() {
+    if (!this.cache) return false;
+
+    const consultedAt = new Date(this.cache.consultedAt);
+    const now = new Date();
+
+    return (now - consultedAt) < this.maxAge;
+  }
+}
+```
 
 ## Próximos Passos
 

@@ -48,6 +48,46 @@
         ]
       },
       {
+        "tab": "API - PIX",
+        "groups": [
+          {
+            "group": "Visão Geral",
+            "pages": ["api-reference/pix/introduction", "downloads"]
+          },
+          {
+            "group": "Fluxo de Integração",
+            "pages": ["api-reference/pix/integration-flow"]
+          },
+          {
+            "group": "PIX Cobrança (Cash In)",
+            "pages": [
+              "api-reference/pix/charge/create-qrcode",
+              "api-reference/pix/charge/get"
+            ]
+          },
+          {
+            "group": "PIX Saque (Cash Out)",
+            "pages": [
+              "api-reference/pix/withdraw/create"
+            ]
+          },
+          {
+            "group": "Operações",
+            "pages": [
+              "api-reference/pix/refund",
+              "api-reference/pix/split"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/pix/webhooks-cashin",
+              "api-reference/pix/webhooks-cashout"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API - Cartão de Crédito",
         "groups": [
           {
@@ -57,6 +97,10 @@
               "api-reference/credit-card/test-cards",
               "downloads"
             ]
+          },
+          {
+            "group": "Fluxo de Integração",
+            "pages": ["api-reference/credit-card/integration-flow"]
           },
           {
             "group": "Pagamentos",
@@ -98,47 +142,15 @@
         ]
       },
       {
-        "tab": "API - PIX",
-        "groups": [
-          {
-            "group": "Visão Geral",
-            "pages": ["api-reference/pix/introduction", "downloads"]
-          },
-          {
-            "group": "PIX Cobrança (Cash In)",
-            "pages": [
-              "api-reference/pix/charge/create-qrcode",
-              "api-reference/pix/charge/get"
-            ]
-          },
-          {
-            "group": "PIX Saque (Cash Out)",
-            "pages": [
-              "api-reference/pix/withdraw/create"
-            ]
-          },
-          {
-            "group": "Operações",
-            "pages": [
-              "api-reference/pix/refund",
-              "api-reference/pix/split"
-            ]
-          },
-          {
-            "group": "Webhooks",
-            "pages": [
-              "api-reference/pix/webhooks-cashin",
-              "api-reference/pix/webhooks-cashout"
-            ]
-          }
-        ]
-      },
-      {
         "tab": "API - Boleto",
         "groups": [
           {
             "group": "Visão Geral",
             "pages": ["api-reference/bank-slip/introduction", "downloads"]
+          },
+          {
+            "group": "Fluxo de Integração",
+            "pages": ["api-reference/bank-slip/integration-flow"]
           },
           {
             "group": "Emissão",

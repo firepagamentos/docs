@@ -21,42 +21,15 @@ O webhook de cancelamento é enviado automaticamente quando um boleto é cancela
 
 ### Payload do Webhook
 
-```json
+```json Boleto Cancelado (Status: CANCELED)
 {
-  "event": "boleto.cancelled",
-  "boleto_id": "bol_1234567890123456",
-  "external_id": "pedido-12345",
-  "timestamp": "2024-01-16T10:30:00Z",
-  "data": {
-    "id": "bol_1234567890123456",
-    "external_id": "pedido-12345",
-    "status": "cancelled",
-    "amount": 25000,
-    "currency": "BRL",
-    "description": "Mensalidade Academia FitLife - Janeiro/2024",
-    "due_date": "2024-02-15",
-    "buyer": {
-      "name": "João Silva Santos",
-      "document": "***.***.***-01",
-      "email": "joao@email.com",
-      "phone": "(11) 9****-9999"
-    },
-    "cancellation": {
-      "cancelled_at": "2024-01-16T10:30:00Z",
-      "reason": "Pedido cancelado pelo cliente",
-      "cancelled_by": "api_user",
-      "method": "api",
-      "metadata": {
-        "cancelled_by": "customer_service",
-        "ticket_id": "SUPP-123456"
-      }
-    },
-    "registered_at": "2024-01-15T10:30:00Z",
-    "metadata": {
-      "cliente_id": "12345",
-      "plano": "premium",
-      "mes_referencia": "2024-01"
-    }
+  "product": "BOLETO",
+  "paymentId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "status": "CANCELED",
+  "externalId": "pedido-12345",
+  "processedAt": "2025-04-07T15:23:45.678Z",
+  "additionalInfo": {
+    "reason": "Boleto cancelado pela loja"
   }
 }
 ```

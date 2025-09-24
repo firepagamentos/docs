@@ -275,21 +275,31 @@ Quando o PIX for pago, você receberá um webhook:
 
 ```json
 {
-  "event": "pix.payment_received",
-  "pix_id": "pix_12345678901234567890",
-  "external_id": "pedido-12345",
-  "timestamp": "2024-01-15T10:35:00Z",
-  "data": {
-    "id": "pix_12345678901234567890",
-    "status": "paid",
-    "amount": 150,
-    "paid_at": "2024-01-15T10:35:00Z",
-    "payer": {
-      "name": "João Silva",
-      "document": "***.***.***-12",
-      "bank": "Banco do Brasil"
-    }
-  }
+  "transactionId": "03cadd36-fddd-4091-9ffe-67b0483cbcf5",
+  "businessTransactionId": "pedido-12345",
+  "status": "PAID",
+  "value": 15000,
+  "movementType": "CREDIT",
+  "endToEndId": "E00000000202401151045300123456789",
+  "pixKey": "joao@email.com",
+  "createdDate": "2024-01-15T10:30:00.123Z",
+  "ReceiverBankAccount": "567890",
+  "ReceiverToBankAccountDigit": "1",
+  "ReceiverBankBranch": "0001",
+  "ReceiverBankCode": "077",
+  "ReceiverDocumentNumber": "45438750000188",
+  "ReceiverBankName": "BANCO INTER S.A.",
+  "ReceiverBankISPB": "00416968",
+  "ReceiverName": "MINHA EMPRESA LTDA",
+  "PayerBankAccount": "123456",
+  "PayerBankAccountDigit": "7",
+  "PayerBankBranch": "0001",
+  "PayerBankCode": "001",
+  "PayerDocumentNumber": "12345678901",
+  "PayerBankName": "BANCO DO BRASIL S.A.",
+  "PayerBankISPB": "00000000",
+  "PayerName": "JOAO COSTA SILVA",
+  "VoucherUrl": "https://voucher.firebanking.com/pix/03cadd36-fddd-4091-9ffe-67b0483cbcf5.pdf"
 }
 ```
 

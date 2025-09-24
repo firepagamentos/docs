@@ -11,57 +11,26 @@ O webhook de confirmação é enviado automaticamente quando um boleto é regist
   Este webhook é enviado logo após a criação do boleto, confirmando que o registro no banco foi realizado com sucesso.
 </Info>
 
-## Evento: `boleto.confirmed`
+## Status: `WAITING_PAYMENT`
 
 ### Quando é Enviado
-- Boleto registrado com sucesso no banco
-- Código de barras e linha digitável gerados
-- PDF do boleto disponível para download
-- Boleto pronto para pagamento
+Quando o boleto é gerado, o webhook indica que a geração foi confirmada.
 
 ### Payload do Webhook
 
-```json
+```json Boleto Confirmado (Status: WAITING_PAYMENT)
 {
-  "event": "boleto.confirmed",
-  "boleto_id": "bol_1234567890123456",
-  "external_id": "pedido-12345",
-  "timestamp": "2024-01-15T10:35:00Z",
-  "data": {
-    "id": "bol_1234567890123456",
-    "external_id": "pedido-12345",
-    "status": "registered",
-    "amount": 250.00,
-    "currency": "BRL",
-    "description": "Mensalidade Academia FitLife - Janeiro/2024",
-    "due_date": "2024-02-15",
-    "fine_amount": 500,
-    "interest_amount": 83,
+  "product": "BOLETO",
+  "paymentId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "status": "WAITING_PAYMENT",
+  "externalId": "pedido-12345",
+  "processedAt": "2025-04-07T15:23:45.678Z",
+  "additionalInfo": {
+    "pdfUrl": "https://firebanking.com.br/boletos/f47ac10b-58cc-4372-a567-0e02b2c3d479.pdf",
+    "pixCode": "00020101021226830014br.gov.bcb.pix2561firebanking.com.br/qr/v2/f47ac10b-58cc-4372-a567-0e02b2c3d4790000000000",
     "barcode": "03399876543210000025000001234567890123456789012",
-    "digitable_line": "03399.87654 32100.000025 00000.123456 7 89012345678901",
-    "our_number": "12345678901",
-    "document_number": "DOC123456",
-    "buyer": {
-      "name": "João Silva Santos",
-      "document": "***.***.***-01",
-      "email": "joao@email.com",
-      "phone": "(11) 9****-9999"
-    },
-    "bank": {
-      "name": "Banco FireBanking",
-      "code": "033",
-      "agency": "0001",
-      "account": "123456-7"
-    },
-    "pdf_url": "https://api-gateway.firebanking.com.br/bank-slip/v1/payment/bol_1234567890123456/pdf",
-    "payment_link": "https://pay.firebanking.com/boleto/bol_1234567890123456",
-    "registered_at": "2024-01-15T10:35:00Z",
-    "expires_at": "2024-05-15T23:59:59Z",
-    "metadata": {
-      "cliente_id": "12345",
-      "plano": "premium",
-      "mes_referencia": "2024-01"
-    }
+    "slipLine": "03399.87654 32100.000025 00000.123456 7 89012345678901",
+    "issuingBank": "Banco Inter S.A."
   }
 }
 ```
@@ -90,34 +59,35 @@ app.post('/webhooks/boleto-confirmed', express.raw({type: 'application/json'}), 
 });
 
 async function processBoletoConfirmed(payload) {
-  const { boleto_id, external_id, data } = payload;
+  const { paymentId, externalId, additionalInfo } = payload;
 
   try {
     // Atualizar status no banco de dados
-    await updateBoletoStatus(boleto_id, 'registered', {
-      barcode: data.barcode,
-      digitable_line: data.digitable_line,
-      our_number: data.our_number,
-      pdf_url: data.pdf_url,
-      registered_at: data.registered_at
+    await updateBoletoStatus(paymentId, 'WAITING_PAYMENT', {
+      barcode: additionalInfo.barcode,
+      slipLine: additionalInfo.slipLine,
+      pdfUrl: additionalInfo.pdfUrl,
+      pixCode: additionalInfo.pixCode,
+      issuingBank: additionalInfo.issuingBank,
+      processedAt: payload.processedAt
     });
 
     // Enviar email com boleto para o cliente
-    await sendBoletoEmail(data);
+    await sendBoletoEmail(payload);
 
     // Atualizar status do pedido
-    await updateOrderStatus(external_id, 'waiting_payment');
+    await updateOrderStatus(externalId, 'waiting_payment');
 
     // Log da ação
     await logWebhookEvent('boleto_confirmed', {
-      boleto_id,
-      external_id,
-      timestamp: payload.timestamp
+      paymentId,
+      externalId,
+      processedAt: payload.processedAt
     });
 
-    console.log(`Boleto ${boleto_id} confirmado e processado`);
+    console.log(`Boleto ${paymentId} confirmado e processado`);
   } catch (error) {
-    console.error(`Erro ao processar confirmação do boleto ${boleto_id}:`, error);
+    console.error(`Erro ao processar confirmação do boleto ${paymentId}:`, error);
     throw error;
   }
 }

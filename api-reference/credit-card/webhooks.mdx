@@ -7,123 +7,109 @@ description: "Receba notificações em tempo real para transações de cartão d
 
 Os webhooks de cartão de crédito permitem que sua aplicação receba notificações em tempo real sobre mudanças no status das transações, garantindo sincronização automática entre os sistemas.
 
-## Eventos Disponíveis
+## Status dos Webhooks
 
-### Transações de Cartão
+O webhook é disparado sempre que uma cobrança pontual ou assinatura sofrer alguma modificação de status. O servidor deve retornar código 200 para confirmar o recebimento. Outros códigos resultarão no reenvio da mensagem.
 
-- `payment.authorized` - Pagamento autorizado com sucesso
-- `payment.captured` - Valor capturado efetivamente
-- `payment.failed` - Falha na autorização do pagamento
-- `payment.expired` - Pré-autorização expirada (7 dias)
-- `payment.refunded` - Estorno processado
-- `payment.cancelled` - Transação cancelada
+### Status Disponíveis
 
-### Assinaturas Recorrentes
-
-- `subscription.created` - Nova assinatura criada
-- `subscription.payment_successful` - Cobrança recorrente bem-sucedida
-- `subscription.payment_failed` - Falha na cobrança recorrente
-- `subscription.cancelled` - Assinatura cancelada
-- `subscription.suspended` - Assinatura suspensa por falha
+- `PAID` - Pagamento aprovado e processado com sucesso
+- `DENIED` - Pagamento negado (cartão recusado, saldo insuficiente, etc.)
+- `CANCELED` - Pagamento cancelado
+- `REFUNDED` - Pagamento estornado
 
 ## Estrutura do Payload
 
-### Cabeçalhos HTTP
+### Payload do Webhook
 
-```http
-POST /webhook HTTP/1.1
-Host: meusite.com
-Content-Type: application/json
-X-FireBanking-Signature: sha256=abc123...
-X-FireBanking-Event: payment.captured
-User-Agent: FireBanking-Webhooks/1.0
-```
-
-### Corpo da Requisição - Pagamento
-
-```json
+```json Pagamento Aprovado (Status: PAID)
 {
-  "event": "payment.captured",
-  "transaction_id": "fb_trans_123456789",
-  "external_id": "pedido-001",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "data": {
-    "id": "fb_trans_123456789",
-    "status": "captured",
-    "amount": 10000,
-    "currency": "BRL",
-    "captured_amount": 10000,
-    "installments": 3,
-    "payment": {
-      "method": "credit_card",
-      "brand": "visa",
-      "lastFourDigits": "1111"
-    },
-    "buyer": {
-      "email": "cliente@email.com",
-      "document": "***.***.***-**"
-    },
-    "created_at": "2024-01-15T10:25:00Z",
-    "captured_at": "2024-01-15T10:30:00Z"
+  "product": "CREDIT_CARD",
+  "paymentId": "070ab63a-5849-4f1b-ad10-a67b9136711f",
+  "externalId": "b8775b66-bbed-45ec-a0da-a31a39e7e5bf",
+  "status": "PAID",
+  "processedAt": "2025-07-31T19:31:02.737Z",
+  "additionalInfo": {
+    "purchaseTitle": "Compra avulsa",
+    "description": "Descrição da compra para teste",
+    "amount": 100.0,
+    "installments": 1,
+    "chargeType": "FEE_TO_SELLER",
+    "cardBrand": "mastercard",
+    "cardLastDigits": "5601",
+    "metadata": {
+      "orderId": "internal-123321",
+      "customerId": "cust-123321"
+    }
   }
 }
 ```
 
-### Corpo da Requisição - Assinatura
-
-```json
+```json Pagamento Negado (Status: DENIED)
 {
-  "event": "subscription.payment_successful",
-  "subscription_id": "fb_sub_123456789",
-  "transaction_id": "fb_trans_987654321",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "data": {
-    "subscription_id": "fb_sub_123456789",
-    "status": "active",
-    "amount": 2999,
-    "currency": "BRL",
-    "billing_cycle": "monthly",
-    "payment": {
-      "transaction_id": "fb_trans_987654321",
-      "method": "credit_card",
-      "brand": "mastercard",
-      "lastFourDigits": "4444"
-    },
-    "buyer": {
-      "email": "cliente@email.com"
-    },
-    "next_billing_date": "2024-02-15",
-    "created_at": "2024-01-15T10:30:00Z"
+  "product": "CREDIT_CARD",
+  "paymentId": "070ab63a-5849-4f1b-ad10-a67b9136711f",
+  "externalId": "b8775b66-bbed-45ec-a0da-a31a39e7e5bf",
+  "status": "DENIED",
+  "processedAt": "2025-07-31T19:31:02.737Z",
+  "additionalInfo": {
+    "purchaseTitle": "Compra avulsa",
+    "description": "Descrição da compra para teste",
+    "amount": 100.0,
+    "installments": 1,
+    "chargeType": "FEE_TO_SELLER",
+    "cardBrand": "mastercard",
+    "cardLastDigits": "5601",
+    "denialReason": "Insufficient funds",
+    "metadata": {
+      "orderId": "internal-123321",
+      "customerId": "cust-123321"
+    }
+  }
+}
+```
+
+```json Pagamento Estornado (Status: REFUNDED)
+{
+  "product": "CREDIT_CARD",
+  "paymentId": "070ab63a-5849-4f1b-ad10-a67b9136711f",
+  "externalId": "b8775b66-bbed-45ec-a0da-a31a39e7e5bf",
+  "status": "REFUNDED",
+  "processedAt": "2025-07-31T19:31:02.737Z",
+  "additionalInfo": {
+    "purchaseTitle": "Compra avulsa",
+    "description": "Descrição da compra para teste",
+    "amount": 100.0,
+    "refundAmount": 100.0,
+    "installments": 1,
+    "chargeType": "FEE_TO_SELLER",
+    "cardBrand": "mastercard",
+    "cardLastDigits": "5601",
+    "metadata": {
+      "orderId": "internal-123321",
+      "customerId": "cust-123321"
+    }
   }
 }
 ```
 
 ## Configuração
 
-### URL de Callback Global
+Configure a URL do webhook de cartão de crédito através do endpoint de configuração de conta:
 
-Configure uma URL padrão para receber todas as notificações no Dashboard.
-
-### URLs Específicas por Transação
-
-Defina URLs customizadas no momento da criação da transação:
-
-```json
-{
-  "amount": 10000,
-  "callback_url": "https://meusite.com/webhook/transacao-especifica",
-  "payment": {
-    "chargeType": "FEE_TO_CUSTOMER",
-    "capture": true,
-    "card": {
-      "number": "5186882549895601",
-      "expiration": "12/2025",
-      "securityCode": "220",
-      "name": "João da Silva"
-    }
-  }
-}
+```bash cURL
+curl --request POST \
+  --url https://api-gateway.firebanking.com.br/v1/account/webhook \
+  --header 'x-api-key: sua_chave_api' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "creditCardWebhookUrl": "https://meusite.com.br/webhooks/cartao"
+  }'
 ```
+
+<Info>
+  Para configuração completa de webhooks, acesse a [documentação de configuração](/api-reference/webhooks/configure).
+</Info>
 
 ## Validação de Segurança
 
