@@ -1,0 +1,326 @@
+---
+title: 'Configurar URLs de Webhook'
+openapi: 'POST /v1/account/webhook'
+---
+
+Configure URLs de webhook para receber notificações automáticas sobre eventos em sua conta FireBanking. Este endpoint permite definir endpoints específicos para diferentes tipos de notificações.
+
+## Tipos de Webhook
+
+<CardGroup cols={2}>
+  <Card title="PIX Webhook" icon="qrcode">
+    **pixWebhookUrl**
+    Notificações de transações PIX (recebimento e envio)
+  </Card>
+  <Card title="Boleto Webhook" icon="file-invoice">
+    **bankSlipWebhookUrl**
+    Atualizações de status de boletos bancários
+  </Card>
+  <Card title="Cartão Webhook" icon="credit-card">
+    **creditCardWebhookUrl**
+    Notificações de transações de cartão de crédito
+  </Card>
+  <Card title="Onboarding Webhook" icon="user-check">
+    **onboardingWebhookUrl**
+    Atualizações do processo de cadastro e KYC
+  </Card>
+</CardGroup>
+
+## Exemplo de Requisição
+
+```bash cURL
+curl --request POST \
+  --url https://api-gateway.firebanking.com.br/v1/account/webhook \
+  --header 'x-api-key: sua_chave_api' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "pixWebhookUrl": "https://meusite.com.br/webhooks/pix",
+    "bankSlipWebhookUrl": "https://meusite.com.br/webhooks/boleto",
+    "creditCardWebhookUrl": "https://meusite.com.br/webhooks/cartao",
+    "onboardingWebhookUrl": "https://meusite.com.br/webhooks/onboarding"
+  }'
+```
+
+## Parâmetros da Requisição
+
+<ParamField body="pixWebhookUrl" type="string" optional>
+  URL para receber notificações de transações PIX
+</ParamField>
+
+<ParamField body="bankSlipWebhookUrl" type="string" optional>
+  URL para receber notificações de boletos bancários
+</ParamField>
+
+<ParamField body="creditCardWebhookUrl" type="string" optional>
+  URL para receber notificações de cartão de crédito
+</ParamField>
+
+<ParamField body="onboardingWebhookUrl" type="string" optional>
+  URL para receber notificações do processo de onboarding
+</ParamField>
+
+## Exemplo de Resposta
+
+```json Resposta de Sucesso
+{
+  "pixWebhookUrl": "https://meusite.com.br/webhooks/pix",
+  "bankSlipWebhookUrl": "https://meusite.com.br/webhooks/boleto",
+  "creditCardWebhookUrl": "https://meusite.com.br/webhooks/cartao",
+  "onboardingWebhookUrl": "https://meusite.com.br/webhooks/onboarding"
+}
+```
+
+## Campos da Resposta
+
+<ResponseField name="pixWebhookUrl" type="string" required>
+  URL configurada para webhooks de PIX
+</ResponseField>
+
+<ResponseField name="bankSlipWebhookUrl" type="string" required>
+  URL configurada para webhooks de boleto
+</ResponseField>
+
+<ResponseField name="creditCardWebhookUrl" type="string" required>
+  URL configurada para webhooks de cartão
+</ResponseField>
+
+<ResponseField name="onboardingWebhookUrl" type="string" required>
+  URL configurada para webhooks de onboarding
+</ResponseField>
+
+## Requisitos de Webhook
+
+### Requisitos Técnicos
+
+<CardGroup cols={2}>
+  <Card title="HTTPS Obrigatório" icon="shield-check">
+    **TLS 1.2+**
+    Todas as URLs devem usar HTTPS com certificado válido
+  </Card>
+  <Card title="Resposta HTTP" icon="clock">
+    **200-299**
+    Responder com status 2xx em até 30 segundos
+  </Card>
+  <Card title="Idempotência" icon="refresh">
+    **Mesmo Evento**
+    Processar o mesmo evento múltiplas vezes sem efeitos colaterais
+  </Card>
+  <Card title="Timeout" icon="timer">
+    **30 segundos**
+    Webhook deve responder dentro do timeout
+  </Card>
+</CardGroup>
+
+### Configuração Atualizada
+
+```json Configurar URLs Individualmente
+{
+  "pixWebhookUrl": "https://meusite.com.br/pix"
+}
+```
+
+```json Limpar URL de Webhook
+{
+  "pixWebhookUrl": ""
+}
+```
+
+## Eventos de Webhook
+
+### PIX Webhook
+
+Eventos enviados para `pixWebhookUrl`:
+
+| Evento | Descrição |
+|--------|-----------|
+| `pix.received` | PIX recebido na conta |
+| `pix.sent` | PIX enviado confirmado |
+| `pix.failed` | PIX rejeitado ou falhou |
+| `pix.refunded` | PIX estornado |
+
+### Boleto Webhook
+
+Eventos enviados para `bankSlipWebhookUrl`:
+
+| Evento | Descrição |
+|--------|-----------|
+| `bankslip.paid` | Boleto pago |
+| `bankslip.expired` | Boleto vencido |
+| `bankslip.cancelled` | Boleto cancelado |
+
+### Cartão Webhook
+
+Eventos enviados para `creditCardWebhookUrl`:
+
+| Evento | Descrição |
+|--------|-----------|
+| `card.authorized` | Transação autorizada |
+| `card.captured` | Transação capturada |
+| `card.failed` | Transação negada |
+| `card.refunded` | Transação estornada |
+
+### Onboarding Webhook
+
+Eventos enviados para `onboardingWebhookUrl`:
+
+| Evento | Descrição |
+|--------|-----------|
+| `kyc.approved` | KYC aprovado |
+| `kyc.rejected` | KYC rejeitado |
+| `account.activated` | Conta ativada |
+
+## Estrutura do Payload
+
+### Cabeçalhos
+
+```http
+POST /seu-webhook-endpoint
+Content-Type: application/json
+X-Fire-Event: pix.received
+X-Fire-Signature: sha256=hash_hmac
+X-Fire-Timestamp: 1640995200
+```
+
+### Payload Padrão
+
+```json
+{
+  "event": "pix.received",
+  "timestamp": "2024-01-15T10:30:45.123Z",
+  "data": {
+    "id": "tx_123456789",
+    "amount": 100.50,
+    "status": "completed",
+    "metadata": {...}
+  }
+}
+```
+
+## Segurança
+
+### Verificação de Assinatura
+
+Sempre verifique a assinatura do webhook:
+
+```python Python
+import hmac
+import hashlib
+
+def verify_webhook(payload, signature, secret):
+    expected = hmac.new(
+        secret.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(f"sha256={expected}", signature)
+```
+
+```javascript Node.js
+const crypto = require('crypto');
+
+function verifyWebhook(payload, signature, secret) {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return signature === `sha256=${expected}`;
+}
+```
+
+## Monitoramento
+
+### Tentativas e Retry
+
+<CardGroup cols={3}>
+  <Card title="Tentativas" icon="repeat">
+    **5 tentativas**
+    Com backoff exponencial
+  </Card>
+  <Card title="Timeout" icon="clock">
+    **30 segundos**
+    Tempo limite por tentativa
+  </Card>
+  <Card title="Status" icon="chart-line">
+    **Dashboard**
+    Monitore entregas no painel
+  </Card>
+</CardGroup>
+
+### Logs de Webhook
+
+Acesse logs detalhados no painel administrativo:
+- Status de entrega
+- Tempo de resposta
+- Conteúdo dos payloads
+- Códigos de erro
+
+## Casos de Uso
+
+<CardGroup cols={2}>
+  <Card title="Conciliação Automática" icon="sync">
+    Atualizar sistema interno automaticamente quando PIX é recebido
+  </Card>
+  <Card title="Notificações" icon="bell">
+    Enviar SMS/email para clientes sobre mudanças de status
+  </Card>
+  <Card title="Integração ERP" icon="boxes">
+    Sincronizar dados financeiros com sistema de gestão
+  </Card>
+  <Card title="Relatórios" icon="chart-bar">
+    Gerar relatórios automáticos de transações
+  </Card>
+</CardGroup>
+
+## Códigos de Resposta
+
+| Código | Descrição | Solução |
+|--------|-----------|---------|
+| **200** | Sucesso | URLs configuradas |
+| **400** | URL inválida | Verifique formato das URLs |
+| **401** | Não autorizado | Verifique header `x-api-key` |
+| **403** | Proibido | Chave API sem permissões |
+| **500** | Erro interno | Tente novamente |
+
+<Warning>
+  URLs inválidas ou inacessíveis serão rejeitadas. Certifique-se de que os endpoints estão funcionando antes de configurar.
+</Warning>
+
+## Testando Webhooks
+
+### Webhook de Teste
+
+Use ferramentas como ngrok para testar localmente:
+
+```bash Terminal
+# Expor localhost:3000
+ngrok http 3000
+
+# Configurar webhook de teste
+curl -X POST https://api-gateway.firebanking.com.br/v1/account/webhook \
+  -H 'x-api-key: sua_chave_api' \
+  -d '{"pixWebhookUrl": "https://abc123.ngrok.io/webhook"}'
+```
+
+### Endpoint de Teste
+
+```javascript Express.js
+app.post('/webhook', (req, res) => {
+  console.log('Webhook recebido:', req.body);
+  console.log('Headers:', req.headers);
+
+  // Processar evento
+  const { event, data } = req.body;
+
+  // Responder rapidamente
+  res.status(200).json({ received: true });
+});
+```
+
+## Próximos Passos
+
+- Implemente [verificação de assinatura](/concepts/webhook-security) para segurança
+- Configure [logs e monitoramento](/guides/webhook-monitoring) para observabilidade
+- Teste [diferentes cenários](/testing#webhooks) de webhook
+- Monitore [métricas de entrega](/concepts/webhook-metrics) no dashboard

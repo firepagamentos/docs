@@ -617,6 +617,66 @@
         }
       }
     },
+    "/v1/account/webhook": {
+      "post": {
+        "tags": ["Conta"],
+        "summary": "Configurar URLs de Webhook",
+        "description": "Configure URLs de webhook para receber notificações automáticas sobre eventos em sua conta",
+        "security": [{ "apiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWebhookUrlsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "URLs de webhook configuradas com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateWebhookUrlsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "URL inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/credit-card/v1/health": {
       "get": {
         "tags": ["Sistema"],
@@ -1961,9 +2021,70 @@
             "type": "number",
             "description": "Saldo disponível para transações",
             "example": 2.76
+          },
+          "consultedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp ISO 8601 de quando o saldo foi consultado",
+            "example": "2024-01-15T10:30:45.123Z"
           }
         },
-        "required": ["id", "totalBalance", "blockedBalance", "availableBalance"]
+        "required": ["id", "totalBalance", "blockedBalance", "availableBalance", "consultedAt"]
+      },
+      "UpdateWebhookUrlsRequest": {
+        "type": "object",
+        "properties": {
+          "pixWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para receber notificações de transações PIX",
+            "example": "https://meusite.com.br/webhooks/pix"
+          },
+          "bankSlipWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para receber notificações de boletos bancários",
+            "example": "https://meusite.com.br/webhooks/boleto"
+          },
+          "creditCardWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para receber notificações de cartão de crédito",
+            "example": "https://meusite.com.br/webhooks/cartao"
+          },
+          "onboardingWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL para receber notificações do processo de onboarding",
+            "example": "https://meusite.com.br/webhooks/onboarding"
+          }
+        }
+      },
+      "UpdateWebhookUrlsResponse": {
+        "type": "object",
+        "properties": {
+          "pixWebhookUrl": {
+            "type": "string",
+            "description": "URL configurada para webhooks de PIX",
+            "example": "https://meusite.com.br/webhooks/pix"
+          },
+          "bankSlipWebhookUrl": {
+            "type": "string",
+            "description": "URL configurada para webhooks de boleto",
+            "example": "https://meusite.com.br/webhooks/boleto"
+          },
+          "creditCardWebhookUrl": {
+            "type": "string",
+            "description": "URL configurada para webhooks de cartão",
+            "example": "https://meusite.com.br/webhooks/cartao"
+          },
+          "onboardingWebhookUrl": {
+            "type": "string",
+            "description": "URL configurada para webhooks de onboarding",
+            "example": "https://meusite.com.br/webhooks/onboarding"
+          }
+        },
+        "required": ["pixWebhookUrl", "bankSlipWebhookUrl", "creditCardWebhookUrl", "onboardingWebhookUrl"]
       },
       "HealthResponse": {
         "type": "object",
