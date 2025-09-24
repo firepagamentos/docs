@@ -1,0 +1,275 @@
+---
+title: 'Fluxo de Integração - Boleto'
+description: 'Guia completo do fluxo de integração para processar boletos bancários'
+---
+
+## Visão Geral
+
+Este guia apresenta o fluxo completo de integração para processar boletos bancários, desde a criação até o recebimento de pagamentos. O fluxo é composto por 6 etapas principais que garantem uma experiência completa e segura.
+
+<Frame>
+  <img
+    className="block dark:hidden"
+    src="/images/bank-slip-flow.png"
+    alt="Fluxo de Integração - Boleto"
+  />
+  <img
+    className="hidden dark:block"
+    src="/images/bank-slip-flow-dark.png"
+    alt="Fluxo de Integração - Boleto"
+  />
+</Frame>
+
+## Fluxo Detalhado
+
+### 1. Criação do Boleto
+
+Inicie o processo criando um boleto através da API:
+
+<CodeGroup>
+```bash cURL
+curl --request POST \
+  --url https://api-gateway.firebanking.com.br/v1/bank-slip \
+  --header 'x-api-key: sua_chave_api' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "externalId": "pedido-12345",
+    "description": "Pagamento do pedido #12345",
+    "amount": 150.00,
+    "buyer": {
+      "name": "João Silva",
+      "document": "12345678901",
+      "email": "joao@email.com"
+    },
+    "dueDate": "2025-12-31"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api-gateway.firebanking.com.br/v1/bank-slip', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'sua_chave_api',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    externalId: "pedido-12345",
+    description: "Pagamento do pedido #12345",
+    amount: 150.00,
+    buyer: {
+      name: "João Silva",
+      document: "12345678901",
+      email: "joao@email.com"
+    },
+    dueDate: "2025-12-31"
+  })
+});
+
+const boleto = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api-gateway.firebanking.com.br/v1/bank-slip',
+    headers={
+        'x-api-key': 'sua_chave_api',
+        'Content-Type': 'application/json'
+    },
+    json={
+        "externalId": "pedido-12345",
+        "description": "Pagamento do pedido #12345",
+        "amount": 150.00,
+        "buyer": {
+            "name": "João Silva",
+            "document": "12345678901",
+            "email": "joao@email.com"
+        },
+        "dueDate": "2025-12-31"
+    }
+)
+
+boleto = response.json()
+```
+</CodeGroup>
+
+**Resposta da API:**
+```json
+{
+  "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "externalId": "pedido-12345",
+  "status": "PENDING",
+  "description": "Pagamento do pedido #12345",
+  "amount": 150.00,
+  "dueDate": "2025-12-31",
+  "createdAt": "2025-04-07T15:23:45.678Z"
+}
+```
+
+### 2. Processamento e Registro
+
+Após a criação, o boleto é enviado automaticamente para o banco emissor para registro:
+
+- ⏳ **Status inicial**: `PENDING` - Boleto criado, aguardando processamento
+- 🔄 **Processamento**: Sistema valida dados e envia para o banco
+- ⚡ **Tempo médio**: 5-10 segundos para confirmação
+
+<Info>
+Durante esta etapa, o sistema FireBanking valida todas as informações e estabelece comunicação com o banco emissor para garantir que o boleto seja registrado corretamente.
+</Info>
+
+### 3. Confirmação do Registro
+
+Quando o banco confirma o registro do boleto com sucesso:
+
+**Webhook Enviado** - `WAITING_PAYMENT`:
+```json
+{
+  "product": "BOLETO",
+  "paymentId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "status": "WAITING_PAYMENT",
+  "externalId": "pedido-12345",
+  "processedAt": "2025-04-07T15:23:45.678Z",
+  "additionalInfo": {
+    "pdfUrl": "https://firebanking.com.br/boletos/f47ac10b-58cc-4372-a567-0e02b2c3d479.pdf",
+    "pixCode": "00020101021226830014br.gov.bcb.pix2561firebanking.com.br/qr/v2/f47ac10b-58cc-4372-a567-0e02b2c3d4790000000000",
+    "barcode": "03399876543210000025000001234567890123456789012",
+    "slipLine": "03399.87654 32100.000025 00000.123456 7 89012345678901",
+    "issuingBank": "Banco Inter S.A."
+  }
+}
+```
+
+**Ações recomendadas nesta etapa:**
+- ✅ Atualizar status do pedido para "aguardando pagamento"
+- 📧 Enviar boleto por email para o cliente
+- 💾 Salvar dados do boleto (código de barras, linha digitável, PDF)
+
+### 4. Disponibilização para Pagamento
+
+Com o registro confirmado, o boleto fica disponível em toda rede bancária:
+
+- 🏪 **Lotéricas**: Aceita pagamento com código de barras
+- 🏦 **Bancos**: Internet banking e agências físicas
+- 📱 **Apps bancários**: Escaneamento do código de barras
+- 💳 **PIX**: Código PIX gerado automaticamente
+
+<Tip>
+O boleto pode ser pago mesmo após o vencimento, respeitando as regras de juros e multa configuradas na criação.
+</Tip>
+
+### 5. Pagamento pelo Cliente
+
+O cliente pode pagar o boleto através de diversos canais:
+
+**Opções de pagamento:**
+- **Aplicativo bancário**: Escanear código de barras ou QR Code PIX
+- **Internet banking**: Copiar linha digitável
+- **Agência bancária**: Apresentar boleto impresso
+- **Lotérica**: Apresentar código de barras
+- **PIX**: Usar o código PIX gerado automaticamente
+
+### 6. Confirmação de Pagamento
+
+Quando o pagamento é processado pelo banco, o webhook final é enviado:
+
+**Webhook Enviado** - `PAID`:
+```json
+{
+  "product": "BOLETO",
+  "amount": 150.00,
+  "paymentId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "status": "PAID",
+  "externalId": "pedido-12345",
+  "processedAt": "2025-04-07T16:45:23.456Z",
+  "additionalInfo": {
+    "amount": 150.00,
+    "paymentType": 1,
+    "paymentDate": "2025-04-07T16:45:23.456Z"
+  }
+}
+```
+
+**Ações finais:**
+- ✅ Confirmar pagamento no seu sistema
+- 📦 Liberar produto/serviço para o cliente
+- 📊 Atualizar relatórios financeiros
+- 🎉 Enviar confirmação de pagamento para o cliente
+
+## Estados do Boleto
+
+| Status | Descrição | Ação do Sistema |
+|--------|-----------|-----------------|
+| `PENDING` | Boleto criado, aguardando registro | Aguardar confirmação |
+| `WAITING_PAYMENT` | Registrado e disponível para pagamento | Disponibilizar para cliente |
+| `PAID` | Pagamento confirmado | Liberar produto/serviço |
+| `EXPIRED` | Boleto vencido sem pagamento | Gerar novo boleto se necessário |
+| `CANCELED` | Boleto cancelado | Informar cliente sobre cancelamento |
+
+## Tratamento de Webhooks
+
+Implemente um endpoint robusto para receber os webhooks:
+
+```javascript
+app.post('/webhooks/boleto', express.raw({type: 'application/json'}), (req, res) => {
+  try {
+    const payload = JSON.parse(req.body);
+
+    // Verificar assinatura do webhook
+    if (!verifyWebhookSignature(req.headers, req.body)) {
+      return res.status(401).send('Unauthorized');
+    }
+
+    // Processar webhook baseado no status
+    switch (payload.status) {
+      case 'WAITING_PAYMENT':
+        // Boleto confirmado - enviar para cliente
+        handleBoletoConfirmed(payload);
+        break;
+
+      case 'PAID':
+        // Pagamento confirmado - liberar produto
+        handlePaymentConfirmed(payload);
+        break;
+
+      case 'CANCELED':
+        // Boleto cancelado - atualizar status
+        handleBoletoCanceled(payload);
+        break;
+    }
+
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Erro processando webhook:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+```
+
+## Monitoramento e Logs
+
+Para uma integração robusta, monitore:
+
+- 📊 **Taxa de conversão**: PENDING → WAITING_PAYMENT
+- ⏱️ **Tempo de processamento**: Criação até confirmação
+- 💰 **Taxa de pagamento**: WAITING_PAYMENT → PAID
+- 🚫 **Boletos expirados**: WAITING_PAYMENT → EXPIRED
+- ⚠️ **Falhas de webhook**: Logs de entrega
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="API Reference - Criar Boleto" href="/api-reference/bank-slip/create">
+    Documentação completa da API de criação
+  </Card>
+  <Card title="Webhooks - Boleto Confirmado" href="/api-reference/bank-slip/webhook-confirmed">
+    Implementar recebimento de confirmações
+  </Card>
+  <Card title="Webhooks - Boleto Pago" href="/api-reference/bank-slip/webhook-paid">
+    Processar confirmações de pagamento
+  </Card>
+  <Card title="Sandbox - Ambiente de Testes" href="/testing/sandbox">
+    Teste sua integração completa
+  </Card>
+</CardGroup>

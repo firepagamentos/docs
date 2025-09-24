@@ -55,6 +55,10 @@
             "pages": ["api-reference/pix/introduction", "downloads"]
           },
           {
+            "group": "Fluxo de Integração",
+            "pages": ["api-reference/pix/integration-flow"]
+          },
+          {
             "group": "PIX Cobrança (Cash In)",
             "pages": [
               "api-reference/pix/charge/create-qrcode",
@@ -93,6 +97,10 @@
               "api-reference/credit-card/test-cards",
               "downloads"
             ]
+          },
+          {
+            "group": "Fluxo de Integração",
+            "pages": ["api-reference/credit-card/integration-flow"]
           },
           {
             "group": "Pagamentos",
@@ -139,6 +147,10 @@
           {
             "group": "Visão Geral",
             "pages": ["api-reference/bank-slip/introduction", "downloads"]
+          },
+          {
+            "group": "Fluxo de Integração",
+            "pages": ["api-reference/bank-slip/integration-flow"]
           },
           {
             "group": "Emissão",

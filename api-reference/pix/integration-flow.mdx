@@ -1,0 +1,580 @@
+---
+title: 'Fluxo de Integração - PIX'
+description: 'Guia completo do fluxo de integração para processar pagamentos PIX (recebimentos e transferências)'
+---
+
+## Visão Geral
+
+Este guia apresenta o fluxo completo de integração PIX, cobrindo tanto **recebimentos** (PIX In) quanto **transferências** (PIX Out). O PIX oferece transações instantâneas 24/7, sendo o método de pagamento mais ágil do Brasil.
+
+<Frame>
+  <img
+    className="block dark:hidden"
+    src="/images/pix-flow.png"
+    alt="Fluxo de Integração - PIX"
+  />
+  <img
+    className="hidden dark:block"
+    src="/images/pix-flow-dark.png"
+    alt="Fluxo de Integração - PIX"
+  />
+</Frame>
+
+## Fluxo PIX In (Recebimentos)
+
+### 1. Criação de Cobrança PIX
+
+Inicie o processo criando uma cobrança PIX:
+
+<CodeGroup>
+```bash cURL
+curl --request POST \
+  --url https://api-gateway.firebanking.com.br/v1/pix/cashin \
+  --header 'x-api-key: sua_chave_api' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "businessTransactionId": "venda-54321",
+    "description": "Pagamento produto XYZ",
+    "value": 89.90,
+    "buyer": {
+      "name": "Maria Santos",
+      "document": "98765432109",
+      "email": "maria@email.com"
+    },
+    "expiresIn": 3600
+  }'
+```
+
+```javascript JavaScript
+const createPixCharge = async (chargeData) => {
+  const response = await fetch('https://api-gateway.firebanking.com.br/v1/pix/cashin', {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'sua_chave_api',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      businessTransactionId: chargeData.orderId,
+      description: chargeData.description,
+      value: chargeData.amount,
+      buyer: {
+        name: chargeData.buyer.name,
+        document: chargeData.buyer.document,
+        email: chargeData.buyer.email
+      },
+      expiresIn: 3600 // 1 hora
+    })
+  });
+
+  return await response.json();
+};
+```
+
+```python Python
+import requests
+
+def create_pix_charge(charge_data):
+    response = requests.post(
+        'https://api-gateway.firebanking.com.br/v1/pix/cashin',
+        headers={
+            'x-api-key': 'sua_chave_api',
+            'Content-Type': 'application/json'
+        },
+        json={
+            "businessTransactionId": charge_data['order_id'],
+            "description": charge_data['description'],
+            "value": charge_data['amount'],
+            "buyer": {
+                "name": charge_data['buyer']['name'],
+                "document": charge_data['buyer']['document'],
+                "email": charge_data['buyer']['email']
+            },
+            "expiresIn": 3600
+        }
+    )
+
+    return response.json()
+```
+</CodeGroup>
+
+**Resposta da API:**
+```json
+{
+  "transactionId": "pix_abc123def456",
+  "businessTransactionId": "venda-54321",
+  "status": "WAITING_PAYMENT",
+  "value": 89.90,
+  "qrCode": "00020101021226580014br.gov.bcb.pix2536pix.firebanking.com.br/qr/v2/abc123def4565204000053039865404899.905802BR5913FIRE BANKING6009Sao Paulo62070503***6304C2A8",
+  "qrCodeImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51...",
+  "pixKey": "pix.firebanking.com.br/qr/v2/abc123def456",
+  "expiresAt": "2025-04-07T16:23:45.678Z",
+  "createdAt": "2025-04-07T15:23:45.678Z"
+}
+```
+
+### 2. Apresentação do QR Code
+
+Mostre o QR Code PIX para o cliente:
+
+```html
+<div class="pix-payment">
+  <div class="qr-section">
+    <img src="{{qrCodeImage}}" alt="QR Code PIX" class="qr-code">
+    <p class="qr-instruction">
+      Escaneie o QR Code com seu app bancário ou Pix
+    </p>
+  </div>
+
+  <div class="copy-paste-section">
+    <label>Ou copie o código PIX:</label>
+    <div class="code-input">
+      <input type="text" value="{{qrCode}}" readonly id="pix-code">
+      <button onclick="copyPixCode()">Copiar</button>
+    </div>
+  </div>
+
+  <div class="payment-info">
+    <p><strong>Valor:</strong> R$ {{value}}</p>
+    <p><strong>Descrição:</strong> {{description}}</p>
+    <p><strong>Expira em:</strong> <span id="countdown"></span></p>
+  </div>
+</div>
+```
+
+```javascript
+function copyPixCode() {
+  const codeInput = document.getElementById('pix-code');
+  codeInput.select();
+  document.execCommand('copy');
+
+  // Feedback visual
+  const button = event.target;
+  button.textContent = 'Copiado!';
+  setTimeout(() => {
+    button.textContent = 'Copiar';
+  }, 2000);
+}
+
+// Countdown de expiração
+function startCountdown(expiresAt) {
+  const countdownElement = document.getElementById('countdown');
+
+  const updateCountdown = () => {
+    const now = new Date().getTime();
+    const expiry = new Date(expiresAt).getTime();
+    const timeLeft = expiry - now;
+
+    if (timeLeft > 0) {
+      const minutes = Math.floor(timeLeft / (1000 * 60));
+      const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+      countdownElement.textContent = `${minutes}m ${seconds}s`;
+    } else {
+      countdownElement.textContent = 'Expirado';
+      handlePixExpired();
+    }
+  };
+
+  updateCountdown();
+  return setInterval(updateCountdown, 1000);
+}
+```
+
+### 3. Aguardando Pagamento
+
+Implemente polling ou WebSocket para verificar o status:
+
+```javascript
+// Polling para verificar status
+async function checkPaymentStatus(transactionId) {
+  try {
+    const response = await fetch(
+      `https://api-gateway.firebanking.com.br/v1/pix/cashin/${transactionId}`,
+      {
+        headers: {
+          'x-api-key': 'sua_chave_api'
+        }
+      }
+    );
+
+    const payment = await response.json();
+
+    if (payment.status === 'PAID') {
+      handlePaymentSuccess(payment);
+      return true;
+    } else if (payment.status === 'EXPIRED') {
+      handlePaymentExpired(payment);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Erro verificando status:', error);
+    return false;
+  }
+}
+
+// Iniciar verificação periódica
+function startPaymentMonitoring(transactionId) {
+  const interval = setInterval(async () => {
+    const completed = await checkPaymentStatus(transactionId);
+
+    if (completed) {
+      clearInterval(interval);
+    }
+  }, 3000); // Verifica a cada 3 segundos
+
+  // Parar após 1 hora (tempo máximo)
+  setTimeout(() => {
+    clearInterval(interval);
+    handlePaymentTimeout();
+  }, 3600000);
+}
+```
+
+### 4. Confirmação de Pagamento
+
+Quando o PIX é pago, você recebe um webhook:
+
+```json
+{
+  "transactionId": "pix_abc123def456",
+  "businessTransactionId": "venda-54321",
+  "status": "PAID",
+  "value": 89.90,
+  "movementType": "CREDIT",
+  "endToEndId": "E12345678202504071523456789012",
+  "paidAt": "2025-04-07T15:25:12.345Z",
+  "buyer": {
+    "name": "Maria Santos",
+    "document": "98765432109",
+    "bankName": "Banco do Brasil",
+    "bankAccount": "12345-6"
+  }
+}
+```
+
+## Fluxo PIX Out (Transferências)
+
+### 1. Iniciação de Transferência
+
+Para enviar PIX para terceiros:
+
+<CodeGroup>
+```bash cURL
+curl --request POST \
+  --url https://api-gateway.firebanking.com.br/v1/pix/cashout \
+  --header 'x-api-key: sua_chave_api' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "businessTransactionId": "transfer-98765",
+    "description": "Pagamento fornecedor",
+    "value": 1500.00,
+    "pixKey": "12345678901",
+    "pixKeyType": "CPF",
+    "recipient": {
+      "name": "João Fornecedor",
+      "document": "12345678901"
+    }
+  }'
+```
+
+```javascript JavaScript
+const sendPixTransfer = async (transferData) => {
+  const response = await fetch('https://api-gateway.firebanking.com.br/v1/pix/cashout', {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'sua_chave_api',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      businessTransactionId: transferData.id,
+      description: transferData.description,
+      value: transferData.amount,
+      pixKey: transferData.pixKey,
+      pixKeyType: transferData.pixKeyType,
+      recipient: {
+        name: transferData.recipient.name,
+        document: transferData.recipient.document
+      }
+    })
+  });
+
+  return await response.json();
+};
+```
+
+```python Python
+def send_pix_transfer(transfer_data):
+    response = requests.post(
+        'https://api-gateway.firebanking.com.br/v1/pix/cashout',
+        headers={
+            'x-api-key': 'sua_chave_api',
+            'Content-Type': 'application/json'
+        },
+        json={
+            "businessTransactionId": transfer_data['id'],
+            "description": transfer_data['description'],
+            "value": transfer_data['amount'],
+            "pixKey": transfer_data['pix_key'],
+            "pixKeyType": transfer_data['pix_key_type'],
+            "recipient": {
+                "name": transfer_data['recipient']['name'],
+                "document": transfer_data['recipient']['document']
+            }
+        }
+    )
+
+    return response.json()
+```
+</CodeGroup>
+
+### 2. Validação e Processamento
+
+A transferência passa por validações antes do envio:
+
+- ✅ **Saldo disponível**: Verificação de fundos suficientes
+- 🔍 **Validação da chave PIX**: Consulta no BACEN
+- 👤 **Dados do destinatário**: Verificação de CPF/CNPJ
+- 🛡️ **Limites operacionais**: Validação de limites diários
+
+### 3. Confirmação de Transferência
+
+Webhook de confirmação da transferência enviada:
+
+```json
+{
+  "transactionId": "pix_transfer_789xyz",
+  "businessTransactionId": "transfer-98765",
+  "status": "PAID",
+  "value": 1500.00,
+  "movementType": "DEBIT",
+  "endToEndId": "E12345678202504071530987654321",
+  "processedAt": "2025-04-07T15:30:45.123Z",
+  "recipient": {
+    "name": "João Fornecedor",
+    "document": "12345678901",
+    "pixKey": "12345678901",
+    "pixKeyType": "CPF",
+    "bankName": "Banco Itaú",
+    "bankAccount": "98765-4"
+  }
+}
+```
+
+## Estados das Transações PIX
+
+| Status | Descrição | Ação Recomendada |
+|--------|-----------|------------------|
+| `WAITING_PAYMENT` | Aguardando pagamento (PIX In) | Apresentar QR Code |
+| `PROCESSING` | Processando transferência (PIX Out) | Aguardar confirmação |
+| `PAID` | Transação concluída com sucesso | Liberar produto/confirmar envio |
+| `FAILED` | Falha no processamento | Investigar erro e retentar |
+| `EXPIRED` | PIX expirado sem pagamento | Gerar nova cobrança |
+| `REFUND_IN` | Estorno recebido | Processar devolução |
+
+## Tipos de Chave PIX
+
+| Tipo | Formato | Exemplo |
+|------|---------|---------|
+| `CPF` | 11 dígitos | `12345678901` |
+| `CNPJ` | 14 dígitos | `12345678000199` |
+| `EMAIL` | Email válido | `usuario@email.com` |
+| `PHONE` | +55 + DDD + número | `+5511987654321` |
+| `RANDOM` | Chave aleatória | `123e4567-e12b-12d3-a456-426614174000` |
+
+## Webhook Handler Completo
+
+```javascript
+app.post('/webhooks/pix', express.raw({type: 'application/json'}), (req, res) => {
+  try {
+    const payload = JSON.parse(req.body);
+
+    // Verificar assinatura
+    if (!verifyWebhookSignature(req.headers, req.body)) {
+      return res.status(401).send('Unauthorized');
+    }
+
+    // Processar baseado no tipo de movimento
+    if (payload.movementType === 'CREDIT') {
+      // PIX recebido
+      handlePixReceived(payload);
+    } else if (payload.movementType === 'DEBIT') {
+      // PIX enviado ou estorno
+      if (payload.status === 'REFUND_IN') {
+        handlePixRefundReceived(payload);
+      } else {
+        handlePixSent(payload);
+      }
+    }
+
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Webhook PIX error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+function handlePixReceived(payload) {
+  // PIX In - pagamento recebido
+  updatePaymentStatus(payload.businessTransactionId, 'paid');
+  fulfillOrder(payload.businessTransactionId);
+  notifyPaymentReceived(payload);
+}
+
+function handlePixSent(payload) {
+  // PIX Out - transferência enviada
+  updateTransferStatus(payload.businessTransactionId, 'completed');
+  notifyTransferCompleted(payload);
+}
+
+function handlePixRefundReceived(payload) {
+  // Estorno recebido
+  processRefund(payload.businessTransactionId, payload.value);
+  notifyRefundReceived(payload);
+}
+```
+
+## Interface de Pagamento PIX
+
+### Componente React Exemplo
+
+```jsx
+import React, { useState, useEffect } from 'react';
+
+const PixPayment = ({ amount, description, onSuccess, onError }) => {
+  const [pixData, setPixData] = useState(null);
+  const [status, setStatus] = useState('loading');
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    createPixCharge();
+  }, []);
+
+  const createPixCharge = async () => {
+    try {
+      const response = await createPixCharge({
+        amount,
+        description,
+        orderId: generateOrderId()
+      });
+
+      setPixData(response);
+      setStatus('waiting');
+      startCountdown(response.expiresAt);
+      monitorPayment(response.transactionId);
+    } catch (error) {
+      setStatus('error');
+      onError(error);
+    }
+  };
+
+  const startCountdown = (expiresAt) => {
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const expiry = new Date(expiresAt).getTime();
+      const timeLeft = Math.max(0, expiry - now);
+
+      setTimeLeft(timeLeft);
+
+      if (timeLeft === 0) {
+        clearInterval(interval);
+        setStatus('expired');
+      }
+    }, 1000);
+  };
+
+  const monitorPayment = (transactionId) => {
+    const interval = setInterval(async () => {
+      try {
+        const payment = await checkPaymentStatus(transactionId);
+
+        if (payment.status === 'PAID') {
+          clearInterval(interval);
+          setStatus('paid');
+          onSuccess(payment);
+        }
+      } catch (error) {
+        console.error('Error monitoring payment:', error);
+      }
+    }, 3000);
+  };
+
+  const copyPixCode = () => {
+    navigator.clipboard.writeText(pixData.qrCode);
+    // Mostrar feedback de cópia
+  };
+
+  const formatTime = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  if (status === 'loading') {
+    return <div>Gerando PIX...</div>;
+  }
+
+  if (status === 'waiting') {
+    return (
+      <div className="pix-payment">
+        <div className="qr-section">
+          <img src={pixData.qrCodeImage} alt="QR Code PIX" />
+          <p>Escaneie com seu app bancário</p>
+        </div>
+
+        <div className="copy-section">
+          <input value={pixData.qrCode} readOnly />
+          <button onClick={copyPixCode}>Copiar código PIX</button>
+        </div>
+
+        <div className="info">
+          <p>Valor: R$ {amount.toFixed(2)}</p>
+          <p>Expira em: {formatTime(timeLeft)}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'paid') {
+    return <div className="success">Pagamento confirmado!</div>;
+  }
+
+  if (status === 'expired') {
+    return (
+      <div className="expired">
+        <p>PIX expirou</p>
+        <button onClick={createPixCharge}>Gerar novo PIX</button>
+      </div>
+    );
+  }
+
+  return <div className="error">Erro ao gerar PIX</div>;
+};
+```
+
+## Monitoramento e Analytics
+
+Monitore métricas importantes do PIX:
+
+- 📊 **Taxa de conversão**: QR Codes pagos vs gerados
+- ⏱️ **Tempo médio de pagamento**: Do QR Code ao pagamento
+- 💰 **Volume transacionado**: Por período
+- 🔄 **Taxa de expiração**: PIX não pagos
+- 📱 **Canal preferido**: QR Code vs Copia e Cola
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="API Reference - PIX Recebimento" href="/api-reference/pix/cashin">
+    Documentação completa do PIX In
+  </Card>
+  <Card title="API Reference - PIX Transferência" href="/api-reference/pix/cashout">
+    Documentação completa do PIX Out
+  </Card>
+  <Card title="Webhooks - PIX Recebimento" href="/api-reference/pix/webhooks-cashin">
+    Processar confirmações de recebimento
+  </Card>
+  <Card title="Webhooks - PIX Transferência" href="/api-reference/pix/webhooks-cashout">
+    Processar confirmações de transferência
+  </Card>
+</CardGroup>
