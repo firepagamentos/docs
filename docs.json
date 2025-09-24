@@ -48,6 +48,42 @@
         ]
       },
       {
+        "tab": "API - PIX",
+        "groups": [
+          {
+            "group": "Visão Geral",
+            "pages": ["api-reference/pix/introduction", "downloads"]
+          },
+          {
+            "group": "PIX Cobrança (Cash In)",
+            "pages": [
+              "api-reference/pix/charge/create-qrcode",
+              "api-reference/pix/charge/get"
+            ]
+          },
+          {
+            "group": "PIX Saque (Cash Out)",
+            "pages": [
+              "api-reference/pix/withdraw/create"
+            ]
+          },
+          {
+            "group": "Operações",
+            "pages": [
+              "api-reference/pix/refund",
+              "api-reference/pix/split"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/pix/webhooks-cashin",
+              "api-reference/pix/webhooks-cashout"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API - Cartão de Crédito",
         "groups": [
           {
@@ -94,42 +130,6 @@
           {
             "group": "Webhooks",
             "pages": ["api-reference/credit-card/webhooks"]
-          }
-        ]
-      },
-      {
-        "tab": "API - PIX",
-        "groups": [
-          {
-            "group": "Visão Geral",
-            "pages": ["api-reference/pix/introduction", "downloads"]
-          },
-          {
-            "group": "PIX Cobrança (Cash In)",
-            "pages": [
-              "api-reference/pix/charge/create-qrcode",
-              "api-reference/pix/charge/get"
-            ]
-          },
-          {
-            "group": "PIX Saque (Cash Out)",
-            "pages": [
-              "api-reference/pix/withdraw/create"
-            ]
-          },
-          {
-            "group": "Operações",
-            "pages": [
-              "api-reference/pix/refund",
-              "api-reference/pix/split"
-            ]
-          },
-          {
-            "group": "Webhooks",
-            "pages": [
-              "api-reference/pix/webhooks-cashin",
-              "api-reference/pix/webhooks-cashout"
-            ]
           }
         ]
       },
