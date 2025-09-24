@@ -7,18 +7,36 @@ description: 'Guia completo do fluxo de integração para processar pagamentos P
 
 Este guia apresenta o fluxo completo de integração PIX, cobrindo tanto **recebimentos** (PIX In) quanto **transferências** (PIX Out). O PIX oferece transações instantâneas 24/7, sendo o método de pagamento mais ágil do Brasil.
 
-<Frame>
-  <img
-    className="block dark:hidden"
-    src="/images/pix-flow.png"
-    alt="Fluxo de Integração - PIX"
-  />
-  <img
-    className="hidden dark:block"
-    src="/images/pix-flow-dark.png"
-    alt="Fluxo de Integração - PIX"
-  />
-</Frame>
+## PIX In - Recebimentos
+
+<Steps>
+  <Step title="Criação de Cobrança PIX">
+    Gerar QR Code e chave PIX para recebimento
+  </Step>
+  <Step title="Apresentação do QR Code">
+    Mostrar QR Code e código copia-e-cola para o cliente
+  </Step>
+  <Step title="Aguardando Pagamento">
+    Monitoramento em tempo real via polling ou webhooks
+  </Step>
+  <Step title="Confirmação de Pagamento">
+    PIX recebido - Webhook PAID com movementType: CREDIT
+  </Step>
+</Steps>
+
+## PIX Out - Transferências
+
+<Steps>
+  <Step title="Iniciação de Transferência">
+    Envio de PIX para terceiros usando chave PIX
+  </Step>
+  <Step title="Validação e Processamento">
+    Sistema valida saldo, chave PIX e dados do destinatário
+  </Step>
+  <Step title="Confirmação de Transferência">
+    PIX enviado - Webhook PAID com movementType: DEBIT
+  </Step>
+</Steps>
 
 ## Fluxo PIX In (Recebimentos)
 
@@ -29,7 +47,7 @@ Inicie o processo criando uma cobrança PIX:
 <CodeGroup>
 ```bash cURL
 curl --request POST \
-  --url https://api-gateway.firebanking.com.br/v1/pix/cashin \
+  --url https://api-gateway.firebanking.com.br/pix/v2/payment \
   --header 'x-api-key: sua_chave_api' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -47,7 +65,7 @@ curl --request POST \
 
 ```javascript JavaScript
 const createPixCharge = async (chargeData) => {
-  const response = await fetch('https://api-gateway.firebanking.com.br/v1/pix/cashin', {
+  const response = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment', {
     method: 'POST',
     headers: {
       'x-api-key': 'sua_chave_api',
@@ -75,7 +93,7 @@ import requests
 
 def create_pix_charge(charge_data):
     response = requests.post(
-        'https://api-gateway.firebanking.com.br/v1/pix/cashin',
+        'https://api-gateway.firebanking.com.br/pix/v2/payment',
         headers={
             'x-api-key': 'sua_chave_api',
             'Content-Type': 'application/json'
@@ -188,7 +206,7 @@ Implemente polling ou WebSocket para verificar o status:
 async function checkPaymentStatus(transactionId) {
   try {
     const response = await fetch(
-      `https://api-gateway.firebanking.com.br/v1/pix/cashin/${transactionId}`,
+      `https://api-gateway.firebanking.com.br/pix/v2/payment/${transactionId}`,
       {
         headers: {
           'x-api-key': 'sua_chave_api'
@@ -237,19 +255,31 @@ Quando o PIX é pago, você recebe um webhook:
 
 ```json
 {
-  "transactionId": "pix_abc123def456",
+  "transactionId": "03cadd36-fddd-4091-9ffe-67b0483cbcf5",
   "businessTransactionId": "venda-54321",
   "status": "PAID",
-  "value": 89.90,
+  "value": 8990,
   "movementType": "CREDIT",
   "endToEndId": "E12345678202504071523456789012",
-  "paidAt": "2025-04-07T15:25:12.345Z",
-  "buyer": {
-    "name": "Maria Santos",
-    "document": "98765432109",
-    "bankName": "Banco do Brasil",
-    "bankAccount": "12345-6"
-  }
+  "pixKey": "maria@email.com",
+  "createdDate": "2025-04-07T15:25:12.345Z",
+  "ReceiverBankAccount": "567890",
+  "ReceiverToBankAccountDigit": "1",
+  "ReceiverBankBranch": "0001",
+  "ReceiverBankCode": "077",
+  "ReceiverDocumentNumber": "45438750000188",
+  "ReceiverBankName": "BANCO INTER S.A.",
+  "ReceiverBankISPB": "00416968",
+  "ReceiverName": "MINHA EMPRESA LTDA",
+  "PayerBankAccount": "12345",
+  "PayerBankAccountDigit": "6",
+  "PayerBankBranch": "0001",
+  "PayerBankCode": "001",
+  "PayerDocumentNumber": "98765432109",
+  "PayerBankName": "BANCO DO BRASIL S.A.",
+  "PayerBankISPB": "00000000",
+  "PayerName": "MARIA SANTOS",
+  "VoucherUrl": "https://voucher.firebanking.com/pix/03cadd36-fddd-4091-9ffe-67b0483cbcf5.pdf"
 }
 ```
 
@@ -262,40 +292,40 @@ Para enviar PIX para terceiros:
 <CodeGroup>
 ```bash cURL
 curl --request POST \
-  --url https://api-gateway.firebanking.com.br/v1/pix/cashout \
+  --url https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw \
   --header 'x-api-key: sua_chave_api' \
   --header 'Content-Type: application/json' \
   --data '{
-    "businessTransactionId": "transfer-98765",
-    "description": "Pagamento fornecedor",
-    "value": 1500.00,
-    "pixKey": "12345678901",
-    "pixKeyType": "CPF",
-    "recipient": {
+    "type": "PIX",
+    "value": 1500,
+    "details": {
+      "key": "12345678901",
+      "keyType": "DOCUMENT",
       "name": "João Fornecedor",
       "document": "12345678901"
-    }
+    },
+    "externalId": "transfer-98765"
   }'
 ```
 
 ```javascript JavaScript
 const sendPixTransfer = async (transferData) => {
-  const response = await fetch('https://api-gateway.firebanking.com.br/v1/pix/cashout', {
+  const response = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw', {
     method: 'POST',
     headers: {
       'x-api-key': 'sua_chave_api',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      businessTransactionId: transferData.id,
-      description: transferData.description,
+      type: "PIX",
       value: transferData.amount,
-      pixKey: transferData.pixKey,
-      pixKeyType: transferData.pixKeyType,
-      recipient: {
+      details: {
+        key: transferData.pixKey,
+        keyType: transferData.pixKeyType,
         name: transferData.recipient.name,
         document: transferData.recipient.document
-      }
+      },
+      externalId: transferData.id
     })
   });
 
@@ -306,21 +336,21 @@ const sendPixTransfer = async (transferData) => {
 ```python Python
 def send_pix_transfer(transfer_data):
     response = requests.post(
-        'https://api-gateway.firebanking.com.br/v1/pix/cashout',
+        'https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw',
         headers={
             'x-api-key': 'sua_chave_api',
             'Content-Type': 'application/json'
         },
         json={
-            "businessTransactionId": transfer_data['id'],
-            "description": transfer_data['description'],
+            "type": "PIX",
             "value": transfer_data['amount'],
-            "pixKey": transfer_data['pix_key'],
-            "pixKeyType": transfer_data['pix_key_type'],
-            "recipient": {
+            "details": {
+                "key": transfer_data['pix_key'],
+                "keyType": transfer_data['pix_key_type'],
                 "name": transfer_data['recipient']['name'],
                 "document": transfer_data['recipient']['document']
-            }
+            },
+            "externalId": transfer_data['id']
         }
     )
 
@@ -343,21 +373,31 @@ Webhook de confirmação da transferência enviada:
 
 ```json
 {
-  "transactionId": "pix_transfer_789xyz",
+  "transactionId": "withdraw-abc123-def456-ghi789",
   "businessTransactionId": "transfer-98765",
-  "status": "PAID",
-  "value": 1500.00,
+  "status": "WITHDRAW_PAID",
+  "value": 150000,
   "movementType": "DEBIT",
   "endToEndId": "E12345678202504071530987654321",
-  "processedAt": "2025-04-07T15:30:45.123Z",
-  "recipient": {
-    "name": "João Fornecedor",
-    "document": "12345678901",
-    "pixKey": "12345678901",
-    "pixKeyType": "CPF",
-    "bankName": "Banco Itaú",
-    "bankAccount": "98765-4"
-  }
+  "pixKey": "12345678901",
+  "createdDate": "2025-04-07T15:30:45.123Z",
+  "ReceiverBankAccount": "98765",
+  "ReceiverToBankAccountDigit": "4",
+  "ReceiverBankBranch": "0001",
+  "ReceiverBankCode": "341",
+  "ReceiverDocumentNumber": "12345678901",
+  "ReceiverBankName": "BANCO ITAÚ UNIBANCO S.A.",
+  "ReceiverBankISPB": "60701190",
+  "ReceiverName": "JOAO FORNECEDOR",
+  "PayerBankAccount": "567890",
+  "PayerBankAccountDigit": "1",
+  "PayerBankBranch": "0001",
+  "PayerBankCode": "077",
+  "PayerDocumentNumber": "45438750000188",
+  "PayerBankName": "BANCO INTER S.A.",
+  "PayerBankISPB": "00416968",
+  "PayerName": "MINHA EMPRESA LTDA",
+  "VoucherUrl": "https://voucher.firebanking.com/withdraw/withdraw-abc123-def456-ghi789.pdf"
 }
 ```
 
@@ -365,22 +405,23 @@ Webhook de confirmação da transferência enviada:
 
 | Status | Descrição | Ação Recomendada |
 |--------|-----------|------------------|
+| `WAITING_CONFIRMATION` | Aguardando confirmação inicial | Aguardar processamento |
 | `WAITING_PAYMENT` | Aguardando pagamento (PIX In) | Apresentar QR Code |
-| `PROCESSING` | Processando transferência (PIX Out) | Aguardar confirmação |
-| `PAID` | Transação concluída com sucesso | Liberar produto/confirmar envio |
-| `FAILED` | Falha no processamento | Investigar erro e retentar |
-| `EXPIRED` | PIX expirado sem pagamento | Gerar nova cobrança |
-| `REFUND_IN` | Estorno recebido | Processar devolução |
+| `WAITING_WITHDRAW` | Aguardando execução de saque | Aguardar processamento |
+| `WITHDRAW_REQUEST` | Solicitação de saque enviada | Aguardar confirmação |
+| `WITHDRAW_PAID` | Saque/transferência confirmada | Confirmar envio |
+| `PAID` | PIX recebido com sucesso | Liberar produto/serviço |
+| `REFUND_IN` | Estorno PIX recebido | Processar devolução |
+| `ERROR` | Erro no processamento | Investigar erro |
 
 ## Tipos de Chave PIX
 
 | Tipo | Formato | Exemplo |
 |------|---------|---------|
-| `CPF` | 11 dígitos | `12345678901` |
-| `CNPJ` | 14 dígitos | `12345678000199` |
-| `EMAIL` | Email válido | `usuario@email.com` |
+| `DOCUMENT` | CPF (11 dígitos) ou CNPJ (14 dígitos) | `12345678901` ou `12345678000199` |
+| `MAIL` | Email válido | `usuario@email.com` |
 | `PHONE` | +55 + DDD + número | `+5511987654321` |
-| `RANDOM` | Chave aleatória | `123e4567-e12b-12d3-a456-426614174000` |
+| `RANDOM_KEY` | Chave aleatória | `123e4567-e12b-12d3-a456-426614174000` |
 
 ## Webhook Handler Completo
 

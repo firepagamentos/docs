@@ -7,18 +7,28 @@ description: 'Guia completo do fluxo de integração para processar pagamentos c
 
 Este guia apresenta o fluxo completo de integração para processar pagamentos com cartão de crédito, desde a captura dos dados até a confirmação da transação. O fluxo é otimizado para conversão e segurança, garantindo uma experiência fluida para o usuário final.
 
-<Frame>
-  <img
-    className="block dark:hidden"
-    src="/images/credit-card-flow.png"
-    alt="Fluxo de Integração - Cartão de Crédito"
-  />
-  <img
-    className="hidden dark:block"
-    src="/images/credit-card-flow-dark.png"
-    alt="Fluxo de Integração - Cartão de Crédito"
-  />
-</Frame>
+## Fluxo de Etapas
+
+<Steps>
+  <Step title="Coleta de Dados do Cartão">
+    Captura segura dos dados do cartão através de formulário validado
+  </Step>
+  <Step title="Validação Client-Side">
+    Validações básicas (algoritmo de Luhn, CVV, data de validade)
+  </Step>
+  <Step title="Processamento da Transação">
+    Envio dos dados para API FireBanking via HTTPS
+  </Step>
+  <Step title="Resposta Inicial">
+    API retorna status inicial (PROCESSING, PAID ou DENIED)
+  </Step>
+  <Step title="Processamento pela Operadora">
+    Validações de segurança, limite e autorização da transação
+  </Step>
+  <Step title="Confirmação Final">
+    Webhook com resultado definitivo (PAID, DENIED ou REFUNDED)
+  </Step>
+</Steps>
 
 ## Fluxo Detalhado
 
@@ -132,25 +142,40 @@ Envie os dados validados para a API FireBanking:
 <CodeGroup>
 ```bash cURL
 curl --request POST \
-  --url https://api-gateway.firebanking.com.br/v1/credit-card \
+  --url https://api-gateway.firebanking.com.br/credit-card/v1/payment \
   --header 'x-api-key: sua_chave_api' \
   --header 'Content-Type: application/json' \
   --data '{
-    "externalId": "pedido-98765",
-    "description": "Compra online - Produto XYZ",
-    "amount": 299.90,
+    "purchaseValue": 299.90,
     "installments": 3,
-    "card": {
-      "number": "4111111111111111",
-      "expirationMonth": "12",
-      "expirationYear": "28",
-      "cvv": "123",
-      "holderName": "JOAO SILVA"
+    "externalId": "pedido-98765",
+    "purchaseTitle": "Compra online - Produto XYZ",
+    "description": "Descrição da compra",
+    "payment": {
+      "chargeType": "FEE_TO_SELLER",
+      "capture": true,
+      "card": {
+        "name": "João Silva",
+        "number": "4111111111111111",
+        "expiration": "12/2025",
+        "securityCode": "123"
+      }
     },
     "buyer": {
       "name": "João Silva",
+      "document": "12345678901",
       "email": "joao@email.com",
-      "document": "12345678901"
+      "phone": "11999999999",
+      "countryCode": "+55",
+      "address": {
+        "country": "BR",
+        "state": "SP",
+        "city": "São Paulo",
+        "district": "Centro",
+        "street": "Rua das Flores",
+        "zipCode": "01000000",
+        "number": "123"
+      }
     }
   }'
 ```
@@ -160,28 +185,43 @@ const processPayment = async (formData) => {
   try {
     showLoading(true);
 
-    const response = await fetch('https://api-gateway.firebanking.com.br/v1/credit-card', {
+    const response = await fetch('https://api-gateway.firebanking.com.br/credit-card/v1/payment', {
       method: 'POST',
       headers: {
         'x-api-key': 'sua_chave_api',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        externalId: generateOrderId(),
-        description: formData.description,
-        amount: formData.amount,
+        purchaseValue: formData.amount,
         installments: formData.installments,
-        card: {
-          number: formData.cardNumber.replace(/\s/g, ''),
-          expirationMonth: formData.expiry.split('/')[0],
-          expirationYear: '20' + formData.expiry.split('/')[1],
-          cvv: formData.cvv,
-          holderName: formData.holderName.toUpperCase()
+        externalId: generateOrderId(),
+        purchaseTitle: formData.description,
+        description: formData.description,
+        payment: {
+          chargeType: "FEE_TO_SELLER",
+          capture: true,
+          card: {
+            name: formData.holderName,
+            number: formData.cardNumber.replace(/\s/g, ''),
+            expiration: formData.expiry,
+            securityCode: formData.cvv
+          }
         },
         buyer: {
           name: formData.buyerName,
+          document: formData.buyerDocument,
           email: formData.buyerEmail,
-          document: formData.buyerDocument
+          phone: formData.phone || "11999999999",
+          countryCode: "+55",
+          address: {
+            country: "BR",
+            state: formData.state || "SP",
+            city: formData.city || "São Paulo",
+            district: formData.district || "Centro",
+            street: formData.street || "Rua Principal",
+            zipCode: formData.zipCode || "01000000",
+            number: formData.number || "123"
+          }
         }
       })
     });
@@ -207,27 +247,42 @@ import requests
 
 def process_payment(payment_data):
     response = requests.post(
-        'https://api-gateway.firebanking.com.br/v1/credit-card',
+        'https://api-gateway.firebanking.com.br/credit-card/v1/payment',
         headers={
             'x-api-key': 'sua_chave_api',
             'Content-Type': 'application/json'
         },
         json={
-            "externalId": payment_data['external_id'],
-            "description": payment_data['description'],
-            "amount": payment_data['amount'],
+            "purchaseValue": payment_data['amount'],
             "installments": payment_data['installments'],
-            "card": {
-                "number": payment_data['card_number'],
-                "expirationMonth": payment_data['expiry_month'],
-                "expirationYear": payment_data['expiry_year'],
-                "cvv": payment_data['cvv'],
-                "holderName": payment_data['holder_name']
+            "externalId": payment_data['external_id'],
+            "purchaseTitle": payment_data['description'],
+            "description": payment_data['description'],
+            "payment": {
+                "chargeType": "FEE_TO_SELLER",
+                "capture": True,
+                "card": {
+                    "name": payment_data['holder_name'],
+                    "number": payment_data['card_number'],
+                    "expiration": payment_data['expiration'],
+                    "securityCode": payment_data['cvv']
+                }
             },
             "buyer": {
                 "name": payment_data['buyer_name'],
+                "document": payment_data['buyer_document'],
                 "email": payment_data['buyer_email'],
-                "document": payment_data['buyer_document']
+                "phone": payment_data.get('phone', '11999999999'),
+                "countryCode": "+55",
+                "address": {
+                    "country": "BR",
+                    "state": payment_data.get('state', 'SP'),
+                    "city": payment_data.get('city', 'São Paulo'),
+                    "district": payment_data.get('district', 'Centro'),
+                    "street": payment_data.get('street', 'Rua Principal'),
+                    "zipCode": payment_data.get('zip_code', '01000000'),
+                    "number": payment_data.get('number', '123')
+                }
             }
         }
     )

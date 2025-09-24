@@ -7,18 +7,28 @@ description: 'Guia completo do fluxo de integração para processar boletos banc
 
 Este guia apresenta o fluxo completo de integração para processar boletos bancários, desde a criação até o recebimento de pagamentos. O fluxo é composto por 6 etapas principais que garantem uma experiência completa e segura.
 
-<Frame>
-  <img
-    className="block dark:hidden"
-    src="/images/bank-slip-flow.png"
-    alt="Fluxo de Integração - Boleto"
-  />
-  <img
-    className="hidden dark:block"
-    src="/images/bank-slip-flow-dark.png"
-    alt="Fluxo de Integração - Boleto"
-  />
-</Frame>
+## Fluxo de Etapas
+
+<Steps>
+  <Step title="Criação do Boleto">
+    Envio dos dados do boleto para API FireBanking
+  </Step>
+  <Step title="Processamento e Registro">
+    Sistema valida dados e envia para banco emissor
+  </Step>
+  <Step title="Confirmação do Registro">
+    Banco confirma registro - Webhook WAITING_PAYMENT enviado
+  </Step>
+  <Step title="Disponibilização para Pagamento">
+    Boleto disponível em toda rede bancária + QR Code PIX
+  </Step>
+  <Step title="Pagamento pelo Cliente">
+    Cliente paga via banco, app, lotérica ou PIX
+  </Step>
+  <Step title="Confirmação de Pagamento">
+    Banco confirma pagamento - Webhook PAID enviado
+  </Step>
+</Steps>
 
 ## Fluxo Detalhado
 
@@ -29,39 +39,49 @@ Inicie o processo criando um boleto através da API:
 <CodeGroup>
 ```bash cURL
 curl --request POST \
-  --url https://api-gateway.firebanking.com.br/v1/bank-slip \
+  --url https://api-gateway.firebanking.com.br/bank-slip/v1/payment \
   --header 'x-api-key: sua_chave_api' \
   --header 'Content-Type: application/json' \
   --data '{
-    "externalId": "pedido-12345",
-    "description": "Pagamento do pedido #12345",
     "amount": 150.00,
-    "buyer": {
+    "dueDate": "2025-12-31",
+    "description": "Pagamento do pedido #12345",
+    "externalId": "pedido-12345",
+    "payer": {
       "name": "João Silva",
       "document": "12345678901",
-      "email": "joao@email.com"
-    },
-    "dueDate": "2025-12-31"
+      "city": "São Paulo",
+      "state": "SP",
+      "number": "123",
+      "postalCode": "01000000",
+      "neighborhood": "Centro",
+      "address": "Rua das Flores"
+    }
   }'
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api-gateway.firebanking.com.br/v1/bank-slip', {
+const response = await fetch('https://api-gateway.firebanking.com.br/bank-slip/v1/payment', {
   method: 'POST',
   headers: {
     'x-api-key': 'sua_chave_api',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    externalId: "pedido-12345",
-    description: "Pagamento do pedido #12345",
     amount: 150.00,
-    buyer: {
+    dueDate: "2025-12-31",
+    description: "Pagamento do pedido #12345",
+    externalId: "pedido-12345",
+    payer: {
       name: "João Silva",
       document: "12345678901",
-      email: "joao@email.com"
-    },
-    dueDate: "2025-12-31"
+      city: "São Paulo",
+      state: "SP",
+      number: "123",
+      postalCode: "01000000",
+      neighborhood: "Centro",
+      address: "Rua das Flores"
+    }
   })
 });
 
@@ -72,21 +92,26 @@ const boleto = await response.json();
 import requests
 
 response = requests.post(
-    'https://api-gateway.firebanking.com.br/v1/bank-slip',
+    'https://api-gateway.firebanking.com.br/bank-slip/v1/payment',
     headers={
         'x-api-key': 'sua_chave_api',
         'Content-Type': 'application/json'
     },
     json={
-        "externalId": "pedido-12345",
-        "description": "Pagamento do pedido #12345",
         "amount": 150.00,
-        "buyer": {
+        "dueDate": "2025-12-31",
+        "description": "Pagamento do pedido #12345",
+        "externalId": "pedido-12345",
+        "payer": {
             "name": "João Silva",
             "document": "12345678901",
-            "email": "joao@email.com"
-        },
-        "dueDate": "2025-12-31"
+            "city": "São Paulo",
+            "state": "SP",
+            "number": "123",
+            "postalCode": "01000000",
+            "neighborhood": "Centro",
+            "address": "Rua das Flores"
+        }
     }
 )
 
