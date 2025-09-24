@@ -21,29 +21,21 @@ Transação PIX falhou durante o processamento. Pode ocorrer por diversos motivo
 
 ## Configuração
 
-### URL do Webhook
-```bash
-# Configurar webhook global
-curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/webhooks" \
-  -H "x-api-key: SUA_CHAVE_DE_API" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://meusite.com/webhooks/pix",
-    "events": ["pix.payment_received", "pix.payment_expired", "pix.refund_processed"],
-    "active": true
+Configure a URL do webhook PIX através do endpoint de configuração de conta:
+
+```bash cURL
+curl --request POST \
+  --url https://api-gateway.firebanking.com.br/v1/account/webhook \
+  --header 'x-api-key: sua_chave_api' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "pixWebhookUrl": "https://meusite.com.br/webhooks/pix"
   }'
 ```
 
-### Webhook por Transação
-```json
-// Na criação da cobrança
-{
-  "amount": 150,
-  "description": "Produto XYZ",
-  "callback_url": "https://meusite.com/webhooks/pix/specific"
-  // ... outros campos
-}
-```
+<Info>
+  Para configuração completa de webhooks, acesse a [documentação de configuração](/api-reference/webhooks/configure).
+</Info>
 
 ## Payload dos Webhooks
 
@@ -356,60 +348,29 @@ Todos os webhooks incluem uma assinatura HMAC-SHA256 no header `X-Firebanking-Si
 X-Firebanking-Signature: sha256=a1b2c3d4e5f6...
 ```
 
-### Idempotência
-Cada webhook possui um ID único. Processe apenas uma vez por ID:
 
-```javascript
-const processedWebhooks = new Set();
 
-if (processedWebhooks.has(webhook.webhook.id)) {
-  return res.status(200).send('Already processed');
-}
 
-processedWebhooks.add(webhook.webhook.id);
-// Processar webhook...
-```
-
-## Retry e Falhas
-
-### Política de Retry
-- **Tentativas**: Até 5 tentativas
-- **Intervalo**: 1s, 5s, 25s, 125s, 625s
-- **Códigos de sucesso**: 200-299
-- **Timeout**: 30 segundos por tentativa
-
-### Webhook Falhou
-Se todas as tentativas falharem, você receberá um webhook especial:
-
-```json
-{
-  "event": "webhook.failed",
-  "original_event": "pix.payment_received",
-  "pix_id": "pix_12345678901234567890",
-  "webhook_id": "webhook_987654321",
-  "attempts": 5,
-  "last_error": "Connection timeout",
-  "timestamp": "2024-01-15T10:50:00Z"
-}
-```
-
-## Testes
-
-### Webhook de Teste
-```bash
-curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/webhooks/test" \
-  -H "x-api-key: SUA_CHAVE_DE_API" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "event": "pix.payment_received",
-    "url": "https://meusite.com/webhooks/pix"
-  }'
-```
+## Testando Webhooks
 
 ### Ambiente de Desenvolvimento
-- Use [ngrok](https://ngrok.com/) para expor localhost
-- Configure webhook para URL do ngrok
-- Teste com PIX de sandbox
+
+Use ferramentas como ngrok para testar localmente:
+
+```bash Terminal
+# Expor localhost:3000
+ngrok http 3000
+
+# Configurar webhook PIX
+curl -X POST https://api-gateway.firebanking.com.br/v1/account/webhook \
+  -H 'x-api-key: sua_chave_api' \
+  -H 'Content-Type: application/json' \
+  -d '{"pixWebhookUrl": "https://abc123.ngrok.io/webhook"}'
+```
+
+<Info>
+  Para informações completas sobre testes de webhooks, consulte a [documentação de configuração](/api-reference/webhooks/configure).
+</Info>
 
 ## Monitoramento
 
@@ -420,12 +381,6 @@ Acompanhe a saúde dos seus webhooks:
 - Webhooks falhados
 - Tempo de resposta
 
-### Logs Detalhados
-```bash
-# Consultar logs de webhook
-curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/webhooks/logs?pix_id=pix_12345678901234567890" \
-  -H "x-api-key: SUA_CHAVE_DE_API"
-```
 
 ## Boas Práticas
 
