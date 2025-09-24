@@ -11,166 +11,147 @@ Os webhooks de PIX Cash Out notificam seu sistema em tempo real sobre o status d
   Os webhooks de cash out seguem o mesmo padrão de segurança dos webhooks de cash in.
 </Info>
 
-## Eventos Disponíveis
+## Status dos Webhooks
 
-### pix.withdraw_completed
-Dispara quando uma transferência PIX é processada com sucesso.
+### WITHDRAW_REQUEST
+Transferência PIX foi iniciada e está sendo processada pelo provedor.
 
-### pix.withdraw_failed
-Dispara quando uma transferência PIX falha durante o processamento.
+### WITHDRAW_PAID
+Transferência PIX foi executada com sucesso. Valor debitado da conta.
 
-### pix.withdraw_cancelled
-Dispara quando uma transferência PIX é cancelada.
+### REFUND_IN
+Estorno de PIX enviado. Valor previamente cobrado foi devolvido para conta de origem.
+
+### ERROR
+Transferência PIX falhou durante o processamento. Valor não foi debitado.
 
 ## Payload dos Webhooks
 
-### Transferência Concluída
+### Transferência Concluída (Status: WITHDRAW_PAID)
 
 ```json
 {
-  "event": "pix.withdraw_completed",
-  "transaction_id": "withdraw_987654321012345",
-  "external_id": "transfer-789012",
-  "timestamp": "2024-01-15T15:30:15Z",
-  "data": {
-    "transaction": {
-      "id": "withdraw_987654321012345",
-      "external_id": "transfer-789012",
-      "status": "WITHDRAW_PAID",
-      "type": "cash_out",
-      "amount": 25050,
-      "currency": "BRL",
-      "description": "Pagamento de fornecedor",
-      "created_at": "2024-01-15T15:30:00Z",
-      "processed_at": "2024-01-15T15:30:15Z"
-    },
-    "beneficiary": {
-      "name": "Ana Silva Santos",
-      "document": "***.***.***-01",
-      "key": "usuario@email.com",
-      "keyType": "EMAIL",
-      "bank": {
-        "name": "Banco Inter",
-        "ispb": "00416968",
-        "branch": "0001",
-        "account": "123456-7"
-      }
-    },
-    "pix_info": {
-      "end_to_end_id": "E00416968202401151530150123456789",
-      "return_identification": "D00000000202401151530150987654321"
-    },
-    "fees": {
-      "total": 0,
-      "fixed": 0,
-      "percentage": 0
-    },
-    "metadata": {
-      "fornecedor_id": "F123",
-      "tipo_pagamento": "servico"
-    }
-  },
-  "webhook": {
-    "id": "webhook_cashout_001",
-    "attempt": 1,
-    "max_attempts": 5
-  }
+  "transactionId": "withdraw-abc123-def456-ghi789",
+  "businessTransactionId": "transfer-789012",
+  "status": "WITHDRAW_PAID",
+  "value": 25050,
+  "movementType": "DEBIT",
+  "endToEndId": "E00416968202401151530150123456789",
+  "pixKey": "usuario@email.com",
+  "createdDate": "2024-01-15T15:30:15.123Z",
+  "ReceiverBankAccount": "123456",
+  "ReceiverToBankAccountDigit": "7",
+  "ReceiverBankBranch": "0001",
+  "ReceiverBankCode": "077",
+  "ReceiverDocumentNumber": "12345678901",
+  "ReceiverBankName": "BANCO INTER S.A.",
+  "ReceiverBankISPB": "00416968",
+  "ReceiverName": "ANA SILVA SANTOS",
+  "PayerBankAccount": "567890",
+  "PayerBankAccountDigit": "1",
+  "PayerBankBranch": "0001",
+  "PayerBankCode": "077",
+  "PayerDocumentNumber": "45438750000188",
+  "PayerBankName": "BANCO INTER S.A.",
+  "PayerBankISPB": "00416968",
+  "PayerName": "MINHA EMPRESA LTDA",
+  "VoucherUrl": "https://voucher.firebanking.com/withdraw/withdraw-abc123-def456-ghi789.pdf"
 }
 ```
 
-### Transferência Falhada
+### Transferência com Erro (Status: ERROR)
 
 ```json
 {
-  "event": "pix.withdraw_failed",
-  "transaction_id": "withdraw_987654321012345",
-  "external_id": "transfer-789012",
-  "timestamp": "2024-01-15T15:30:15Z",
-  "data": {
-    "transaction": {
-      "id": "withdraw_987654321012345",
-      "external_id": "transfer-789012",
-      "status": "ERROR",
-      "type": "cash_out",
-      "amount": 25050,
-      "currency": "BRL",
-      "description": "Pagamento de fornecedor",
-      "created_at": "2024-01-15T15:30:00Z",
-      "failed_at": "2024-01-15T15:30:15Z"
-    },
-    "error": {
-      "code": "INVALID_PIX_KEY",
-      "message": "Chave PIX inválida ou não encontrada",
-      "details": "Email fornecido não está registrado como chave PIX",
-      "category": "VALIDATION_ERROR"
-    },
-    "beneficiary": {
-      "name": "Ana Silva Santos",
-      "key": "usuario@email.com",
-      "keyType": "EMAIL"
-    },
-    "amount_returned": true,
-    "metadata": {
-      "fornecedor_id": "F123",
-      "tipo_pagamento": "servico"
-    }
-  },
-  "webhook": {
-    "id": "webhook_cashout_002",
-    "attempt": 1,
-    "max_attempts": 5
-  }
+  "transactionId": "error-withdraw-123456789",
+  "businessTransactionId": "transfer-erro-789012",
+  "status": "ERROR",
+  "value": 25050,
+  "movementType": null,
+  "endToEndId": null,
+  "pixKey": "usuario-invalido@email.com",
+  "createdDate": "2024-01-15T15:30:15.123Z",
+  "ReceiverBankAccount": null,
+  "ReceiverToBankAccountDigit": null,
+  "ReceiverBankBranch": null,
+  "ReceiverBankCode": null,
+  "ReceiverDocumentNumber": null,
+  "ReceiverBankName": null,
+  "ReceiverBankISPB": null,
+  "ReceiverName": null,
+  "PayerBankAccount": null,
+  "PayerBankAccountDigit": null,
+  "PayerBankBranch": null,
+  "PayerBankCode": null,
+  "PayerDocumentNumber": null,
+  "PayerBankName": null,
+  "PayerBankISPB": null,
+  "PayerName": null,
+  "VoucherUrl": null
 }
 ```
 
-### Transferência por QR Code
+### Estorno Enviado (Status: REFUND_IN)
 
 ```json
 {
-  "event": "pix.withdraw_completed",
-  "transaction_id": "qr_withdraw_123456789",
-  "external_id": "qr-transfer-001",
-  "timestamp": "2024-01-15T16:45:20Z",
-  "data": {
-    "transaction": {
-      "id": "qr_withdraw_123456789",
-      "external_id": "qr-transfer-001",
-      "status": "WITHDRAW_PAID",
-      "type": "cash_out",
-      "amount": 15000,
-      "currency": "BRL",
-      "description": "Pagamento via QR Code",
-      "method": "qr_code",
-      "created_at": "2024-01-15T16:45:00Z",
-      "processed_at": "2024-01-15T16:45:20Z"
-    },
-    "beneficiary": {
-      "name": "MARIA SANTOS",
-      "city": "BRASILIA",
-      "bank": {
-        "name": "Banco do Brasil",
-        "ispb": "00000000"
-      },
-      "qr_code_info": {
-        "merchant_name": "MARIA SANTOS",
-        "merchant_city": "BRASILIA",
-        "merchant_category_code": "5200"
-      }
-    },
-    "pix_info": {
-      "end_to_end_id": "E00000000202401151645200123456789",
-      "qr_code_data": "00020101021226830014br.gov.bcb.pix..."
-    },
-    "metadata": {
-      "origem": "qr_scanner",
-      "tipo": "pagamento_presencial"
-    }
-  },
-  "webhook": {
-    "id": "webhook_qr_001",
-    "attempt": 1,
-    "max_attempts": 5
-  }
+  "transactionId": "8f7e6d5c-4b3a-2918-7654-3210fedcba98",
+  "businessTransactionId": "estorno-pedido-12345",
+  "status": "REFUND_IN",
+  "value": 15000,
+  "movementType": "DEBIT",
+  "endToEndId": "E00000000202401151700300987654321",
+  "pixKey": "joao@email.com",
+  "createdDate": "2024-01-15T17:00:30.123Z",
+  "ReceiverBankAccount": "123456",
+  "ReceiverToBankAccountDigit": "7",
+  "ReceiverBankBranch": "0001",
+  "ReceiverBankCode": "001",
+  "ReceiverDocumentNumber": "12345678901",
+  "ReceiverBankName": "BANCO DO BRASIL S.A.",
+  "ReceiverBankISPB": "00000000",
+  "ReceiverName": "JOAO COSTA SILVA",
+  "PayerBankAccount": "567890",
+  "PayerBankAccountDigit": "1",
+  "PayerBankBranch": "0001",
+  "PayerBankCode": "077",
+  "PayerDocumentNumber": "45438750000188",
+  "PayerBankName": "BANCO INTER S.A.",
+  "PayerBankISPB": "00416968",
+  "PayerName": "MINHA EMPRESA LTDA",
+  "VoucherUrl": "https://voucher.firebanking.com/refund/8f7e6d5c-4b3a-2918-7654-3210fedcba98.pdf"
+}
+```
+
+### Transferência Solicitada (Status: WITHDRAW_REQUEST)
+
+```json
+{
+  "transactionId": "pending-qr-789012345",
+  "businessTransactionId": "qr-transfer-001",
+  "status": "WITHDRAW_REQUEST",
+  "value": 15000,
+  "movementType": "DEBIT",
+  "endToEndId": null,
+  "pixKey": "00020101021226830014br.gov.bcb.pix2584",
+  "createdDate": "2024-01-15T16:45:05.123Z",
+  "ReceiverBankAccount": "456789",
+  "ReceiverToBankAccountDigit": "0",
+  "ReceiverBankBranch": "0001",
+  "ReceiverBankCode": "001",
+  "ReceiverDocumentNumber": "98765432100",
+  "ReceiverBankName": "BANCO DO BRASIL S.A.",
+  "ReceiverBankISPB": "00000000",
+  "ReceiverName": "MARIA SANTOS",
+  "PayerBankAccount": "567890",
+  "PayerBankAccountDigit": "1",
+  "PayerBankBranch": "0001",
+  "PayerBankCode": "077",
+  "PayerDocumentNumber": "45438750000188",
+  "PayerBankName": "BANCO INTER S.A.",
+  "PayerBankISPB": "00416968",
+  "PayerName": "MINHA EMPRESA LTDA",
+  "VoucherUrl": null
 }
 ```
 
@@ -188,65 +169,77 @@ app.post('/webhooks/pix-cashout', (req, res) => {
   
   const webhook = JSON.parse(payload);
   
-  switch (webhook.event) {
-    case 'pix.withdraw_completed':
-      handleWithdrawCompleted(webhook.data);
+  switch (webhook.operation.status) {
+    case 'WITHDRAW_REQUEST':
+      handleWithdrawRequested(webhook);
       break;
-      
-    case 'pix.withdraw_failed':
-      handleWithdrawFailed(webhook.data);
+
+    case 'WITHDRAW_PAID':
+      handleWithdrawCompleted(webhook);
       break;
-      
-    case 'pix.withdraw_cancelled':
-      handleWithdrawCancelled(webhook.data);
+
+    case 'REFUND_IN':
+      handleRefundSent(webhook);
+      break;
+
+    case 'ERROR':
+      handleWithdrawFailed(webhook);
       break;
   }
   
   res.status(200).send('OK');
 });
 
-function handleWithdrawCompleted(data) {
-  const transaction = data.transaction;
-  const beneficiary = data.beneficiary;
-  
-  console.log(`Transferência concluída: ${transaction.external_id}`);
-  console.log(`Beneficiário: ${beneficiary.name}`);
-  console.log(`Valor: R$ ${transaction.amount / 100}`);
-  console.log(`End-to-End ID: ${data.pix_info.end_to_end_id}`);
-  
+function handleWithdrawCompleted(transaction) {
+  const valueBrl = transaction.operation.value / 100;
+  const feeBrl = transaction.operation.fee / 100;
+  const resultBrl = transaction.operation.result / 100;
+
+  console.log(`Transferência PIX concluída: ${transaction.operation.externalID}`);
+  console.log(`Beneficiário: ${transaction.receiver.fullName}`);
+  console.log(`Valor: R$ ${valueBrl} (Taxa: R$ ${feeBrl}, Líquido: R$ ${resultBrl})`);
+  console.log(`End-to-End ID: ${transaction.operation.additionalInfo.endToEndId}`);
+
   // Atualizar sistema interno
-  updateTransferStatus(transaction.external_id, 'completed');
-  
+  updateTransferStatus(transaction.operation.externalID, 'completed');
+
   // Notificar usuário
   sendNotification({
     type: 'transfer_success',
-    message: `Transferência de R$ ${transaction.amount / 100} realizada com sucesso`,
-    transaction_id: transaction.external_id
+    message: `Transferência PIX de R$ ${valueBrl} realizada com sucesso`,
+    transaction_id: transaction.operation.externalID,
+    endToEndId: transaction.operation.additionalInfo.endToEndId
   });
 }
 
-function handleWithdrawFailed(data) {
-  const transaction = data.transaction;
-  const error = data.error;
-  
-  console.log(`Transferência falhou: ${transaction.external_id}`);
-  console.log(`Erro: ${error.message}`);
-  
+function handleWithdrawFailed(transaction) {
+  const error = transaction.operation.error?.[0];
+  const amountReturned = transaction.operation.additionalInfo?.amountReturned;
+
+  console.log(`Transferência PIX falhou: ${transaction.operation.externalID}`);
+  console.log(`Código do erro: ${error?.code}`);
+  console.log(`Mensagem: ${error?.message}`);
+  console.log(`Valor retornado: ${amountReturned ? 'Sim' : 'Não'}`);
+
   // Atualizar sistema interno
-  updateTransferStatus(transaction.external_id, 'failed', error);
-  
+  updateTransferStatus(transaction.operation.externalID, 'failed', error);
+
   // Notificar usuário do erro
   sendNotification({
     type: 'transfer_error',
-    message: `Erro na transferência: ${error.message}`,
-    transaction_id: transaction.external_id,
-    amount_returned: data.amount_returned
+    message: `Erro na transferência PIX: ${error?.message}`,
+    transaction_id: transaction.operation.externalID,
+    error_code: error?.code,
+    amount_returned: amountReturned
   });
-  
-  // Se necessário, tentar transferência novamente
-  if (error.category === 'TEMPORARY_ERROR') {
-    scheduleRetry(transaction.external_id);
-  }
+
+  // Log para auditoria
+  logTransferFailure({
+    transactionId: transaction._id,
+    businessId: transaction.businessId,
+    errorCode: error?.code,
+    errorMessage: error?.message
+  });
 }
 ```
 
@@ -261,60 +254,88 @@ def webhook_pix_cashout():
     
     webhook = json.loads(payload)
     
-    if webhook['event'] == 'pix.withdraw_completed':
-        handle_withdraw_completed(webhook['data'])
-    elif webhook['event'] == 'pix.withdraw_failed':
-        handle_withdraw_failed(webhook['data'])
+    if webhook['operation']['status'] == 'WITHDRAW_REQUEST':
+        handle_withdraw_requested(webhook)
+    elif webhook['operation']['status'] == 'WITHDRAW_PAID':
+        handle_withdraw_completed(webhook)
+    elif webhook['operation']['status'] == 'REFUND_IN':
+        handle_refund_sent(webhook)
+    elif webhook['operation']['status'] == 'ERROR':
+        handle_withdraw_failed(webhook)
     
     return 'OK', 200
 
-def handle_withdraw_completed(data):
-    transaction = data['transaction']
-    beneficiary = data['beneficiary']
-    
+def handle_withdraw_completed(transaction):
+    operation = transaction['operation']
+    receiver = transaction['receiver']
+
     # Registrar métricas
     record_metrics({
         'event': 'withdraw_success',
-        'amount': transaction['amount'],
+        'amount': operation['value'],
+        'fee': operation['fee'],
+        'result': operation['result'],
         'processing_time': calculate_processing_time(transaction),
-        'beneficiary_bank': beneficiary['bank']['name']
-    })
-    
-    # Atualizar contaábil
-    update_accounting({
-        'transaction_id': transaction['id'],
-        'type': 'debit',
-        'amount': transaction['amount'],
-        'description': f"Transferência PIX - {transaction['description']}"
-    })
-    
-    # Gerar comprovante
-    generate_receipt({
-        'transaction_id': transaction['id'],
-        'beneficiary_name': beneficiary['name'],
-        'amount': transaction['amount'],
-        'end_to_end_id': data['pix_info']['end_to_end_id']
+        'provider': operation['provider'],
+        'movement_type': operation['movementType']
     })
 
-def handle_withdraw_failed(data):
-    transaction = data['transaction']
-    error = data['error']
-    
+    # Atualizar contaábil
+    update_accounting({
+        'transaction_id': transaction['_id'],
+        'business_id': transaction['businessId'],
+        'type': 'debit',
+        'amount': operation['value'],
+        'fee': operation['fee'],
+        'net_amount': operation['result'],
+        'description': f"Transferência PIX - {operation['description']}"
+    })
+
+    # Gerar comprovante
+    generate_receipt({
+        'transaction_id': transaction['_id'],
+        'beneficiary_name': receiver['fullName'],
+        'beneficiary_document': receiver['document']['value'],
+        'amount': operation['value'],
+        'fee': operation['fee'],
+        'net_amount': operation['result'],
+        'end_to_end_id': operation['additionalInfo']['endToEndId']
+    })
+
+def handle_withdraw_failed(transaction):
+    operation = transaction['operation']
+    error = operation['error'][0] if operation.get('error') else {}
+    amount_returned = operation.get('additionalInfo', {}).get('amountReturned', False)
+
     # Registrar falha para análise
     log_failure({
-        'transaction_id': transaction['id'],
-        'error_code': error['code'],
-        'error_message': error['message'],
-        'error_category': error['category']
+        'transaction_id': transaction['_id'],
+        'business_id': transaction['businessId'],
+        'external_id': operation.get('externalID'),
+        'error_code': error.get('code'),
+        'error_message': error.get('message'),
+        'provider': operation['provider'],
+        'amount': operation['value'],
+        'amount_returned': amount_returned
     })
-    
-    # Se o valor foi retornado, atualizar saldo
-    if data['amount_returned']:
-        restore_balance(transaction['amount'])
-    
-    # Alertar equipe para erros críticos
-    if error['category'] == 'CRITICAL_ERROR':
-        send_alert(f"Transferência crítica falhou: {error['message']}")
+
+    # Se o valor foi retornado, registrar auditoria
+    if amount_returned:
+        log_balance_restoration({
+            'business_id': transaction['businessId'],
+            'amount': operation['value'],
+            'reason': 'PIX transfer failed',
+            'transaction_id': transaction['_id']
+        })
+
+    # Alertar equipe para erros críticos de chave PIX
+    if error.get('code') == 'INVALID_PIX_KEY':
+        send_alert({
+            'type': 'pix_key_validation_error',
+            'message': f"Chave PIX inválida: {operation.get('pixKey')}",
+            'business_id': transaction['businessId'],
+            'amount': operation['value'] / 100
+        })
 ```
 </CodeGroup>
 

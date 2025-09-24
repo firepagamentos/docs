@@ -11,19 +11,13 @@ Os webhooks de PIX Cash In notificam seu sistema em tempo real sobre mudanças d
   Todos os webhooks são enviados via POST com payload JSON e assinatura de segurança.
 </Info>
 
-## Eventos Disponíveis
+## Status dos Webhooks
 
-### pix.payment_received
-Dispara quando uma cobrança PIX é paga com sucesso.
+### PAID
+Transação PIX foi paga com sucesso pelo cliente. Valores creditados na conta.
 
-### pix.payment_expired
-Dispara quando uma cobrança PIX expira sem pagamento.
-
-### pix.refund_processed
-Dispara quando um estorno PIX é processado com sucesso.
-
-### pix.split_completed
-Dispara quando um split de pagamento é finalizado.
+### ERROR
+Transação PIX falhou durante o processamento. Pode ocorrer por diversos motivos técnicos.
 
 ## Configuração
 
@@ -53,176 +47,152 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/webhooks" \
 
 ## Payload dos Webhooks
 
-### Pagamento Recebido
+### PIX Recebido (Status: PAID)
 
 ```json
 {
-  "event": "pix.payment_received",
-  "pix_id": "pix_12345678901234567890",
-  "external_id": "pedido-12345",
-  "timestamp": "2024-01-15T10:45:30Z",
-  "data": {
-    "id": "pix_12345678901234567890",
-    "external_id": "pedido-12345",
-    "status": "paid",
-    "amount": 15000,
-    "currency": "BRL",
-    "description": "Compra na loja virtual",
-    "buyer": {
-      "name": "Maria Silva Santos",
-      "document": "***.***.***-01",
-      "email": "maria@email.com"
-    },
-    "payer": {
-      "name": "João Costa Silva",
-      "document": "***.***.***-98",
-      "bank": {
-        "name": "Banco do Brasil",
-        "ispb": "00000000",
-        "branch": "1234",
-        "account": "567890"
-      }
-    },
-    "paid_at": "2024-01-15T10:45:30Z",
-    "created_at": "2024-01-15T10:30:00Z",
-    "end_to_end_id": "E00000000202401151045300123456789",
-    "fees": {
-      "total": 0,
-      "fixed": 0,
-      "percentage": 0
-    },
-    "metadata": {
-      "pedido_id": "12345",
-      "vendedor": "Loja ABC"
-    }
-  },
-  "webhook": {
-    "id": "webhook_987654321",
-    "attempt": 1,
-    "max_attempts": 5
-  }
+  "transactionId": "03cadd36-fddd-4091-9ffe-67b0483cbcf5",
+  "businessTransactionId": "pedido-12345",
+  "status": "PAID",
+  "value": 15000,
+  "movementType": "CREDIT",
+  "endToEndId": "E00000000202401151045300123456789",
+  "pixKey": "joao@email.com",
+  "createdDate": "2024-01-15T10:30:00.123Z",
+  "ReceiverBankAccount": "567890",
+  "ReceiverToBankAccountDigit": "1",
+  "ReceiverBankBranch": "0001",
+  "ReceiverBankCode": "077",
+  "ReceiverDocumentNumber": "45438750000188",
+  "ReceiverBankName": "BANCO INTER S.A.",
+  "ReceiverBankISPB": "00416968",
+  "ReceiverName": "MINHA EMPRESA LTDA",
+  "PayerBankAccount": "123456",
+  "PayerBankAccountDigit": "7",
+  "PayerBankBranch": "0001",
+  "PayerBankCode": "001",
+  "PayerDocumentNumber": "12345678901",
+  "PayerBankName": "BANCO DO BRASIL S.A.",
+  "PayerBankISPB": "00000000",
+  "PayerName": "JOAO COSTA SILVA",
+  "VoucherUrl": "https://voucher.firebanking.com/pix/03cadd36-fddd-4091-9ffe-67b0483cbcf5.pdf"
 }
 ```
 
-### Cobrança Expirada
+
+### Transação com Erro (Status: ERROR)
 
 ```json
 {
-  "event": "pix.payment_expired",
-  "pix_id": "pix_12345678901234567890",
-  "external_id": "pedido-12345",
-  "timestamp": "2024-01-15T11:30:00Z",
-  "data": {
-    "id": "pix_12345678901234567890",
-    "external_id": "pedido-12345",
-    "status": "expired",
-    "amount": 15000,
-    "currency": "BRL",
-    "description": "Compra na loja virtual",
-    "buyer": {
-      "name": "Maria Silva Santos",
-      "document": "***.***.***-01",
-      "email": "maria@email.com"
-    },
-    "expires_at": "2024-01-15T11:30:00Z",
-    "expired_at": "2024-01-15T11:30:00Z",
-    "created_at": "2024-01-15T10:30:00Z",
-    "metadata": {
-      "pedido_id": "12345",
-      "vendedor": "Loja ABC"
-    }
-  },
-  "webhook": {
-    "id": "webhook_987654322",
-    "attempt": 1,
-    "max_attempts": 5
-  }
+  "transactionId": "error-1234-5678-9abc-def012345678",
+  "businessTransactionId": "pedido-erro-12345",
+  "status": "ERROR",
+  "value": 15000,
+  "movementType": null,
+  "endToEndId": null,
+  "pixKey": "chave-invalida@email.com",
+  "createdDate": "2024-01-15T14:30:45.123Z",
+  "ReceiverBankAccount": null,
+  "ReceiverToBankAccountDigit": null,
+  "ReceiverBankBranch": null,
+  "ReceiverBankCode": null,
+  "ReceiverDocumentNumber": null,
+  "ReceiverBankName": null,
+  "ReceiverBankISPB": null,
+  "ReceiverName": null,
+  "PayerBankAccount": null,
+  "PayerBankAccountDigit": null,
+  "PayerBankBranch": null,
+  "PayerBankCode": null,
+  "PayerDocumentNumber": null,
+  "PayerBankName": null,
+  "PayerBankISPB": null,
+  "PayerName": null,
+  "VoucherUrl": null
 }
 ```
 
-### Estorno Processado
+## Campos da Transação
 
-```json
-{
-  "event": "pix.refund_processed",
-  "pix_id": "pix_12345678901234567890",
-  "refund_id": "refund_123456789012345",
-  "timestamp": "2024-01-15T17:00:30Z",
-  "data": {
-    "original_transaction": {
-      "id": "pix_12345678901234567890",
-      "external_id": "pedido-12345",
-      "amount": 15000
-    },
-    "refund": {
-      "id": "refund_123456789012345",
-      "status": "refund_completed",
-      "amount": 15000,
-      "description": "Produto não entregue",
-      "processed_at": "2024-01-15T17:00:30Z",
-      "end_to_end_id": "E00000000202401151700300987654321"
-    }
-  },
-  "webhook": {
-    "id": "webhook_987654323",
-    "attempt": 1,
-    "max_attempts": 5
-  }
-}
-```
+### Estrutura Principal
 
-### Split Finalizado
+<ResponseField name="_id" type="string" required>
+  ID único da transação (ObjectId)
+</ResponseField>
 
-```json
-{
-  "event": "pix.split_completed",
-  "pix_id": "pix_split_123456789",
-  "external_id": "marketplace-001",
-  "timestamp": "2024-01-15T18:15:50Z",
-  "data": {
-    "transaction": {
-      "id": "pix_split_123456789",
-      "external_id": "marketplace-001",
-      "total_amount": 100000,
-      "paid_at": "2024-01-15T18:15:30Z"
-    },
-    "split": {
-      "total_transfers": 3,
-      "successful_transfers": 3,
-      "failed_transfers": 0,
-      "total_transferred": 100000,
-      "splits": [
-        {
-          "recipient_id": "vendor_123",
-          "amount": 85000,
-          "status": "transferred",
-          "transfer_id": "split_transfer_001",
-          "transferred_at": "2024-01-15T18:15:45Z"
-        },
-        {
-          "recipient_id": "platform_fee",
-          "amount": 10000,
-          "status": "transferred",
-          "transfer_id": "split_transfer_002",
-          "transferred_at": "2024-01-15T18:15:46Z"
-        },
-        {
-          "recipient_id": "shipping_partner",
-          "amount": 5000,
-          "status": "transferred",
-          "transfer_id": "split_transfer_003",
-          "transferred_at": "2024-01-15T18:15:47Z"
-        }
-      ]
-    }
-  },
-  "webhook": {
-    "id": "webhook_987654324",
-    "attempt": 1,
-    "max_attempts": 5
-  }
-}
-```
+<ResponseField name="businessId" type="string" required>
+  ID do business que recebeu o PIX
+</ResponseField>
+
+<ResponseField name="operation" type="object" required>
+  Dados da operação PIX
+</ResponseField>
+
+<ResponseField name="payer" type="object" required>
+  Dados do pagador (cliente externo)
+</ResponseField>
+
+<ResponseField name="createdAt" type="string" required>
+  Data de criação da transação (ISO 8601)
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string" required>
+  Data da última atualização (ISO 8601)
+</ResponseField>
+
+### Campo Operation
+
+<ResponseField name="operation.type" type="string" required>
+  Tipo da operação: `PAYMENT` ou `REFUND`
+</ResponseField>
+
+<ResponseField name="operation.method" type="string" required>
+  Método: sempre `PIX`
+</ResponseField>
+
+<ResponseField name="operation.direction" type="string" required>
+  Direção: sempre `IN` (recebimento)
+</ResponseField>
+
+<ResponseField name="operation.status" type="string" required>
+  Status: `PAID` ou `ERROR`
+</ResponseField>
+
+<ResponseField name="operation.movementType" type="string" required>
+  Tipo de movimento: `CREDIT` (entrada) ou `DEBIT` (saída)
+</ResponseField>
+
+<ResponseField name="operation.value" type="number" required>
+  Valor original em centavos (R$ 150,00 = 15000)
+</ResponseField>
+
+<ResponseField name="operation.result" type="number" required>
+  Valor efetivado em centavos
+</ResponseField>
+
+<ResponseField name="operation.fee" type="number" required>
+  Taxa cobrada em centavos
+</ResponseField>
+
+<ResponseField name="operation.provider" type="string" required>
+  Provedor utilizado: `CELCOIN`, `WOOVI`, etc.
+</ResponseField>
+
+<ResponseField name="operation.providerID" type="string" required>
+  ID da transação no provedor
+</ResponseField>
+
+<ResponseField name="operation.externalID" type="string" optional>
+  ID externo fornecido pelo cliente
+</ResponseField>
+
+<ResponseField name="operation.description" type="string" optional>
+  Descrição da transação
+</ResponseField>
+
+<ResponseField name="operation.additionalInfo.endToEndId" type="string" required>
+  ID end-to-end do PIX (BACEN)
+</ResponseField>
 
 ## Implementação do Webhook
 
@@ -247,21 +217,13 @@ app.post('/webhooks/pix', (req, res) => {
   
   const webhook = JSON.parse(payload);
   
-  switch (webhook.event) {
-    case 'pix.payment_received':
-      handlePaymentReceived(webhook.data);
+  switch (webhook.operation.status) {
+    case 'PAID':
+      handlePaymentReceived(webhook);
       break;
-      
-    case 'pix.payment_expired':
-      handlePaymentExpired(webhook.data);
-      break;
-      
-    case 'pix.refund_processed':
-      handleRefundProcessed(webhook.data);
-      break;
-      
-    case 'pix.split_completed':
-      handleSplitCompleted(webhook.data);
+
+    case 'ERROR':
+      handleTransactionError(webhook);
       break;
   }
   
@@ -276,9 +238,14 @@ function verifySignature(payload, signature) {
   return signature === `sha256=${hash}`;
 }
 
-function handlePaymentReceived(data) {
-  console.log(`Pagamento recebido: ${data.external_id}`);
+function handlePaymentReceived(transaction) {
+  console.log(`PIX recebido: R$ ${transaction.operation.value / 100}`);
+  console.log(`End-to-end ID: ${transaction.operation.additionalInfo.endToEndId}`);
+  console.log(`Cliente: ${transaction.payer.fullName}`);
+
   // Processar pedido, enviar produto, etc.
+  updateOrderStatus(transaction.operation.externalID, 'paid');
+  sendConfirmationEmail(transaction.payer.fullName);
 }
 
 app.listen(3000);
@@ -304,14 +271,10 @@ def webhook_pix():
     
     webhook = json.loads(payload)
     
-    if webhook['event'] == 'pix.payment_received':
-        handle_payment_received(webhook['data'])
-    elif webhook['event'] == 'pix.payment_expired':
-        handle_payment_expired(webhook['data'])
-    elif webhook['event'] == 'pix.refund_processed':
-        handle_refund_processed(webhook['data'])
-    elif webhook['event'] == 'pix.split_completed':
-        handle_split_completed(webhook['data'])
+    if webhook['operation']['status'] == 'PAID':
+        handle_payment_received(webhook)
+    elif webhook['operation']['status'] == 'ERROR':
+        handle_transaction_error(webhook)
     
     return 'OK', 200
 
@@ -325,9 +288,14 @@ def verify_signature(payload, signature):
     expected_signature = f"sha256={hash_obj.hexdigest()}"
     return signature == expected_signature
 
-def handle_payment_received(data):
-    print(f"Pagamento recebido: {data['external_id']}")
+def handle_payment_received(transaction):
+    value_brl = transaction['operation']['value'] / 100
+    print(f"PIX recebido: R$ {value_brl}")
+    print(f"End-to-end ID: {transaction['operation']['additionalInfo']['endToEndId']}")
+    print(f"Cliente: {transaction['payer']['fullName']}")
+
     # Processar pedido
+    update_order_status(transaction['operation']['externalID'], 'paid')
 
 if __name__ == '__main__':
     app.run(port=3000)
@@ -348,18 +316,12 @@ if (!verifySignature($payload, $signature)) {
 
 $webhook = json_decode($payload, true);
 
-switch ($webhook['event']) {
-    case 'pix.payment_received':
-        handlePaymentReceived($webhook['data']);
+switch ($webhook['operation']['status']) {
+    case 'PAID':
+        handlePaymentReceived($webhook);
         break;
-    case 'pix.payment_expired':
-        handlePaymentExpired($webhook['data']);
-        break;
-    case 'pix.refund_processed':
-        handleRefundProcessed($webhook['data']);
-        break;
-    case 'pix.split_completed':
-        handleSplitCompleted($webhook['data']);
+    case 'ERROR':
+        handleTransactionError($webhook);
         break;
 }
 
@@ -372,9 +334,14 @@ function verifySignature($payload, $signature) {
     return hash_equals($signature, $hash);
 }
 
-function handlePaymentReceived($data) {
-    error_log("Pagamento recebido: " . $data['external_id']);
+function handlePaymentReceived($transaction) {
+    $valueBrl = $transaction['operation']['value'] / 100;
+    error_log("PIX recebido: R$ " . $valueBrl);
+    error_log("End-to-end ID: " . $transaction['operation']['additionalInfo']['endToEndId']);
+    error_log("Cliente: " . $transaction['payer']['fullName']);
+
     // Processar pedido
+    updateOrderStatus($transaction['operation']['externalID'], 'paid');
 }
 ?>
 ```
