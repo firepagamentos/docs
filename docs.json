@@ -171,10 +171,7 @@
           },
           {
             "group": "Conta",
-            "pages": [
-              "api-reference/account/balance",
-              "api-reference/account/webhook"
-            ]
+            "pages": ["api-reference/account/balance"]
           },
           {
             "group": "Webhooks",
