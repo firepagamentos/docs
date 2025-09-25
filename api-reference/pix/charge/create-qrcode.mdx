@@ -31,11 +31,7 @@ curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment" \
       "fullName": "John Marvin",
       "document": "12312312387"
     },
-    "callback_url": "https://meusite.com/webhooks/pix",
-    "metadata": {
-      "pedido_id": "12345",
-      "vendedor": "Loja ABC"
-    }
+    "callback_url": "https://meusite.com/webhooks/pix"
   }'
 ```
 
@@ -90,11 +86,7 @@ pix_data = {
         "fullName": "John Marvin",
         "document": "12312312387"
     },
-    "callback_url": "https://meusite.com/webhooks/pix",
-    "metadata": {
-        "pedido_id": "12345",
-        "vendedor": "Loja ABC"
-    }
+    "callback_url": "https://meusite.com/webhooks/pix"
 }
 
 response = requests.post(
@@ -127,11 +119,7 @@ $pixData = [
         'fullName' => 'John Marvin',
         'document' => '12312312387'
     ],
-    'callback_url' => 'https://meusite.com/webhooks/pix',
-    'metadata' => [
-        'pedido_id' => '12345',
-        'vendedor' => 'Loja ABC'
-    ]
+    'callback_url' => 'https://meusite.com/webhooks/pix'
 ];
 
 $curl = curl_init();
