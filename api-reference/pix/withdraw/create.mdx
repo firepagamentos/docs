@@ -1,12 +1,16 @@
 ---
-title: 'Criar Transferência'
+title: 'Transferência via Chave PIX'
 openapi: 'POST /pix/v2/payment/withdraw'
-description: 'Realize transferências PIX para chaves PIX ou contas bancárias de terceiros'
+description: 'Realize transferências PIX utilizando chaves PIX (CPF, CNPJ, email, telefone ou chave aleatória)'
 ---
 
 ## Visão Geral
 
-Realize transferências PIX (cash out) enviando valores da sua conta FireBanking para chaves PIX ou contas bancárias de terceiros. As transferências são processadas instantaneamente e funcionam 24/7.
+Realize transferências PIX (cash out) enviando valores da sua conta FireBanking para chaves PIX conhecidas (CPF, CNPJ, email, telefone ou chave aleatória). As transferências são processadas instantaneamente e funcionam 24/7.
+
+<Note>
+  Para pagamentos via QR Code dinâmico ou código Copia e Cola, utilize o endpoint [/payment/withdraw/qrcode](/api-reference/pix/withdraw/create-qrcode).
+</Note>
 
 <Warning>
   Certifique-se de ter saldo suficiente na sua conta antes de realizar a transferência.

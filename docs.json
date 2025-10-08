@@ -68,7 +68,8 @@
           {
             "group": "PIX Saque (Cash Out)",
             "pages": [
-              "api-reference/pix/withdraw/create"
+              "api-reference/pix/withdraw/create",
+              "api-reference/pix/withdraw/create-qrcode"
             ]
           },
           {

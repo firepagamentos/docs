@@ -949,8 +949,8 @@
     "/pix/v2/payment/withdraw": {
       "post": {
         "tags": ["PIX"],
-        "summary": "Criar Transferência PIX",
-        "description": "Realiza transferências PIX para chaves PIX ou contas bancárias",
+        "summary": "Transferência via Chave PIX",
+        "description": "Realiza transferências PIX utilizando chaves PIX (CPF, CNPJ, email, telefone ou chave aleatória)",
         "security": [{ "apiKeyAuth": [] }],
         "requestBody": {
           "required": true,
@@ -979,6 +979,46 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pix/v2/payment/withdraw/qrcode": {
+      "post": {
+        "tags": ["PIX"],
+        "summary": "Transferência via QR Code",
+        "description": "Realiza transferências PIX utilizando QR Code dinâmico ou código Copia e Cola",
+        "security": [{ "apiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePixQrCodeWithdrawRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transferência via QR Code criada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixWithdrawResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida (QR Code inválido, saldo insuficiente, limite excedido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixWithdrawError"
                 }
               }
             }
@@ -2281,6 +2321,93 @@
             "type": "string",
             "description": "Identificador único da transferência em seu sistema",
             "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          }
+        }
+      },
+      "CreatePixQrCodeWithdrawRequest": {
+        "type": "object",
+        "required": ["type", "value", "details"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["PIX"],
+            "description": "Tipo da operação: sempre PIX"
+          },
+          "value": {
+            "type": "number",
+            "description": "Valor da transferência em centavos (ex: 5000 = R$ 50,00)",
+            "example": 5000,
+            "minimum": 1
+          },
+          "details": {
+            "type": "object",
+            "required": ["qrCode"],
+            "properties": {
+              "qrCode": {
+                "type": "string",
+                "description": "String completa do QR Code PIX (Copia e Cola) no formato EMV",
+                "example": "00020126580014br.gov.bcb.pix0136a629532e-7693-4846-852d-1bbff6b2f8cd520400005303986540510.005802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D"
+              },
+              "name": {
+                "type": "string",
+                "description": "Nome do beneficiário (opcional, usado para referência)",
+                "example": "Estabelecimento XYZ"
+              },
+              "document": {
+                "type": "string",
+                "description": "CPF ou CNPJ do beneficiário (opcional, usado para auditoria)",
+                "example": "12345678000190"
+              }
+            }
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Identificador único da transferência em seu sistema",
+            "example": "payment-12345-abc"
+          },
+          "callbackWebhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL customizada para receber webhook desta transação específica"
+          }
+        }
+      },
+      "PixWithdrawError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Código do erro",
+            "example": "INSUFFICIENT_BALANCE"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem de erro",
+            "example": "Insufficient balance for transaction."
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da transação",
+            "example": "ERROR"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação",
+            "example": "8f4a2b1c-9d3e-4a5f-b6c7-d8e9f0a1b2c3"
+          },
+          "providerError": {
+            "type": "object",
+            "description": "Detalhes do erro do provedor (se disponível)",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "INVALID_PAYLOAD"
+              },
+              "message": {
+                "type": "string",
+                "example": "O código Copia e Cola fornecido está em formato inválido"
+              }
+            }
           }
         }
       },

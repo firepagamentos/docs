@@ -1,0 +1,669 @@
+---
+title: 'Transferência via QR Code'
+openapi: 'POST /pix/v2/payment/withdraw/qrcode'
+description: 'Realize transferências PIX utilizando QR Code ou código Copia e Cola'
+---
+
+## Visão Geral
+
+Realize transferências PIX (cash out) utilizando QR Code dinâmico ou código Copia e Cola. Este método permite enviar pagamentos para cobranças PIX geradas por terceiros, seja escaneando um QR Code ou colando o código alfanumérico.
+
+<Note>
+  Este endpoint é ideal para pagamento de boletos PIX, cobranças de terceiros e pagamentos via QR Code dinâmico.
+</Note>
+
+<Warning>
+  Certifique-se de ter saldo suficiente na sua conta antes de realizar a transferência.
+</Warning>
+
+## Diferenças entre Métodos de Cash Out
+
+<AccordionGroup>
+  <Accordion title="Transferência via Chave PIX (/payment/withdraw)">
+    - **Uso**: Transferências para chaves PIX conhecidas (CPF, email, telefone, chave aleatória)
+    - **Dados necessários**: Chave PIX + tipo de chave
+    - **Exemplo**: Transferir R$ 100,00 para o CPF 123.456.789-00
+  </Accordion>
+
+  <Accordion title="Transferência via QR Code (/payment/withdraw/qrcode)">
+    - **Uso**: Pagamento de cobranças PIX (QR Code dinâmico)
+    - **Dados necessários**: String do QR Code (Copia e Cola)
+    - **Exemplo**: Pagar boleto PIX escaneando QR Code ou colando código
+    - **Características**: Valor pode estar pré-definido no QR Code
+  </Accordion>
+</AccordionGroup>
+
+## Exemplo de Requisição
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw/qrcode" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "PIX",
+    "value": 5000,
+    "details": {
+      "qrCode": "00020126580014br.gov.bcb.pix0136a629532e-7693-4846-852d-1bbff6b2f8cd520400005303986540510.005802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D",
+      "name": "Estabelecimento XYZ",
+      "document": "12345678000190"
+    },
+    "externalId": "payment-12345-abc"
+  }'
+```
+
+```javascript JavaScript
+const pixQrCodeWithdraw = await fetch('https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw/qrcode', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'SUA_CHAVE_DE_API',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    type: 'PIX',
+    value: 5000,
+    details: {
+      qrCode: '00020126580014br.gov.bcb.pix0136a629532e-7693-4846-852d-1bbff6b2f8cd520400005303986540510.005802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D',
+      name: 'Estabelecimento XYZ',
+      document: '12345678000190'
+    },
+    externalId: 'payment-12345-abc'
+  })
+});
+
+const result = await pixQrCodeWithdraw.json();
+console.log('Pagamento via QR Code criado:', result);
+```
+
+```python Python
+import requests
+
+withdraw_data = {
+    "type": "PIX",
+    "value": 5000,
+    "details": {
+        "qrCode": "00020126580014br.gov.bcb.pix0136a629532e-7693-4846-852d-1bbff6b2f8cd520400005303986540510.005802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D",
+        "name": "Estabelecimento XYZ",
+        "document": "12345678000190"
+    },
+    "externalId": "payment-12345-abc"
+}
+
+response = requests.post(
+    'https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw/qrcode',
+    json=withdraw_data,
+    headers={
+        'x-api-key': 'SUA_CHAVE_DE_API',
+        'Content-Type': 'application/json'
+    }
+)
+
+result = response.json()
+print('Pagamento via QR Code criado:', result)
+```
+
+```php PHP
+<?php
+$withdrawData = [
+    'type' => 'PIX',
+    'value' => 5000,
+    'details' => [
+        'qrCode' => '00020126580014br.gov.bcb.pix0136a629532e-7693-4846-852d-1bbff6b2f8cd520400005303986540510.005802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D',
+        'name' => 'Estabelecimento XYZ',
+        'document' => '12345678000190'
+    ],
+    'externalId' => 'payment-12345-abc'
+];
+
+$curl = curl_init();
+curl_setopt_array($curl, [
+    CURLOPT_URL => 'https://api-gateway.firebanking.com.br/pix/v2/payment/withdraw/qrcode',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($withdrawData),
+    CURLOPT_HTTPHEADER => [
+        'x-api-key: SUA_CHAVE_DE_API',
+        'Content-Type: application/json'
+    ]
+]);
+
+$response = curl_exec($curl);
+$result = json_decode($response, true);
+echo 'Pagamento via QR Code criado: ' . print_r($result, true);
+?>
+```
+</CodeGroup>
+
+## Campos da Requisição
+
+### Campos Principais
+
+<ParamField body="type" type="string" required>
+  Tipo da transferência. Valor fixo: `PIX`
+</ParamField>
+
+<ParamField body="value" type="number" required>
+  Valor da transferência em centavos.
+  - Exemplo: `5000` = R$ 50,00
+  - Mínimo: 1 centavo (R$ 0,01)
+  - Máximo: Conforme limites do business
+</ParamField>
+
+<ParamField body="details" type="object" required>
+  Detalhes da transferência via QR Code
+</ParamField>
+
+<ParamField body="externalId" type="string" optional>
+  ID único da sua aplicação para rastreamento.
+  - Deve ser único por business
+  - Útil para reconciliação e idempotência
+  - Máximo: 255 caracteres
+</ParamField>
+
+<ParamField body="callbackWebhookUrl" type="string" optional>
+  URL customizada para receber webhook desta transação específica
+</ParamField>
+
+### Objeto details
+
+<ParamField body="details.qrCode" type="string" required>
+  String completa do QR Code PIX (Copia e Cola)
+  - Formato: Código EMV padrão Banco Central
+  - Começa com: `00020126...`
+  - Contém: Chave PIX, valor, beneficiário, etc.
+  - Obtido: Ao escanear QR Code ou através de API do recebedor
+</ParamField>
+
+<ParamField body="details.name" type="string" optional>
+  Nome do beneficiário (estabelecimento/pessoa)
+  - Usado para referência e logs
+  - Não afeta o processamento
+</ParamField>
+
+<ParamField body="details.document" type="string" optional>
+  CPF ou CNPJ do beneficiário
+  - Formato: Apenas números (sem formatação)
+  - CPF: 11 dígitos
+  - CNPJ: 14 dígitos
+  - Usado para auditoria e logs
+</ParamField>
+
+## Exemplo de Resposta
+
+<ResponseExample>
+```json 200 OK - Aguardando Confirmação
+{
+  "transactionId": "8f4a2b1c-9d3e-4a5f-b6c7-d8e9f0a1b2c3",
+  "status": "WAITING_CONFIRMATION"
+}
+```
+
+```json 400 Bad Request - Saldo Insuficiente
+{
+  "code": "INSUFFICIENT_BALANCE",
+  "message": "Insufficient balance for transaction.",
+  "status": "ERROR",
+  "transactionId": "8f4a2b1c-9d3e-4a5f-b6c7-d8e9f0a1b2c3"
+}
+```
+
+```json 400 Bad Request - QR Code Inválido
+{
+  "code": "INVALID_QR_CODE",
+  "message": "QR Code PIX inválido ou expirado",
+  "status": "ERROR",
+  "transactionId": "8f4a2b1c-9d3e-4a5f-b6c7-d8e9f0a1b2c3",
+  "providerError": {
+    "code": "INVALID_PAYLOAD",
+    "message": "O código Copia e Cola fornecido está em formato inválido"
+  }
+}
+```
+
+```json 400 Bad Request - Limite Excedido
+{
+  "code": "LIMIT_EXCEEDED",
+  "message": "Valor excede limite por transação",
+  "status": "ERROR",
+  "transactionId": "8f4a2b1c-9d3e-4a5f-b6c7-d8e9f0a1b2c3"
+}
+```
+</ResponseExample>
+
+## Campos de Resposta
+
+<ResponseField name="transactionId" type="string">
+  ID único da transferência no FireBanking (UUID v4)
+  - Use este ID para consultar status via `/pix/v2/payment/{transactionId}`
+  - Será enviado no webhook de confirmação
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Status da transferência:
+  - `WAITING_CONFIRMATION` - Aguardando confirmação/processamento
+  - `WITHDRAW_PAID` - Transferência realizada com sucesso
+  - `ERROR` - Erro no processamento
+</ResponseField>
+
+## Fluxo de Processamento
+
+### 1. Validação Inicial
+- **Verificação do QR Code**: Decodificação e validação do formato EMV
+- **Extração de dados**: Chave PIX, valor, beneficiário, expiração
+- **Validação de saldo**: Verificação de saldo disponível
+- **Limites de horário**: Validação de limites diurnos/noturnos
+
+### 2. Processamento
+- **Débito do valor**: Adição ao saldo bloqueado da conta
+- **Envio ao provedor**: Transmissão da transferência PIX
+- **Confirmação SPI**: Processamento pelo Sistema de Pagamentos Instantâneos
+- **Atualização de status**: Transição `WAITING_CONFIRMATION` → `WITHDRAW_PAID`
+
+### 3. Confirmação
+- **Webhook enviado**: Notificação com status final
+- **Atualização de saldo**: Débito confirmado do saldo
+- **Comprovante gerado**: Dados disponíveis para consulta
+- **Log de auditoria**: Registro completo da operação
+
+## Estados da Transferência
+
+<AccordionGroup>
+  <Accordion title="WAITING_CONFIRMATION">
+    - **Descrição**: Transferência criada, aguardando processamento pelo provedor
+    - **Duração típica**: 3-10 segundos
+    - **Saldo**: Valor adicionado ao saldo bloqueado
+    - **Ação**: Sistema está processando no SPI (Sistema de Pagamentos Instantâneos)
+    - **Próximo status**: `WITHDRAW_PAID` ou `ERROR`
+  </Accordion>
+
+  <Accordion title="WITHDRAW_PAID">
+    - **Descrição**: Transferência realizada com sucesso
+    - **Valor**: Debitado do saldo bloqueado e confirmado
+    - **Beneficiário**: Valor creditado na conta de destino
+    - **Comprovante**: Dados completos disponíveis via API
+    - **Status final**: Transação concluída e irreversível
+  </Accordion>
+
+  <Accordion title="ERROR">
+    - **Descrição**: Erro no processamento da transferência
+    - **Possíveis causas**:
+      - QR Code expirado ou inválido
+      - Saldo insuficiente
+      - Limite de horário excedido
+      - Erro na comunicação com provedor
+    - **Valor**: Removido do saldo bloqueado (estorno automático)
+    - **Ação**: Verificar erro e tentar novamente com novo QR Code
+  </Accordion>
+</AccordionGroup>
+
+## Validações e Limites
+
+### Limites Operacionais
+
+<Note>
+  Os limites abaixo seguem regulamentação do Banco Central (Resolução BCB nº 1/2020)
+</Note>
+
+- **Valor mínimo**: R$ 0,01
+- **Valor máximo diurno**: R$ 20.000,00 (6h às 20h)
+- **Valor máximo noturno**: R$ 1.000,00 (20h às 6h)
+- **Limite por transação**: Configurável por business no `business-rules`
+- **Limite mensal**: Configurável por business
+
+### Validações Automáticas
+
+<AccordionGroup>
+  <Accordion title="Validação do QR Code">
+    - **Formato EMV**: Validação do padrão Banco Central
+    - **Checksum**: Verificação de integridade do código
+    - **Expiração**: Validação de data de validade (se presente)
+    - **Valor**: Extração e validação do valor (se pré-definido)
+  </Accordion>
+
+  <Accordion title="Validação de Saldo">
+    - **Saldo disponível**: `balance - (assuranceBalance + blockedBalance)`
+    - **Verificação em tempo real**: Antes do processamento
+    - **Reserva de saldo**: Adição ao `blockedBalance` durante processamento
+    - **Liberação**: Débito ou estorno após confirmação
+  </Accordion>
+
+  <Accordion title="Validação de Limites">
+    - **Limite por transação**: Verificação em `businessRules.limits.pixOut.perTransactionLimit`
+    - **Limite de horário**: Aplicação de limites diurnos/noturnos (regulamentação BC)
+    - **Limite acumulado**: Validação de limites diários/mensais
+    - **Business ativo**: Verificação de `business.active === true`
+  </Accordion>
+</AccordionGroup>
+
+## Formato do QR Code PIX
+
+O QR Code PIX segue o padrão EMV (Europay, Mastercard e Visa) e contém:
+
+### Estrutura do Código Copia e Cola
+
+```
+00020126580014br.gov.bcb.pix0136[CHAVE_PIX]5204000053039865405[VALOR]5802BR5913[BENEFICIARIO]6008[CIDADE]62070503***6304[CRC]
+```
+
+### Campos Principais
+
+| Campo | ID | Descrição | Exemplo |
+|-------|-----|-----------|---------|
+| Payload Format | `00` | Versão do formato | `01` |
+| Merchant Account | `26` | Informações da conta | Chave PIX + domínio |
+| Merchant Category | `52` | Código de categoria | `0000` (pessoa física) |
+| Currency | `53` | Código da moeda | `986` (BRL) |
+| Amount | `54` | Valor da transação | `10.00` (opcional) |
+| Country | `58` | Código do país | `BR` |
+| Merchant Name | `59` | Nome do beneficiário | `Fulano de Tal` |
+| Merchant City | `60` | Cidade do beneficiário | `BRASILIA` |
+| Additional Info | `62` | Informações adicionais | ID da transação |
+| CRC | `63` | Checksum CRC16 | `1D3D` |
+
+<Note>
+  O campo `54` (valor) é opcional. Se presente no QR Code, ele será usado. Se ausente, o valor do campo `value` da requisição será considerado.
+</Note>
+
+## Códigos de Erro
+
+| Código | Descrição | Ação Sugerida |
+|--------|-----------|---------------|
+| `INSUFFICIENT_BALANCE` | Saldo insuficiente na conta | Adicionar saldo antes de tentar novamente |
+| `INVALID_QR_CODE` | QR Code inválido ou mal formatado | Verificar o código Copia e Cola |
+| `QR_CODE_EXPIRED` | QR Code expirado | Solicitar novo QR Code ao beneficiário |
+| `INVALID_AMOUNT` | Valor inválido ou fora dos limites | Verificar limites de horário e transação |
+| `LIMIT_EXCEEDED` | Limite de transferência excedido | Aguardar novo período ou aumentar limite |
+| `BUSINESS_INACTIVE` | Business desativado | Contatar suporte FireBanking |
+| `PIX_OUT_INACTIVE` | PIX Out desativado no business | Ativar PIX Out nas configurações |
+| `EXTERNAL_ID_EXISTS` | ExternalId já utilizado | Usar novo externalId único |
+| `PIX_UNAVAILABLE` | Sistema PIX temporariamente indisponível | Tentar novamente em alguns minutos |
+| `PROVIDER_ERROR` | Erro no provedor de pagamento | Verificar `providerError` na resposta |
+
+## Boas Práticas
+
+### Segurança
+
+<AccordionGroup>
+  <Accordion title="Validação do QR Code">
+    - **Verificação prévia**: Decodificar e validar QR Code antes de enviar
+    - **Timeout de expiração**: Alertar usuário sobre validade do QR Code
+    - **Confirmação de valor**: Exibir valor extraído do QR Code para confirmação
+    - **Log detalhado**: Registrar todas as tentativas de pagamento
+  </Accordion>
+
+  <Accordion title="Controle de Acesso">
+    - **API Key segura**: Armazenar em variáveis de ambiente
+    - **HTTPS obrigatório**: Todas as requisições devem usar TLS 1.2+
+    - **Rate limiting**: Limitar número de transferências por minuto
+    - **Confirmação dupla**: Implementar confirmação adicional para valores altos
+  </Accordion>
+
+  <Accordion title="Auditoria">
+    - **ExternalId único**: Sempre usar externalId para rastreamento
+    - **Logs estruturados**: Registrar request/response completos
+    - **Histórico de transações**: Manter registro de todas as tentativas
+    - **Alertas**: Configurar alertas para falhas recorrentes
+  </Accordion>
+</AccordionGroup>
+
+### Experiência do Usuário
+
+<AccordionGroup>
+  <Accordion title="Interface de Pagamento">
+    - **Scan QR Code**: Implementar leitor de QR Code nativo
+    - **Copia e Cola**: Permitir colar código manualmente
+    - **Preview de dados**: Mostrar beneficiário e valor antes de confirmar
+    - **Feedback visual**: Indicar progresso do processamento
+  </Accordion>
+
+  <Accordion title="Validação em Tempo Real">
+    - **Decodificação imediata**: Validar QR Code assim que colado/escaneado
+    - **Exibir beneficiário**: Mostrar nome extraído do QR Code
+    - **Exibir valor**: Mostrar valor se presente no QR Code
+    - **Alertas de expiração**: Avisar se QR Code está próximo de expirar
+  </Accordion>
+
+  <Accordion title="Confirmação e Comprovante">
+    - **Tela de confirmação**: Resumo antes de processar
+    - **Feedback imediato**: Mostrar status `WAITING_CONFIRMATION`
+    - **Comprovante**: Gerar PDF ou imagem após `WITHDRAW_PAID`
+    - **Histórico**: Permitir consultar transações anteriores
+  </Accordion>
+</AccordionGroup>
+
+### Performance e Confiabilidade
+
+<AccordionGroup>
+  <Accordion title="Otimização de Requisições">
+    - **Timeout apropriado**: 30 segundos para transferências
+    - **Retry Strategy**:
+      - ❌ NÃO retentar se `status === "ERROR"`
+      - ✅ Retentar apenas em timeout ou erro de rede
+      - ⚠️ Usar `externalId` para evitar duplicatas
+    - **Cache de validações**: Armazenar limites do business
+  </Accordion>
+
+  <Accordion title="Monitoramento">
+    - **Webhook prioritário**: Usar webhook ao invés de polling
+    - **Logs detalhados**: Registrar tempo de resposta e erros
+    - **Métricas**: Taxa de sucesso, tempo médio de processamento
+    - **Alertas**: Falhas consecutivas, timeouts frequentes
+  </Accordion>
+
+  <Accordion title="Tratamento de Erros">
+    - **Erros de saldo**: Orientar usuário a adicionar saldo
+    - **QR Code expirado**: Solicitar novo código ao beneficiário
+    - **Timeout**: Consultar status via `/pix/v2/payment/{transactionId}`
+    - **Provider Error**: Exibir mensagem de `providerError` se disponível
+  </Accordion>
+</AccordionGroup>
+
+## Webhook de Confirmação
+
+Após o processamento, você receberá um webhook com o resultado:
+
+### Sucesso
+
+```json
+{
+  "event": "pix.withdraw_completed",
+  "transaction_id": "8f4a2b1c-9d3e-4a5f-b6c7-d8e9f0a1b2c3",
+  "external_id": "payment-12345-abc",
+  "timestamp": "2024-01-15T15:30:15Z",
+  "data": {
+    "status": "WITHDRAW_PAID",
+    "value": 5000,
+    "beneficiary": {
+      "name": "Estabelecimento XYZ",
+      "document": "12345678000190",
+      "bank": "Banco ABC"
+    },
+    "fees": {
+      "total": 0
+    },
+    "operation": {
+      "result": 5000,
+      "fee": 0
+    }
+  }
+}
+```
+
+### Erro
+
+```json
+{
+  "event": "pix.withdraw_failed",
+  "transaction_id": "8f4a2b1c-9d3e-4a5f-b6c7-d8e9f0a1b2c3",
+  "external_id": "payment-12345-abc",
+  "timestamp": "2024-01-15T15:30:20Z",
+  "data": {
+    "status": "ERROR",
+    "value": 5000,
+    "error": {
+      "code": "QR_CODE_EXPIRED",
+      "message": "QR Code expirado",
+      "provider_code": "EXPIRED_PAYLOAD"
+    }
+  }
+}
+```
+
+<Note>
+  Configure sua URL de webhook em **Dashboard → Configurações → Webhooks** ou use o parâmetro `callbackWebhookUrl` para webhooks específicos por transação.
+</Note>
+
+## Exemplos de Integração
+
+### Scanner de QR Code (React Native)
+
+```javascript
+import { Camera } from 'react-native-vision-camera';
+
+const QRCodeScanner = () => {
+  const onQRCodeScanned = async (codes) => {
+    const qrCode = codes[0]?.value;
+
+    if (!qrCode || !qrCode.startsWith('00020126')) {
+      alert('QR Code inválido');
+      return;
+    }
+
+    // Decodificar informações do QR Code
+    const pixData = decodePixQRCode(qrCode);
+
+    // Exibir confirmação
+    const confirmed = await showConfirmation({
+      beneficiary: pixData.name,
+      value: pixData.value || 'A definir',
+      city: pixData.city
+    });
+
+    if (confirmed) {
+      // Processar pagamento
+      await processQRCodePayment(qrCode, pixData.value);
+    }
+  };
+
+  return (
+    <Camera
+      onCodeScanned={onQRCodeScanned}
+      codeTypes={['qr']}
+    />
+  );
+};
+```
+
+### Copia e Cola (Web)
+
+```javascript
+const handlePasteQRCode = async (event) => {
+  const qrCode = event.clipboardData.getData('text');
+
+  // Validar formato
+  if (!qrCode.startsWith('00020126')) {
+    showError('Código Copia e Cola inválido');
+    return;
+  }
+
+  try {
+    // Decodificar QR Code
+    const pixData = decodePixQRCode(qrCode);
+
+    // Exibir preview
+    setPreview({
+      beneficiary: pixData.name,
+      value: pixData.value || 0,
+      city: pixData.city,
+      qrCode: qrCode
+    });
+
+    setStep('confirm');
+  } catch (error) {
+    showError('Erro ao processar código: ' + error.message);
+  }
+};
+
+const processPayment = async () => {
+  try {
+    setLoading(true);
+
+    const response = await fetch('/pix/v2/payment/withdraw/qrcode', {
+      method: 'POST',
+      headers: {
+        'x-api-key': API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: 'PIX',
+        value: preview.value * 100, // converter para centavos
+        details: {
+          qrCode: preview.qrCode,
+          name: preview.beneficiary
+        },
+        externalId: `payment-${Date.now()}`
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.status === 'WAITING_CONFIRMATION') {
+      // Aguardar webhook ou consultar status
+      pollTransactionStatus(result.transactionId);
+    }
+  } catch (error) {
+    showError('Erro ao processar pagamento: ' + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+## Consultar Status da Transação
+
+Use o endpoint de consulta para verificar o status:
+
+```bash
+curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/{transactionId}" \
+  -H "x-api-key: SUA_CHAVE_DE_API"
+```
+
+Resposta:
+
+```json
+{
+  "_id": "8f4a2b1c-9d3e-4a5f-b6c7-d8e9f0a1b2c3",
+  "status": "WITHDRAW_PAID",
+  "operation": {
+    "type": "CASH_OUT",
+    "status": "WITHDRAW_PAID",
+    "value": 5000,
+    "fee": 0,
+    "result": 5000,
+    "externalID": "payment-12345-abc"
+  },
+  "beneficiary": {
+    "name": "Estabelecimento XYZ",
+    "document": "12345678000190"
+  },
+  "createdAt": "2024-01-15T15:30:10Z",
+  "updatedAt": "2024-01-15T15:30:15Z"
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Webhooks Cash Out" href="/api-reference/pix/webhooks-cashout">
+    Configure notificações de transferência
+  </Card>
+  <Card title="Transferência via Chave" href="/api-reference/pix/withdraw/create">
+    Transferências para chaves PIX
+  </Card>
+  <Card title="Consultar Transação" href="/api-reference/pix/charge/get">
+    Verificar status de transações
+  </Card>
+  <Card title="Verificar Saldo" href="/api-reference/account/balance">
+    Consulte saldo disponível
+  </Card>
+</CardGroup>
