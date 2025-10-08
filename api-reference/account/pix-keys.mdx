@@ -1,0 +1,544 @@
+---
+title: 'Listar Chaves PIX'
+openapi: 'GET /v1/account/pix-keys'
+---
+
+Consultar todas as chaves PIX cadastradas na sua conta FireBanking. Este endpoint retorna a lista completa de chaves PIX ativas, incluindo tipo e provedor de cada chave.
+
+<Note>
+  As chaves PIX retornadas são aquelas cadastradas e aprovadas pelo provedor. Use estas chaves para receber pagamentos via PIX.
+</Note>
+
+## Tipos de Chave PIX
+
+<CardGroup cols={4}>
+  <Card title="Chave Aleatória" icon="key">
+    **RANDOM_KEY**
+    UUID gerado automaticamente
+  </Card>
+  <Card title="CPF/CNPJ" icon="id-card">
+    **DOCUMENT**
+    Documento da empresa
+  </Card>
+  <Card title="Email" icon="envelope">
+    **EMAIL**
+    Endereço de email
+  </Card>
+  <Card title="Telefone" icon="phone">
+    **PHONE**
+    Número de celular
+  </Card>
+</CardGroup>
+
+## Exemplo de Requisição
+
+```bash cURL
+curl --request GET \
+  --url https://api-gateway.firebanking.com.br/v1/account/pix-keys \
+  --header 'x-api-key: sua_chave_api'
+```
+
+## Exemplo de Resposta
+
+```json Resposta de Sucesso
+{
+  "pixKeys": [
+    {
+      "pixKey": "72d52e67-9b98-45e0-a20e-4c259259d271",
+      "pixType": "RANDOM_KEY",
+      "provider": "celcoin"
+    },
+    {
+      "pixKey": "1d8cba66-be01-4b7f-a642-12c37535e234",
+      "pixType": "RANDOM_KEY",
+      "provider": "celcoin"
+    },
+    {
+      "pixKey": "contato@minhaempresa.com.br",
+      "pixType": "EMAIL",
+      "provider": "celcoin"
+    },
+    {
+      "pixKey": "12345678000190",
+      "pixType": "DOCUMENT",
+      "provider": "celcoin"
+    }
+  ]
+}
+```
+
+```json Conta sem Chaves PIX
+{
+  "pixKeys": []
+}
+```
+
+## Campos da Resposta
+
+<ResponseField name="pixKeys" type="array" required>
+  Lista de chaves PIX cadastradas na conta
+</ResponseField>
+
+### Objeto pixKeys[]
+
+<ResponseField name="pixKey" type="string" required>
+  Valor da chave PIX cadastrada
+  - **RANDOM_KEY**: UUID v4 (ex: `72d52e67-9b98-45e0-a20e-4c259259d271`)
+  - **DOCUMENT**: CPF/CNPJ sem formatação (ex: `12345678000190`)
+  - **EMAIL**: Endereço de email (ex: `contato@empresa.com.br`)
+  - **PHONE**: Número com código do país (ex: `+5511999999999`)
+</ResponseField>
+
+<ResponseField name="pixType" type="string" required>
+  Tipo da chave PIX
+  - `RANDOM_KEY` - Chave aleatória (UUID)
+  - `DOCUMENT` - CPF ou CNPJ
+  - `EMAIL` - Endereço de email
+  - `PHONE` - Número de telefone
+</ResponseField>
+
+<ResponseField name="provider" type="string" required>
+  Provedor PIX responsável pela chave
+  - `celcoin` - Celcoin (provedor principal)
+  - `woovi` - Woovi
+  - `treeal` - Treeal
+  - `voluti` - Voluti
+</ResponseField>
+
+## Casos de Uso
+
+<CardGroup cols={2}>
+  <Card title="Exibir Chaves" icon="list">
+    Mostrar chaves disponíveis para recebimento
+  </Card>
+  <Card title="Compartilhar Chave" icon="share">
+    Permitir usuário copiar chave para compartilhar
+  </Card>
+  <Card title="Validação" icon="check-circle">
+    Verificar se conta possui chaves ativas
+  </Card>
+  <Card title="Seleção de Chave" icon="hand-pointer">
+    Permitir escolha de chave preferencial
+  </Card>
+</CardGroup>
+
+## Limitação de Taxa
+
+Este endpoint tem os seguintes limites:
+- **50 requisições por minuto** por chave API
+- Cache recomendado: as chaves PIX não mudam frequentemente
+
+<Tip>
+  Armazene as chaves PIX em cache local por alguns minutos para evitar requisições desnecessárias.
+</Tip>
+
+## Cenários de Resposta
+
+### Conta com Múltiplas Chaves
+
+```json
+{
+  "pixKeys": [
+    {
+      "pixKey": "72d52e67-9b98-45e0-a20e-4c259259d271",
+      "pixType": "RANDOM_KEY",
+      "provider": "celcoin"
+    },
+    {
+      "pixKey": "financeiro@empresa.com.br",
+      "pixType": "EMAIL",
+      "provider": "celcoin"
+    },
+    {
+      "pixKey": "+5511999887766",
+      "pixType": "PHONE",
+      "provider": "celcoin"
+    }
+  ]
+}
+```
+
+### Conta sem Chaves Cadastradas
+
+```json
+{
+  "pixKeys": []
+}
+```
+
+<Note>
+  Se `pixKeys` retornar um array vazio, significa que a conta ainda não possui chaves PIX cadastradas. Entre em contato com o suporte para solicitar o cadastro de chaves.
+</Note>
+
+## Códigos de Resposta
+
+| Código | Descrição | Solução |
+|--------|-----------|---------|
+| **200** | Sucesso | Chaves PIX retornadas |
+| **401** | Não autorizado | Verifique header `x-api-key` |
+| **403** | Proibido | Chave API sem permissões |
+| **429** | Limite excedido | Aguarde 1 minuto |
+| **500** | Erro interno | Tente novamente |
+
+## Formato das Chaves
+
+### RANDOM_KEY (Chave Aleatória)
+
+```json
+{
+  "pixKey": "72d52e67-9b98-45e0-a20e-4c259259d271",
+  "pixType": "RANDOM_KEY"
+}
+```
+
+**Características:**
+- Formato UUID v4 (36 caracteres com hífens)
+- Gerada automaticamente pelo provedor
+- Não expõe dados pessoais
+- Recomendada para maior privacidade
+
+### DOCUMENT (CPF/CNPJ)
+
+```json
+{
+  "pixKey": "12345678000190",
+  "pixType": "DOCUMENT"
+}
+```
+
+**Características:**
+- CPF: 11 dígitos (sem pontos ou traços)
+- CNPJ: 14 dígitos (sem pontos, traços ou barras)
+- Vinculado ao documento da empresa
+
+### EMAIL
+
+```json
+{
+  "pixKey": "financeiro@empresa.com.br",
+  "pixType": "EMAIL"
+}
+```
+
+**Características:**
+- Endereço de email válido
+- Case-insensitive (convertido para minúsculas)
+- Deve estar sob controle da empresa
+
+### PHONE (Telefone)
+
+```json
+{
+  "pixKey": "+5511999887766",
+  "pixType": "PHONE"
+}
+```
+
+**Características:**
+- Formato internacional: `+55` + DDD + número
+- Apenas números com código do país
+- Deve ser um celular válido
+
+## Exemplo de Implementação
+
+### Listar e Exibir Chaves
+
+```javascript JavaScript
+const fetchPixKeys = async () => {
+  try {
+    const response = await fetch(
+      'https://api-gateway.firebanking.com.br/v1/account/pix-keys',
+      {
+        headers: {
+          'x-api-key': 'sua_chave_api'
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.pixKeys.length === 0) {
+      console.log('Nenhuma chave PIX cadastrada');
+      return;
+    }
+
+    console.log('Chaves PIX disponíveis:');
+    data.pixKeys.forEach((key, index) => {
+      console.log(`${index + 1}. ${key.pixKey} (${key.pixType})`);
+    });
+
+    return data.pixKeys;
+  } catch (error) {
+    console.error('Erro ao buscar chaves PIX:', error);
+  }
+};
+```
+
+### Copiar Chave (React)
+
+```javascript React Component
+import { useState, useEffect } from 'react';
+
+function PixKeysSelector() {
+  const [pixKeys, setPixKeys] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPixKeys();
+  }, []);
+
+  const fetchPixKeys = async () => {
+    try {
+      const response = await fetch('/v1/account/pix-keys', {
+        headers: { 'x-api-key': process.env.API_KEY }
+      });
+      const data = await response.json();
+      setPixKeys(data.pixKeys);
+    } catch (error) {
+      console.error('Erro ao carregar chaves:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = (pixKey) => {
+    navigator.clipboard.writeText(pixKey);
+    alert('Chave PIX copiada!');
+  };
+
+  if (loading) return <div>Carregando...</div>;
+
+  if (pixKeys.length === 0) {
+    return <div>Nenhuma chave PIX cadastrada</div>;
+  }
+
+  return (
+    <div>
+      <h2>Minhas Chaves PIX</h2>
+      {pixKeys.map((key, index) => (
+        <div key={index} className="pix-key-item">
+          <span>{key.pixKey}</span>
+          <span className="badge">{key.pixType}</span>
+          <button onClick={() => copyToClipboard(key.pixKey)}>
+            Copiar
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Cache com Tempo de Expiração
+
+```python Python
+import requests
+import time
+from datetime import datetime, timedelta
+
+class PixKeysCache:
+    def __init__(self, api_key, cache_duration_minutes=10):
+        self.api_key = api_key
+        self.cache_duration = timedelta(minutes=cache_duration_minutes)
+        self.cached_keys = None
+        self.last_fetch = None
+
+    def get_pix_keys(self):
+        """Retorna chaves PIX do cache ou faz nova requisição"""
+        if self.is_cache_valid():
+            return self.cached_keys
+
+        return self.fetch_pix_keys()
+
+    def is_cache_valid(self):
+        """Verifica se o cache ainda é válido"""
+        if not self.cached_keys or not self.last_fetch:
+            return False
+
+        return datetime.now() - self.last_fetch < self.cache_duration
+
+    def fetch_pix_keys(self):
+        """Busca chaves PIX da API"""
+        response = requests.get(
+            'https://api-gateway.firebanking.com.br/v1/account/pix-keys',
+            headers={'x-api-key': self.api_key}
+        )
+
+        data = response.json()
+
+        # Atualizar cache
+        self.cached_keys = data['pixKeys']
+        self.last_fetch = datetime.now()
+
+        return self.cached_keys
+
+# Uso
+cache = PixKeysCache(api_key='sua_chave_api', cache_duration_minutes=10)
+
+# Primeira chamada: busca da API
+keys = cache.get_pix_keys()
+print(f"Encontradas {len(keys)} chaves PIX")
+
+# Chamadas subsequentes nos próximos 10 minutos: usa cache
+keys = cache.get_pix_keys()  # Retorna do cache
+```
+
+## Filtragem por Tipo
+
+```javascript Filtrar Chaves por Tipo
+const getKeysByType = (pixKeys, type) => {
+  return pixKeys.filter(key => key.pixType === type);
+};
+
+const data = await fetchPixKeys();
+
+// Buscar apenas chaves aleatórias
+const randomKeys = getKeysByType(data.pixKeys, 'RANDOM_KEY');
+
+// Buscar apenas emails
+const emailKeys = getKeysByType(data.pixKeys, 'EMAIL');
+
+// Buscar chave principal (primeira da lista)
+const mainKey = data.pixKeys[0]?.pixKey;
+```
+
+## Buscar por Provedor
+
+```javascript Filtrar por Provedor
+const getKeysByProvider = (pixKeys, provider) => {
+  return pixKeys.filter(key => key.provider === provider);
+};
+
+// Buscar apenas chaves do Celcoin
+const celcoinKeys = getKeysByProvider(data.pixKeys, 'celcoin');
+
+// Contar chaves por provedor
+const countByProvider = (pixKeys) => {
+  return pixKeys.reduce((acc, key) => {
+    acc[key.provider] = (acc[key.provider] || 0) + 1;
+    return acc;
+  }, {});
+};
+
+console.log(countByProvider(data.pixKeys));
+// Output: { celcoin: 3, woovi: 1 }
+```
+
+## Melhores Práticas
+
+<AccordionGroup>
+  <Accordion title="Cache Local">
+    - **Armazenar chaves**: Cache por 5-10 minutos
+    - **Invalidar**: Ao cadastrar nova chave
+    - **Refresh automático**: Após operações de cadastro
+    - **Fallback**: Mostrar cache desatualizado em caso de erro
+  </Accordion>
+
+  <Accordion title="Exibição para Usuário">
+    - **Formatar chaves**: Exibir CPF/CNPJ formatados
+    - **Ícones por tipo**: Usar ícones visuais (📧 email, 📱 telefone, 🔑 aleatória)
+    - **Copiar fácil**: Botão de copiar para clipboard
+    - **Destacar principal**: Marcar chave preferencial
+  </Accordion>
+
+  <Accordion title="Segurança">
+    - **Não expor API key**: Nunca no frontend
+    - **Backend proxy**: Fazer requisição via backend
+    - **Rate limiting**: Respeitar limite de 50 req/min
+    - **Error handling**: Tratamento adequado de erros
+  </Accordion>
+
+  <Accordion title="UX">
+    - **Loading state**: Indicador de carregamento
+    - **Empty state**: Mensagem clara quando sem chaves
+    - **Atualização manual**: Botão para refresh
+    - **Feedback visual**: Confirmar ações (ex: "Copiado!")
+  </Accordion>
+</AccordionGroup>
+
+## Integração com QR Code
+
+Use as chaves PIX retornadas para gerar QR Codes de cobrança:
+
+```javascript Gerar Cobrança com Chave
+// 1. Buscar chaves PIX
+const { pixKeys } = await fetchPixKeys();
+
+// 2. Selecionar chave aleatória (mais privacidade)
+const randomKey = pixKeys.find(k => k.pixType === 'RANDOM_KEY');
+
+// 3. Criar cobrança PIX usando a chave
+const charge = await fetch('/pix/v2/payment', {
+  method: 'POST',
+  headers: {
+    'x-api-key': API_KEY,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    value: 5000, // R$ 50,00
+    buyer: {
+      name: 'Cliente Exemplo',
+      document: '12345678901'
+    },
+    pixKey: randomKey.pixKey // Usar chave da conta
+  })
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Array vazio retornado">
+    **Problema**: `pixKeys: []`
+
+    **Possíveis causas**:
+    - Conta ainda não tem chaves cadastradas
+    - Chaves em processo de aprovação no provedor
+    - Conta desativada
+
+    **Solução**:
+    - Contatar suporte FireBanking para solicitar cadastro
+    - Verificar status da conta no dashboard
+    - Aguardar aprovação do provedor (até 24h)
+  </Accordion>
+
+  <Accordion title="Erro 429 - Too Many Requests">
+    **Problema**: Limite de requisições excedido
+
+    **Solução**:
+    - Implementar cache local (5-10 minutos)
+    - Aguardar 1 minuto antes de nova tentativa
+    - Revisar lógica de chamadas (evitar loops)
+  </Accordion>
+
+  <Accordion title="Chave não aparece após cadastro">
+    **Problema**: Chave cadastrada mas não retornada
+
+    **Possíveis causas**:
+    - Cache desatualizado (frontend ou backend)
+    - Provedor ainda processando cadastro
+    - Erro no cadastro (chave rejeitada)
+
+    **Solução**:
+    - Aguardar alguns minutos e tentar novamente
+    - Limpar cache e fazer nova requisição
+    - Verificar logs de erro no dashboard
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Criar Cobrança PIX" href="/api-reference/pix/charge/create-qrcode">
+    Gerar QR Code para recebimentos
+  </Card>
+  <Card title="Verificar Saldo" href="/api-reference/account/balance">
+    Consultar saldo após recebimentos
+  </Card>
+  <Card title="Webhooks PIX" href="/api-reference/pix/webhooks-cashin">
+    Receber notificações de pagamento
+  </Card>
+  <Card title="Transferências PIX" href="/api-reference/pix/withdraw/create">
+    Realizar transferências usando chaves
+  </Card>
+</CardGroup>

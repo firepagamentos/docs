@@ -184,7 +184,10 @@
           },
           {
             "group": "Conta",
-            "pages": ["api-reference/account/balance"]
+            "pages": [
+              "api-reference/account/balance",
+              "api-reference/account/pix-keys"
+            ]
           },
           {
             "group": "Webhooks",

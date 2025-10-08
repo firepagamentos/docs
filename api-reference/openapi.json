@@ -617,6 +617,56 @@
         }
       }
     },
+    "/v1/account/pix-keys": {
+      "get": {
+        "tags": ["Conta"],
+        "summary": "Listar Chaves PIX",
+        "description": "Consultar todas as chaves PIX cadastradas na conta, incluindo tipo e provedor de cada chave",
+        "security": [{ "apiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de chaves PIX retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixKeysResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de requisições excedido (50 por minuto)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/account/webhook": {
       "post": {
         "tags": ["Conta"],
@@ -2070,6 +2120,42 @@
           }
         },
         "required": ["id", "totalBalance", "blockedBalance", "availableBalance", "consultedAt"]
+      },
+      "PixKeysResponse": {
+        "type": "object",
+        "properties": {
+          "pixKeys": {
+            "type": "array",
+            "description": "Lista de chaves PIX cadastradas na conta",
+            "items": {
+              "$ref": "#/components/schemas/PixKeyItem"
+            }
+          }
+        },
+        "required": ["pixKeys"]
+      },
+      "PixKeyItem": {
+        "type": "object",
+        "properties": {
+          "pixKey": {
+            "type": "string",
+            "description": "Valor da chave PIX (UUID para RANDOM_KEY, CPF/CNPJ para DOCUMENT, email para EMAIL, telefone para PHONE)",
+            "example": "72d52e67-9b98-45e0-a20e-4c259259d271"
+          },
+          "pixType": {
+            "type": "string",
+            "enum": ["RANDOM_KEY", "DOCUMENT", "EMAIL", "PHONE"],
+            "description": "Tipo da chave PIX",
+            "example": "RANDOM_KEY"
+          },
+          "provider": {
+            "type": "string",
+            "enum": ["celcoin", "woovi", "treeal", "voluti"],
+            "description": "Provedor PIX responsável pela chave",
+            "example": "celcoin"
+          }
+        },
+        "required": ["pixKey", "pixType", "provider"]
       },
       "UpdateWebhookUrlsRequest": {
         "type": "object",
