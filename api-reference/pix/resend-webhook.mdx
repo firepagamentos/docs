@@ -9,7 +9,7 @@ description: 'Reenvia webhook de atualização de status de uma transação PIX 
 Reenvia manualmente o webhook de uma transação PIX específica. Útil para recuperar notificações perdidas ou testar integrações.
 
 <Warning>
-**Rate Limit**: Este endpoint possui rate limiting de **2 requisições por minuto** para prevenir sobrecarga.
+**Rate Limit**: Este endpoint possui rate limiting de **60 requisições por minuto** para prevenir sobrecarga.
 </Warning>
 
 ## Casos de Uso
@@ -197,7 +197,7 @@ data = response.json()
 </ResponseField>
 
 <ResponseField name="429" type="error">
-  Rate limit excedido (máximo 2 requisições por minuto)
+  Rate limit excedido (máximo 60 requisições por minuto)
 </ResponseField>
 
 <ResponseField name="500" type="error">
@@ -259,7 +259,7 @@ data = response.json()
       "error": "Too Many Requests"
     }
     ```
-    Você excedeu o limite de 2 requisições por minuto. Aguarde antes de tentar novamente.
+    Você excedeu o limite de 60 requisições por minuto. Aguarde antes de tentar novamente.
   </Accordion>
 </AccordionGroup>
 
@@ -278,7 +278,7 @@ data = response.json()
     Valida IP contra lista permitida
   </Card>
   <Card title="Rate Limiting" icon="gauge">
-    Máximo 2 req/min por business
+    Máximo 60 req/min por business
   </Card>
 </CardGroup>
 
@@ -324,15 +324,16 @@ O webhook inclui automaticamente:
 ## Rate Limiting
 
 <Warning>
-**Limite**: 2 requisições por minuto por business
+**Limite**: 60 requisições por minuto por business
 
 **TTL**: 60 segundos
 </Warning>
 
-Se você precisar reenviar múltiplos webhooks:
-1. Envie as requisições com intervalo de 30+ segundos entre elas
-2. Considere usar ferramentas de retry com exponential backoff
-3. Para volumes maiores, entre em contato com o suporte
+Se você precisar reenviar múltiplos webhooks em grande volume:
+1. Envie até 60 requisições por minuto
+2. Para volumes maiores, distribua as requisições ao longo do tempo
+3. Considere usar ferramentas de retry com exponential backoff
+4. Para volumes muito grandes, entre em contato com o suporte
 
 ## Versões Suportadas
 
@@ -362,7 +363,7 @@ Ambas as versões possuem comportamento idêntico.
     Monitore logs do seu servidor para debugar recebimento
   </Card>
   <Card title="Respeite Rate Limit" icon="clock">
-    Aguarde 30s entre requisições para evitar 429
+    Máximo 60 requisições por minuto
   </Card>
 </CardGroup>
 
