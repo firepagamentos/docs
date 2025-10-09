@@ -21,16 +21,22 @@ Realiza o pagamento de um boleto bancário. O sistema irá:
 ```
 1. Cliente chama POST /withdraw
    ↓
-2. Sistema valida e bloqueia saldo
+2. Sistema valida saldo disponível
    ↓
 3. Autoriza pagamento na Celcoin
    ↓
-4. Executa pagamento
+4. Bloqueia saldo necessário
    ↓
-5. Retorna ID do pagamento (status: PENDING)
+5. Executa pagamento na Celcoin
    ↓
-6. Webhook confirma (status: PAID ou CANCELED)
+6. Retorna ID do pagamento (status: PENDING)
+   ↓
+7. Webhook confirma (status: PAID ou CANCELED)
 ```
+
+<Info>
+**Validação de Saldo**: O sistema verifica se há saldo disponível **ANTES** de bloquear e processar o pagamento. O saldo disponível é calculado como: `saldo total - saldo bloqueado`.
+</Info>
 
 ## Parâmetros da Requisição
 
@@ -149,11 +155,11 @@ data = response.json()
     ```json
     {
       "statusCode": 400,
-      "message": "Insufficient balance",
+      "message": "Insufficient balance. Available: R$ 100.00, Required: R$ 150.50",
       "error": "Bad Request"
     }
     ```
-    O business não possui saldo suficiente para o pagamento.
+    O business não possui saldo disponível suficiente para o pagamento. A mensagem indica o saldo disponível e o valor necessário.
   </Accordion>
 
   <Accordion title="ExternalId duplicado">
@@ -194,15 +200,29 @@ data = response.json()
 
 O pagamento de boleto segue o seguinte fluxo de saldo:
 
-1. **Autorização**: Saldo é **bloqueado** (não disponível para outras operações)
-2. **Confirmação** (webhook billpayment):
+### Fluxo Normal (Sucesso)
+
+1. **Validação**: Sistema verifica se `saldo disponível >= valor total`
+   - Saldo disponível = `saldo total - saldo bloqueado`
+   - Se insuficiente, retorna erro 400
+2. **Bloqueio**: Saldo é **bloqueado** (não disponível para outras operações)
+3. **Execução**: Pagamento é processado na Celcoin
+4. **Confirmação** (webhook billpayment):
    - Saldo bloqueado é **desbloqueado**
    - Valor é **debitado** do saldo real
    - Status muda para `PAID`
-3. **Erro** (webhook billpayment-occurrence):
-   - Saldo bloqueado é **devolvido**
-   - Nada é debitado
-   - Status muda para `CANCELED`
+
+### Fluxo de Erro
+
+**Erro Imediato (falha na Celcoin)**:
+- Sistema faz **rollback automático**
+- Saldo bloqueado é **devolvido imediatamente**
+- Erro retornado ao cliente
+
+**Erro via Webhook** (billpayment-occurrence):
+- Saldo bloqueado é **devolvido**
+- Nada é debitado
+- Status muda para `CANCELED`
 
 ## Webhooks
 
