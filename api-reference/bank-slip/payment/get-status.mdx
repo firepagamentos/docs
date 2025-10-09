@@ -1,0 +1,276 @@
+---
+title: 'Consultar Status do Pagamento'
+openapi: 'GET /bank-slip/v1/payments/withdraw/{id}/status'
+description: 'Consulta o status atualizado de um pagamento de boleto em tempo real'
+---
+
+## Visão Geral
+
+Consulta o status atualizado de um pagamento de boleto diretamente na Celcoin e sincroniza automaticamente com o banco de dados local. Útil para:
+
+- Verificar o status atual do pagamento
+- Sincronizar status em caso de webhook perdido
+- Obter informações detalhadas do provedor
+
+<Info>
+Este endpoint consulta o status **em tempo real** na Celcoin e atualiza automaticamente o banco de dados local se houver divergência.
+</Info>
+
+## Parâmetros da Requisição
+
+<ParamField path="id" type="string" required>
+  ID do pagamento (UUID) retornado ao criar o pagamento
+
+  **Exemplo:** `550e8400-e29b-41d4-a716-446655440000`
+</ParamField>
+
+## Resposta de Sucesso
+
+<ResponseField name="id" type="string">
+  ID único do pagamento (UUID)
+</ResponseField>
+
+<ResponseField name="externalId" type="string">
+  Identificador externo fornecido na criação (se foi fornecido)
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Status atual do pagamento no sistema local
+
+  **Valores possíveis:**
+  - `PENDING`: Pagamento em processamento
+  - `PAID`: Pagamento confirmado
+  - `CANCELED`: Pagamento cancelado
+  - `REFUND_OCCURRENCE`: Ocorrência de estorno
+</ResponseField>
+
+<ResponseField name="statusProvider" type="string">
+  Status retornado pela Celcoin
+
+  **Valores possíveis:**
+  - `CONFIRMED`: Pagamento confirmado
+  - `PROCESSING`: Em processamento
+  - `ERROR`: Erro no pagamento
+</ResponseField>
+
+<ResponseField name="amount" type="number">
+  Valor do pagamento em reais
+</ResponseField>
+
+<ResponseField name="paymentDate" type="string">
+  Data/hora em que o pagamento foi efetivado (formato ISO 8601)
+
+  Retorna `null` se o pagamento ainda não foi confirmado.
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string">
+  Data/hora da última atualização do status (formato ISO 8601)
+</ResponseField>
+
+<ResponseField name="providerData" type="object">
+  Dados adicionais retornados pelo provedor (Celcoin)
+
+  <Expandable title="providerData">
+    <ResponseField name="providerData.account" type="string">
+      Conta debitada na Celcoin
+    </ResponseField>
+
+    <ResponseField name="providerData.clientRequestId" type="string">
+      ID da requisição na Celcoin (externalId)
+    </ResponseField>
+
+    <ResponseField name="providerData.errorCode" type="string">
+      Código de erro (se aplicável)
+    </ResponseField>
+
+    <ResponseField name="providerData.message" type="string">
+      Mensagem detalhada do provedor
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X GET https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/550e8400-e29b-41d4-a716-446655440000/status \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/550e8400-e29b-41d4-a716-446655440000/status', {
+  headers: {
+    'x-api-key': 'YOUR_API_KEY'
+  }
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/550e8400-e29b-41d4-a716-446655440000/status',
+    headers={
+        'x-api-key': 'YOUR_API_KEY'
+    }
+)
+
+data = response.json()
+```
+
+## Exemplo de Resposta
+
+### Pagamento Confirmado
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "externalId": "PAY-2024-001",
+  "status": "PAID",
+  "statusProvider": "CONFIRMED",
+  "amount": 152.50,
+  "paymentDate": "2024-01-10T14:30:00.000Z",
+  "updatedAt": "2024-01-10T14:30:15.000Z",
+  "providerData": {
+    "account": "12345-6",
+    "clientRequestId": "PAY-2024-001",
+    "errorCode": null,
+    "message": "Payment processed successfully"
+  }
+}
+```
+
+### Pagamento Pendente
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "externalId": "PAY-2024-001",
+  "status": "PENDING",
+  "statusProvider": "PROCESSING",
+  "amount": 152.50,
+  "paymentDate": null,
+  "updatedAt": "2024-01-10T14:25:00.000Z",
+  "providerData": {
+    "account": "12345-6",
+    "clientRequestId": "PAY-2024-001",
+    "errorCode": null,
+    "message": "Payment is being processed"
+  }
+}
+```
+
+### Pagamento com Erro
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "externalId": "PAY-2024-001",
+  "status": "CANCELED",
+  "statusProvider": "ERROR",
+  "amount": 152.50,
+  "paymentDate": null,
+  "updatedAt": "2024-01-10T14:26:00.000Z",
+  "providerData": {
+    "account": "12345-6",
+    "clientRequestId": "PAY-2024-001",
+    "errorCode": "CBE001",
+    "message": "Bank slip already paid"
+  }
+}
+```
+
+## Códigos de Resposta
+
+<ResponseField name="200" type="success">
+  Status consultado com sucesso
+</ResponseField>
+
+<ResponseField name="404" type="error">
+  Pagamento não encontrado
+
+  O ID fornecido não existe ou não pertence ao business autenticado.
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  API key inválida ou ausente
+</ResponseField>
+
+<ResponseField name="500" type="error">
+  Erro interno do servidor
+</ResponseField>
+
+## Sincronização Automática
+
+Este endpoint implementa **sincronização inteligente** de status:
+
+1. Consulta o status local no banco de dados
+2. Consulta o status na Celcoin em tempo real
+3. Se houver divergência e o status local não for final (`PAID`, `CANCELED`):
+   - Atualiza o status local automaticamente
+   - Registra a sincronização nos logs
+4. Retorna o status atualizado
+
+### Estados Finais (não sincronizados)
+
+Os seguintes status são considerados **finais** e não serão sobrescritos:
+
+- `PAID`: Pagamento confirmado
+- `CANCELED`: Pagamento cancelado
+- `REFUND_OCCURRENCE`: Estorno processado
+
+<Warning>
+**Fail-safe**: Se a consulta na Celcoin falhar, o endpoint retorna o status local sem erro, garantindo que você sempre tenha uma resposta.
+</Warning>
+
+## Casos de Uso
+
+### Verificar status após criação
+
+```javascript
+// 1. Criar pagamento
+const createResponse = await createPayment(barcode);
+const paymentId = createResponse.id;
+
+// 2. Aguardar alguns segundos
+await sleep(5000);
+
+// 3. Consultar status
+const statusResponse = await getPaymentStatus(paymentId);
+
+if (statusResponse.status === 'PAID') {
+  console.log('Pagamento confirmado!');
+} else if (statusResponse.status === 'PENDING') {
+  console.log('Ainda processando...');
+}
+```
+
+### Sincronizar após webhook perdido
+
+Se um webhook não for recebido, você pode usar este endpoint para forçar a sincronização:
+
+```javascript
+const statusResponse = await getPaymentStatus(paymentId);
+
+// O status foi automaticamente sincronizado com a Celcoin
+console.log('Status atualizado:', statusResponse.status);
+```
+
+## Mapeamento de Status
+
+| Status Celcoin | Status Interno | Descrição |
+|----------------|----------------|-----------|
+| `CONFIRMED` | `PAID` | Pagamento confirmado com sucesso |
+| `PROCESSING` | `PENDING` | Pagamento em processamento |
+| `ERROR` | `CANCELED` | Erro no processamento |
+
+## Próximos Passos
+
+- **Listar pagamentos**: Veja o histórico com [Listar Pagamentos](/api-reference/bank-slip/payment/list-withdraws)
+- **Criar novo pagamento**: Use [Pagar Boleto](/api-reference/bank-slip/payment/create-withdraw)
+- **Webhooks**: Configure [Webhooks de Pagamento](/api-reference/webhooks/bank-slip-payment) para receber atualizações automáticas
+
+<Tip>
+**Dica**: Use este endpoint quando precisar verificar o status imediatamente, sem depender de webhooks. Ideal para interfaces de usuário ou validações em tempo real.
+</Tip>

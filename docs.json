@@ -154,11 +154,20 @@
             "pages": ["api-reference/bank-slip/integration-flow"]
           },
           {
-            "group": "Emissão",
+            "group": "Emissão de Boletos",
             "pages": [
               "api-reference/bank-slip/create",
               "api-reference/bank-slip/get",
               "api-reference/bank-slip/generate-pdf"
+            ]
+          },
+          {
+            "group": "Pagamento de Boletos",
+            "pages": [
+              "api-reference/bank-slip/payment/verify-data",
+              "api-reference/bank-slip/payment/create-withdraw",
+              "api-reference/bank-slip/payment/get-status",
+              "api-reference/bank-slip/payment/list-withdraws"
             ]
           },
           {

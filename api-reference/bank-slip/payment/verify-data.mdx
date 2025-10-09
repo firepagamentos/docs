@@ -1,0 +1,232 @@
+---
+title: 'Verificar Dados do Boleto'
+openapi: 'POST /bank-slip/v1/payments/withdraw/verify-data'
+description: 'Consulta informações atualizadas do boleto antes de efetuar o pagamento'
+---
+
+## Visão Geral
+
+Verifica e consulta os dados atualizados de um boleto através do código de barras ou linha digitável, **sem efetuar o pagamento**. Útil para mostrar ao usuário final o valor atualizado com juros/multas antes de confirmar a operação.
+
+<Warning>
+Este endpoint **NÃO** efetua o pagamento do boleto. Ele apenas consulta as informações atualizadas. Para realizar o pagamento, utilize o endpoint [Pagar Boleto](/api-reference/bank-slip/payment/create-withdraw).
+</Warning>
+
+## Casos de Uso
+
+- Exibir valor atualizado do boleto (com juros/multa) antes do pagamento
+- Validar se o boleto é válido e está disponível para pagamento
+- Verificar data de vencimento e condições de pagamento
+- Obter dados do cedente (empresa que emitiu o boleto)
+
+## Parâmetros da Requisição
+
+<ParamField body="barcode" type="string" required>
+  Código de barras ou linha digitável do boleto (apenas números)
+
+  **Formatos aceitos:**
+  - Código de barras: 44 dígitos
+  - Linha digitável: 47 dígitos
+
+  **Exemplo:** `34191091000000150001234567880000012345678901`
+</ParamField>
+
+## Resposta de Sucesso
+
+<ResponseField name="assignor" type="string">
+  Nome do cedente (empresa que emitiu o boleto)
+</ResponseField>
+
+<ResponseField name="originalValue" type="number">
+  Valor original do boleto (sem juros/multas)
+</ResponseField>
+
+<ResponseField name="totalUpdated" type="number">
+  Valor total atualizado para pagamento (com juros/multas se aplicável)
+</ResponseField>
+
+<ResponseField name="dueDate" type="string">
+  Data de vencimento do boleto (formato ISO 8601)
+</ResponseField>
+
+<ResponseField name="type" type="integer">
+  Tipo de boleto:
+  - `0`: Compensação bancária (boletos comuns)
+  - `1`: Concessionária/Tributo (água, luz, telefone, impostos)
+</ResponseField>
+
+<ResponseField name="allowChangeValue" type="boolean">
+  Indica se o boleto permite pagamento parcial
+</ResponseField>
+
+<ResponseField name="interestValueCalculated" type="number">
+  Valor dos juros calculados (se boleto vencido)
+</ResponseField>
+
+<ResponseField name="fineValueCalculated" type="number">
+  Valor da multa calculada (se boleto vencido)
+</ResponseField>
+
+<ResponseField name="minValue" type="number">
+  Valor mínimo permitido para pagamento (se pagamento parcial permitido)
+</ResponseField>
+
+<ResponseField name="maxValue" type="number">
+  Valor máximo permitido para pagamento
+</ResponseField>
+
+<ResponseField name="settleDate" type="string">
+  Data prevista de liquidação do pagamento
+</ResponseField>
+
+<ResponseField name="endHour" type="string">
+  Horário limite para pagamento no dia (formato HH:MM)
+</ResponseField>
+
+<ResponseField name="initeHour" type="string">
+  Horário inicial para pagamento no dia (formato HH:MM)
+</ResponseField>
+
+<ResponseField name="nextSettle" type="string">
+  Indica se liquidação será no mesmo dia ou próximo dia útil ("S" ou "N")
+</ResponseField>
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "barcode": "34191091000000150001234567880000012345678901"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    barcode: '34191091000000150001234567880000012345678901'
+  })
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data',
+    headers={
+        'Content-Type': 'application/json',
+        'x-api-key': 'YOUR_API_KEY'
+    },
+    json={
+        'barcode': '34191091000000150001234567880000012345678901'
+    }
+)
+
+data = response.json()
+```
+
+## Exemplo de Resposta
+
+```json
+{
+  "assignor": "EMPRESA DE LUZ LTDA",
+  "documentRecipient": "12345678901234",
+  "recipient": "Empresa Fornecedora",
+  "originalValue": 150.00,
+  "totalUpdated": 152.50,
+  "dueDate": "2024-01-15T03:00:00.000Z",
+  "type": 1,
+  "digitable": "34191234567880000012345678901091000000150001",
+  "minValue": 50.00,
+  "maxValue": 152.50,
+  "allowChangeValue": false,
+  "interestValueCalculated": 1.50,
+  "fineValueCalculated": 1.00,
+  "discountValue": 0,
+  "settleDate": "2024-01-16T03:00:00.000Z",
+  "endHour": "22:00",
+  "initeHour": "06:00",
+  "nextSettle": "N"
+}
+```
+
+## Códigos de Resposta
+
+<ResponseField name="200" type="success">
+  Dados do boleto consultados com sucesso
+</ResponseField>
+
+<ResponseField name="400" type="error">
+  Código de barras inválido ou boleto não encontrado
+
+  **Possíveis causas:**
+  - Código de barras com formato inválido
+  - Boleto não existe ou já foi pago
+  - Boleto vencido há mais de 60 dias
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  API key inválida ou ausente
+</ResponseField>
+
+<ResponseField name="500" type="error">
+  Erro interno do servidor ou falha na comunicação com o provedor
+</ResponseField>
+
+## Erros Comuns
+
+<AccordionGroup>
+  <Accordion title="Boleto já foi pago">
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Bank slip has already been paid",
+      "error": "Bad Request"
+    }
+    ```
+    O boleto consultado já foi quitado anteriormente.
+  </Accordion>
+
+  <Accordion title="Código de barras inválido">
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Invalid barcode format",
+      "error": "Bad Request"
+    }
+    ```
+    O código de barras fornecido não possui o formato correto (44 ou 47 dígitos numéricos).
+  </Accordion>
+
+  <Accordion title="Boleto vencido">
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Bank slip is expired and cannot be paid",
+      "error": "Bad Request"
+    }
+    ```
+    O boleto está vencido há mais de 60 dias e não pode ser pago.
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Passos
+
+Após verificar os dados do boleto, você pode:
+
+1. **Efetuar o pagamento**: Use o endpoint [Pagar Boleto](/api-reference/bank-slip/payment/create-withdraw)
+2. **Consultar status**: Verifique o status do pagamento com [Consultar Status](/api-reference/bank-slip/payment/get-status)
+3. **Listar pagamentos**: Veja o histórico com [Listar Pagamentos](/api-reference/bank-slip/payment/list-withdraws)
+
+<Note>
+**Importante:** Este endpoint apenas consulta informações. O saldo do business **NÃO** será debitado. Para efetuar o pagamento, use o endpoint de criação de pagamento.
+</Note>

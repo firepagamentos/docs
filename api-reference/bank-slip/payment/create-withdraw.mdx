@@ -1,0 +1,241 @@
+---
+title: 'Pagar Boleto'
+openapi: 'POST /bank-slip/v1/payments/withdraw'
+description: 'Efetua o pagamento de um boleto bancário'
+---
+
+## Visão Geral
+
+Realiza o pagamento de um boleto bancário. O sistema irá:
+1. Validar o código de barras
+2. Bloquear o saldo necessário
+3. Autorizar e executar o pagamento na Celcoin
+4. Processar confirmação via webhook
+
+<Warning>
+**Atenção**: Este endpoint **debita o saldo do business**. Certifique-se de ter saldo suficiente antes de executar.
+</Warning>
+
+## Fluxo de Pagamento
+
+```
+1. Cliente chama POST /withdraw
+   ↓
+2. Sistema valida e bloqueia saldo
+   ↓
+3. Autoriza pagamento na Celcoin
+   ↓
+4. Executa pagamento
+   ↓
+5. Retorna ID do pagamento (status: PENDING)
+   ↓
+6. Webhook confirma (status: PAID ou CANCELED)
+```
+
+## Parâmetros da Requisição
+
+<ParamField body="barcode" type="string" required>
+  Código de barras ou linha digitável do boleto (apenas números)
+
+  **Formatos aceitos:**
+  - Código de barras: 44 dígitos
+  - Linha digitável: 47 dígitos
+
+  **Exemplo:** `34191091000000150001234567880000012345678901`
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Identificador único da transação em seu sistema (máximo 100 caracteres)
+
+  **Importante**: Se fornecido, não é possível criar dois pagamentos com o mesmo `externalId` para o mesmo business.
+</ParamField>
+
+## Resposta de Sucesso
+
+<ResponseField name="id" type="string">
+  ID único do pagamento (UUID)
+
+  Use este ID para consultar o status do pagamento posteriormente.
+</ResponseField>
+
+## Exemplo de Requisição
+
+```bash cURL
+curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/withdraw \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "barcode": "34191091000000150001234567880000012345678901",
+    "externalId": "PAY-2024-001"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.firebanking.com.br/bank-slip/v1/payments/withdraw', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    barcode: '34191091000000150001234567880000012345678901',
+    externalId: 'PAY-2024-001'
+  })
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.firebanking.com.br/bank-slip/v1/payments/withdraw',
+    headers={
+        'Content-Type': 'application/json',
+        'x-api-key': 'YOUR_API_KEY'
+    },
+    json={
+        'barcode': '34191091000000150001234567880000012345678901',
+        'externalId': 'PAY-2024-001'
+    }
+)
+
+data = response.json()
+```
+
+## Exemplo de Resposta
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+## Códigos de Resposta
+
+<ResponseField name="200" type="success">
+  Pagamento iniciado com sucesso
+
+  O pagamento está sendo processado. Use o ID retornado para consultar o status.
+</ResponseField>
+
+<ResponseField name="400" type="error">
+  Requisição inválida
+
+  **Possíveis causas:**
+  - Código de barras inválido
+  - Boleto já foi pago
+  - Saldo insuficiente
+  - ExternalId duplicado
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  API key inválida ou ausente
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Conflito - pagamento com mesmo externalId já existe
+</ResponseField>
+
+<ResponseField name="500" type="error">
+  Erro interno do servidor
+</ResponseField>
+
+## Erros Comuns
+
+<AccordionGroup>
+  <Accordion title="Saldo insuficiente">
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Insufficient balance",
+      "error": "Bad Request"
+    }
+    ```
+    O business não possui saldo suficiente para o pagamento.
+  </Accordion>
+
+  <Accordion title="ExternalId duplicado">
+    ```json
+    {
+      "statusCode": 409,
+      "message": "Payment with externalId PAY-2024-001 already exists",
+      "error": "Conflict"
+    }
+    ```
+    Já existe um pagamento com o mesmo `externalId` para este business.
+  </Accordion>
+
+  <Accordion title="Boleto já pago">
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Bank slip has already been paid",
+      "error": "Bad Request"
+    }
+    ```
+    O boleto já foi quitado anteriormente (pela Fire Banking ou outro meio).
+  </Accordion>
+
+  <Accordion title="Código de barras inválido">
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Invalid barcode format",
+      "error": "Bad Request"
+    }
+    ```
+    O código de barras fornecido não possui o formato correto.
+  </Accordion>
+</AccordionGroup>
+
+## Gestão de Saldo
+
+O pagamento de boleto segue o seguinte fluxo de saldo:
+
+1. **Autorização**: Saldo é **bloqueado** (não disponível para outras operações)
+2. **Confirmação** (webhook billpayment):
+   - Saldo bloqueado é **desbloqueado**
+   - Valor é **debitado** do saldo real
+   - Status muda para `PAID`
+3. **Erro** (webhook billpayment-occurrence):
+   - Saldo bloqueado é **devolvido**
+   - Nada é debitado
+   - Status muda para `CANCELED`
+
+## Webhooks
+
+Após a criação do pagamento, você receberá webhooks para atualização de status:
+
+- **billpayment**: Quando o pagamento é confirmado com sucesso
+- **billpayment-occurrence**: Quando ocorre erro no pagamento
+
+[Saiba mais sobre Webhooks de Pagamento](/api-reference/webhooks/bank-slip-payment)
+
+## Status do Pagamento
+
+Após criar o pagamento, ele passará pelos seguintes status:
+
+| Status | Descrição |
+|--------|-----------|
+| `PENDING` | Pagamento em processamento na Celcoin |
+| `PAID` | Pagamento confirmado com sucesso |
+| `CANCELED` | Pagamento falhou ou foi cancelado |
+| `REFUND_OCCURRENCE` | Ocorrência de estorno/devolução |
+
+## Próximos Passos
+
+Após criar o pagamento, você pode:
+
+1. **Consultar status em tempo real**: Use [Consultar Status](/api-reference/bank-slip/payment/get-status)
+2. **Listar pagamentos**: Veja o histórico com [Listar Pagamentos](/api-reference/bank-slip/payment/list-withdraws)
+3. **Receber webhooks**: Configure webhooks para receber atualizações automáticas
+
+<Tip>
+**Dica**: Sempre verifique os dados do boleto com [Verificar Dados](/api-reference/bank-slip/payment/verify-data) antes de criar o pagamento, para mostrar o valor atualizado ao usuário final.
+</Tip>
+
+<Note>
+**Pagamento Parcial**: Atualmente não é suportado. O boleto sempre será pago pelo valor total retornado pela autorização.
+</Note>
