@@ -80,6 +80,12 @@
             ]
           },
           {
+            "group": "Gestão",
+            "pages": [
+              "api-reference/pix/resend-webhook"
+            ]
+          },
+          {
             "group": "Webhooks",
             "pages": [
               "api-reference/pix/webhooks-cashin",
