@@ -1,0 +1,385 @@
+---
+title: 'Reenviar Webhooks de Boleto'
+openapi: 'POST /bank-slip/v1/payments/webhooks/resend'
+description: 'Reenvia webhooks de atualização de status de boletos'
+---
+
+## Visão Geral
+
+Reenvia manualmente os webhooks de atualização de status para boletos que já foram processados. Útil para recuperar notificações perdidas ou testar integrações.
+
+<Info>
+Este endpoint reenvia **apenas** webhooks de status finais (`PAID`, `WAITING_PAYMENT`, `CANCELED`). Status intermediários como `PENDING` são ignorados.
+</Info>
+
+## Casos de Uso
+
+- **Webhook perdido**: Quando seu servidor não recebeu a notificação original
+- **Retry após downtime**: Reprocessar notificações perdidas durante uma manutenção
+- **Teste de integração**: Validar tratamento de webhooks sem criar novos boletos
+- **Debug**: Reenviar notificação específica para análise
+
+## Parâmetros da Requisição
+
+<Info>
+Você pode especificar pagamentos **por período** OU **por lista de IDs**. Pelo menos um dos dois métodos deve ser fornecido.
+</Info>
+
+### Filtro por Período
+
+<ParamField body="startDate" type="string (ISO 8601)">
+  Data inicial do período de busca
+
+  **Exemplo:** `2024-01-01`
+
+  <Note>
+  Obrigatório se `endDate` for fornecido. Não pode ser usado junto com `paymentIds`.
+  </Note>
+</ParamField>
+
+<ParamField body="endDate" type="string (ISO 8601)">
+  Data final do período de busca
+
+  **Exemplo:** `2024-01-31`
+
+  <Note>
+  Obrigatório se `startDate` for fornecido. Não pode ser usado junto com `paymentIds`.
+  </Note>
+</ParamField>
+
+### Filtro por IDs
+
+<ParamField body="paymentIds" type="array">
+  Lista de IDs dos pagamentos (UUIDs)
+
+  **Exemplo:** `["550e8400-e29b-41d4-a716-446655440000", "6ba7b810-9dad-11d1-80b4-00c04fd430c8"]`
+
+  <Note>
+  Obrigatório se `startDate` e `endDate` não forem fornecidos.
+  </Note>
+</ParamField>
+
+## Status Processados
+
+| Status | Webhook Reenviado? | Motivo |
+|--------|-------------------|---------|
+| `PAID` | ✅ Sim | Status final - pagamento confirmado |
+| `WAITING_PAYMENT` | ✅ Sim | Boleto emitido aguardando pagamento |
+| `CANCELED` | ✅ Sim | Status final - boleto cancelado |
+| `PENDING` | ❌ Não | Status intermediário - sem webhook |
+| `PROVIDER_CREATION_ERROR` | ❌ Não | Erro técnico - sem webhook |
+| `PROVIDER_CANCEL_ERROR` | ❌ Não | Erro técnico - sem webhook |
+
+## Resposta de Sucesso
+
+<ResponseField name="message" type="string">
+  Mensagem de confirmação
+
+  **Valor:** `"Payment updates sent successfully"`
+</ResponseField>
+
+<Info>
+O endpoint retorna sucesso mesmo se alguns webhooks falharem. Verifique os logs para detalhes de falhas individuais.
+</Info>
+
+## Exemplo de Requisição
+
+### Reenviar por Período
+
+```bash cURL
+curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "startDate": "2024-01-01",
+    "endDate": "2024-01-31"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    startDate: '2024-01-01',
+    endDate: '2024-01-31'
+  })
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend',
+    headers={
+        'Content-Type': 'application/json',
+        'x-api-key': 'YOUR_API_KEY'
+    },
+    json={
+        'startDate': '2024-01-01',
+        'endDate': '2024-01-31'
+    }
+)
+
+data = response.json()
+```
+
+### Reenviar por Lista de IDs
+
+```bash cURL
+curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "paymentIds": [
+      "550e8400-e29b-41d4-a716-446655440000",
+      "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+    ]
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    paymentIds: [
+      '550e8400-e29b-41d4-a716-446655440000',
+      '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
+    ]
+  })
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend',
+    headers={
+        'Content-Type': 'application/json',
+        'x-api-key': 'YOUR_API_KEY'
+    },
+    json={
+        'paymentIds': [
+            '550e8400-e29b-41d4-a716-446655440000',
+            '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
+        ]
+    }
+)
+
+data = response.json()
+```
+
+## Exemplo de Resposta
+
+```json
+{
+  "message": "Payment updates sent successfully"
+}
+```
+
+## Códigos de Resposta
+
+<ResponseField name="200" type="success">
+  Webhooks enviados com sucesso
+
+  <Note>
+  Alguns webhooks individuais podem ter falhado. Verifique os logs para detalhes.
+  </Note>
+</ResponseField>
+
+<ResponseField name="400" type="error">
+  Requisição inválida
+
+  **Possíveis causas:**
+  - Nem `startDate/endDate` nem `paymentIds` foram fornecidos
+  - `startDate` fornecido sem `endDate` (ou vice-versa)
+  - Formato de data inválido
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  API key inválida ou ausente
+</ResponseField>
+
+<ResponseField name="404" type="error">
+  Nenhum pagamento encontrado com os critérios fornecidos
+</ResponseField>
+
+<ResponseField name="500" type="error">
+  Erro interno do servidor
+</ResponseField>
+
+## Erros Comuns
+
+<AccordionGroup>
+  <Accordion title="Nenhum pagamento encontrado">
+    ```json
+    {
+      "statusCode": 404,
+      "message": "No payment found to notify update",
+      "error": "Not Found"
+    }
+    ```
+    Nenhum pagamento atende aos critérios de busca (período ou IDs).
+  </Accordion>
+
+  <Accordion title="Parâmetros ausentes">
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Either startDate/endDate or paymentIds must be provided",
+      "error": "Bad Request"
+    }
+    ```
+    Você deve fornecer **um** dos dois métodos de filtro.
+  </Accordion>
+
+  <Accordion title="Data incompleta">
+    ```json
+    {
+      "statusCode": 400,
+      "message": "startDate is required when endDate is provided",
+      "error": "Bad Request"
+    }
+    ```
+    Se usar filtro por período, ambas as datas são obrigatórias.
+  </Accordion>
+</AccordionGroup>
+
+## Comportamento e Limitações
+
+### Webhooks Reenviados
+
+Para cada status, o webhook contém:
+
+**PAID (Pagamento Confirmado)**:
+```json
+{
+  "event": "payment.paid",
+  "payment": {
+    "id": "uuid",
+    "externalId": "external-id",
+    "status": "PAID",
+    "amount": 150.00,
+    "paymentDate": "2024-01-10T14:30:00.000Z",
+    "paymentType": "PIX"
+  }
+}
+```
+
+**WAITING_PAYMENT (Aguardando Pagamento)**:
+```json
+{
+  "event": "payment.waiting",
+  "payment": {
+    "id": "uuid",
+    "externalId": "external-id",
+    "status": "WAITING_PAYMENT",
+    "pdfUrl": "https://...",
+    "pixCode": "00020101021226...",
+    "barcode": "34191091000000150001...",
+    "slipLine": "34191234567880000..."
+  }
+}
+```
+
+**CANCELED (Cancelado)**:
+```json
+{
+  "event": "payment.canceled",
+  "payment": {
+    "id": "uuid",
+    "externalId": "external-id",
+    "status": "CANCELED",
+    "cancelReason": "Requested by user"
+  }
+}
+```
+
+### Falhas e Retries
+
+<Warning>
+**Importante**: O endpoint não garante entrega. Se o webhook URL do business estiver indisponível, a requisição falhará.
+</Warning>
+
+- ✅ Tentativas são feitas em **paralelo** (Promise.allSettled)
+- ✅ Falhas individuais são **logadas** mas não interrompem o processo
+- ✅ Retorna sucesso mesmo se alguns webhooks falharem
+- ❌ **Não há retry automático** - se falhar, você deve chamar o endpoint novamente
+
+### Performance
+
+- Para períodos longos (muitos pagamentos), o processo pode demorar
+- Máximo recomendado: ~100 pagamentos por requisição
+- Considere filtrar por períodos menores se tiver volume alto
+
+## Boas Práticas
+
+<CardGroup cols={2}>
+  <Card title="Use Períodos Curtos" icon="calendar">
+    Filtre por períodos de 7-30 dias para evitar timeout
+  </Card>
+  <Card title="IDs Específicos" icon="list">
+    Para reenvios pontuais, use `paymentIds` ao invés de período
+  </Card>
+  <Card title="Monitore Logs" icon="chart-line">
+    Verifique logs da aplicação para detalhes de falhas
+  </Card>
+  <Card title="Webhook URL Válido" icon="link">
+    Garanta que seu webhook URL esteja configurado e acessível
+  </Card>
+</CardGroup>
+
+## Monitoramento
+
+Os logs incluem informações detalhadas:
+
+```
+[ResendPaymentUpdateUseCase][Execute]: Resend completed
+{
+  businessId: "uuid",
+  totalPayments: 25,
+  successCount: 23,
+  failureCount: 2,
+  successRate: "92.00%"
+}
+```
+
+### Logs de Erro
+
+Para webhooks que falharam:
+
+```
+[ResendPaymentUpdateUseCase][Execute]: Failed to resend notification
+{
+  paymentId: "uuid",
+  externalId: "external-id",
+  errorType: "HTTP_ERROR",
+  errorStatus: 500,
+  errorMessage: "Internal Server Error",
+  webhookUrl: "https://your-server.com/webhooks"
+}
+```
+
+## Próximos Passos
+
+- **Configurar Webhook URL**: [Configuração de Webhooks](/webhooks/setup)
+- **Emitir Boletos**: [Criar Boleto](/api-reference/bank-slip/create)
+- **Pagar Boletos**: [Pagar Boleto](/api-reference/bank-slip/payment/create-withdraw)
+- **Consultar Status**: [Listar Pagamentos](/api-reference/bank-slip/payment/list-withdraws)
+
+<Tip>
+**Dica de Debug**: Use este endpoint em ambiente de testes para validar seu sistema de recebimento de webhooks antes do go-live.
+</Tip>

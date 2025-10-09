@@ -172,7 +172,10 @@
           },
           {
             "group": "Gestão",
-            "pages": ["api-reference/bank-slip/cancel"]
+            "pages": [
+              "api-reference/bank-slip/cancel",
+              "api-reference/bank-slip/resend-webhooks"
+            ]
           },
           {
             "group": "Webhooks",
