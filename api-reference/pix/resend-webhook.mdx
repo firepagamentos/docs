@@ -39,10 +39,10 @@ Reenvia manualmente o webhook de uma transação PIX específica. Útil para rec
   **Exemplo:** `https://webhook.seuservidor.com/pix/callback`
 
   <Info>
-  Se não fornecido, usa a URL configurada no business:
+  Se não fornecido, usa a URL configurada na conta:
   1. `callbackWebhookUrl` da transação
-  2. `pixWebhookUrl` do business
-  3. `webhookUrl` global do business
+  2. `pixWebhookUrl` da conta
+  3. `webhookUrl` global da conta
   </Info>
 </ParamField>
 
@@ -184,8 +184,8 @@ data = response.json()
   **Possíveis causas:**
   - Transaction ID ausente
   - URL fornecida não usa HTTPS
-  - Tentativa de reenviar webhook de outra business (sem permissão)
-  - Business sem configuração de webhook e URL não fornecida
+  - Tentativa de reenviar webhook de outra conta (sem permissão)
+  - Conta sem configuração de webhook e URL não fornecida
 </ResponseField>
 
 <ResponseField name="401" type="error">
@@ -193,7 +193,7 @@ data = response.json()
 </ResponseField>
 
 <ResponseField name="404" type="error">
-  Transação não encontrada ou business não encontrado
+  Transação não encontrada ou conta não encontrada
 </ResponseField>
 
 <ResponseField name="429" type="error">
@@ -237,18 +237,18 @@ data = response.json()
       "error": "Bad Request"
     }
     ```
-    Você não tem permissão para reenviar webhook desta transação (pertence a outro business).
+    Você não tem permissão para reenviar webhook desta transação (pertence a outra conta).
   </Accordion>
 
   <Accordion title="Webhook não configurado">
     ```json
     {
       "statusCode": 400,
-      "message": "Business does not have webhook configuration or url provided",
+      "message": "Account does not have webhook configuration or url provided",
       "error": "Bad Request"
     }
     ```
-    O business não possui webhook configurado e nenhuma URL foi fornecida no body.
+    A conta não possui webhook configurado e nenhuma URL foi fornecida no body.
   </Accordion>
 
   <Accordion title="Rate limit excedido">
@@ -272,13 +272,13 @@ data = response.json()
     Requer `x-api-key` válida
   </Card>
   <Card title="Autorização" icon="shield">
-    Apenas transações do seu business
+    Apenas transações da sua conta
   </Card>
   <Card title="IP Allowlist" icon="lock">
     Valida IP contra lista permitida
   </Card>
   <Card title="Rate Limiting" icon="gauge">
-    Máximo 60 req/min por business
+    Máximo 60 req/min por conta
   </Card>
 </CardGroup>
 
@@ -288,8 +288,8 @@ O sistema usa a seguinte ordem de prioridade para determinar a URL do webhook:
 
 1. **URL fornecida no body** (parâmetro `url`)
 2. **URL da transação** (`callbackWebhookUrl`)
-3. **URL PIX do business** (`pixWebhookUrl`)
-4. **URL global do business** (`webhookUrl`)
+3. **URL PIX da conta** (`pixWebhookUrl`)
+4. **URL global da conta** (`webhookUrl`)
 
 <Info>
 Se nenhuma das opções acima estiver disponível, o endpoint retornará erro 400.
@@ -319,12 +319,12 @@ O webhook inclui automaticamente:
 - **Informações da transação**: ID, status, valor, endToEndId
 - **Dados do pagador** (se disponível): Nome, documento, banco, agência, conta
 - **Dados do recebedor** (se disponível): Nome, documento, banco, agência, conta
-- **Chave PIX**: Recuperada da transação, histórico Celcoin ou business
+- **Chave PIX**: Recuperada da transação, histórico Celcoin ou conta
 
 ## Rate Limiting
 
 <Warning>
-**Limite**: 60 requisições por minuto por business
+**Limite**: 60 requisições por minuto por conta
 
 **TTL**: 60 segundos
 </Warning>

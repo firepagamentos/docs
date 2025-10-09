@@ -13,7 +13,7 @@ Realiza o pagamento de um boleto bancário. O sistema irá:
 4. Processar confirmação via webhook
 
 <Warning>
-**Atenção**: Este endpoint **debita o saldo do business**. Certifique-se de ter saldo suficiente antes de executar.
+**Atenção**: Este endpoint **debita o saldo da conta**. Certifique-se de ter saldo suficiente antes de executar.
 </Warning>
 
 ## Fluxo de Pagamento
@@ -53,7 +53,7 @@ Realiza o pagamento de um boleto bancário. O sistema irá:
 <ParamField body="externalId" type="string">
   Identificador único da transação em seu sistema (máximo 100 caracteres)
 
-  **Importante**: Se fornecido, não é possível criar dois pagamentos com o mesmo `externalId` para o mesmo business.
+  **Importante**: Se fornecido, não é possível criar dois pagamentos com o mesmo `externalId` para a mesma conta.
 </ParamField>
 
 ## Resposta de Sucesso
@@ -159,7 +159,7 @@ data = response.json()
       "error": "Bad Request"
     }
     ```
-    O business não possui saldo disponível suficiente para o pagamento. A mensagem indica o saldo disponível e o valor necessário.
+    A conta não possui saldo disponível suficiente para o pagamento. A mensagem indica o saldo disponível e o valor necessário.
   </Accordion>
 
   <Accordion title="ExternalId duplicado">
@@ -170,7 +170,7 @@ data = response.json()
       "error": "Conflict"
     }
     ```
-    Já existe um pagamento com o mesmo `externalId` para este business.
+    Já existe um pagamento com o mesmo `externalId` para esta conta.
   </Accordion>
 
   <Accordion title="Boleto já pago">
