@@ -6,14 +6,14 @@ description: 'Consulta o status atualizado de um pagamento de boleto em tempo re
 
 ## Visão Geral
 
-Consulta o status atualizado de um pagamento de boleto diretamente na Celcoin e sincroniza automaticamente com o banco de dados local. Útil para:
+Consulta o status atualizado de um pagamento de boleto diretamente no provedor e sincroniza automaticamente com o banco de dados local. Útil para:
 
 - Verificar o status atual do pagamento
 - Sincronizar status em caso de webhook perdido
 - Obter informações detalhadas do provedor
 
 <Info>
-Este endpoint consulta o status **em tempo real** na Celcoin e atualiza automaticamente o banco de dados local se houver divergência.
+Este endpoint consulta o status **em tempo real** no provedor de pagamento e atualiza automaticamente o banco de dados local se houver divergência.
 </Info>
 
 ## Parâmetros da Requisição
@@ -45,7 +45,7 @@ Este endpoint consulta o status **em tempo real** na Celcoin e atualiza automati
 </ResponseField>
 
 <ResponseField name="statusProvider" type="string">
-  Status retornado pela Celcoin
+  Status retornado pelo provedor de pagamento
 
   **Valores possíveis:**
   - `CONFIRMED`: Pagamento confirmado
@@ -68,15 +68,15 @@ Este endpoint consulta o status **em tempo real** na Celcoin e atualiza automati
 </ResponseField>
 
 <ResponseField name="providerData" type="object">
-  Dados adicionais retornados pelo provedor (Celcoin)
+  Dados adicionais retornados pelo provedor de pagamento
 
   <Expandable title="providerData">
     <ResponseField name="providerData.account" type="string">
-      Conta debitada na Celcoin
+      Conta debitada no provedor
     </ResponseField>
 
     <ResponseField name="providerData.clientRequestId" type="string">
-      ID da requisição na Celcoin (externalId)
+      ID da requisição no provedor (externalId)
     </ResponseField>
 
     <ResponseField name="providerData.errorCode" type="string">
@@ -206,7 +206,7 @@ data = response.json()
 Este endpoint implementa **sincronização inteligente** de status:
 
 1. Consulta o status local no banco de dados
-2. Consulta o status na Celcoin em tempo real
+2. Consulta o status no provedor de pagamento em tempo real
 3. Se houver divergência e o status local não for final (`PAID`, `CANCELED`):
    - Atualiza o status local automaticamente
    - Registra a sincronização nos logs
@@ -221,7 +221,7 @@ Os seguintes status são considerados **finais** e não serão sobrescritos:
 - `REFUND_OCCURRENCE`: Estorno processado
 
 <Warning>
-**Fail-safe**: Se a consulta na Celcoin falhar, o endpoint retorna o status local sem erro, garantindo que você sempre tenha uma resposta.
+**Fail-safe**: Se a consulta no provedor falhar, o endpoint retorna o status local sem erro, garantindo que você sempre tenha uma resposta.
 </Warning>
 
 ## Casos de Uso
@@ -253,14 +253,14 @@ Se um webhook não for recebido, você pode usar este endpoint para forçar a si
 ```javascript
 const statusResponse = await getPaymentStatus(paymentId);
 
-// O status foi automaticamente sincronizado com a Celcoin
+// O status foi automaticamente sincronizado com o provedor
 console.log('Status atualizado:', statusResponse.status);
 ```
 
 ## Mapeamento de Status
 
-| Status Celcoin | Status Interno | Descrição |
-|----------------|----------------|-----------|
+| Status Provedor | Status Interno | Descrição |
+|-----------------|----------------|-----------|
 | `CONFIRMED` | `PAID` | Pagamento confirmado com sucesso |
 | `PROCESSING` | `PENDING` | Pagamento em processamento |
 | `ERROR` | `CANCELED` | Erro no processamento |
