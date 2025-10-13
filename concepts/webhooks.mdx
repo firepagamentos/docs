@@ -45,7 +45,7 @@ Configure as URLs de webhook usando o endpoint de gerenciamento:
 
 ```bash Configurar Webhooks
 curl --request POST \
-  --url https://api.firebanking.com.br/business/webhook \
+  --url https://api-gateway.firebanking.com.br/business/webhook \
   --header 'Content-Type: application/json' \
   --header 'apiKey: sua_chave_api' \
   --data '{
@@ -259,7 +259,7 @@ def process_webhook(webhook_data):
 
 ```bash Obter URLs Configuradas
 curl --request GET \
-  --url https://api.firebanking.com.br/business/webhook \
+  --url https://api-gateway.firebanking.com.br/business/webhook \
   --header 'apiKey: sua_chave_api'
 ```
 
@@ -277,7 +277,7 @@ curl --request GET \
 
 ```bash Atualizar URLs Parcialmente
 curl --request PATCH \
-  --url https://api.firebanking.com.br/business/webhook \
+  --url https://api-gateway.firebanking.com.br/business/webhook \
   --header 'Content-Type: application/json' \
   --header 'apiKey: sua_chave_api' \
   --data '{
@@ -299,7 +299,7 @@ curl --request PATCH \
 
 ```bash Remover URL Específica
 curl --request DELETE \
-  --url https://api.firebanking.com.br/business/webhook/pix \
+  --url https://api-gateway.firebanking.com.br/business/webhook/pix \
   --header 'apiKey: sua_chave_api'
 ```
 

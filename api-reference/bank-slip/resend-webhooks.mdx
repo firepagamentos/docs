@@ -87,7 +87,7 @@ O endpoint retorna sucesso mesmo se alguns webhooks falharem. Verifique os logs 
 ### Reenviar por Período
 
 ```bash cURL
-curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend \
+curl -X POST https://api-gateway.firebanking.com.br/bank-slip/v1/payments/webhooks/resend \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_API_KEY" \
   -d '{
@@ -97,7 +97,7 @@ curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resen
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend', {
+const response = await fetch('https://api-gateway.firebanking.com.br/bank-slip/v1/payments/webhooks/resend', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const data = await response.json();
 import requests
 
 response = requests.post(
-    'https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend',
+    'https://api-gateway.firebanking.com.br/bank-slip/v1/payments/webhooks/resend',
     headers={
         'Content-Type': 'application/json',
         'x-api-key': 'YOUR_API_KEY'
@@ -133,7 +133,7 @@ data = response.json()
 ### Reenviar por Lista de IDs
 
 ```bash cURL
-curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend \
+curl -X POST https://api-gateway.firebanking.com.br/bank-slip/v1/payments/webhooks/resend \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_API_KEY" \
   -d '{
@@ -145,7 +145,7 @@ curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resen
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend', {
+const response = await fetch('https://api-gateway.firebanking.com.br/bank-slip/v1/payments/webhooks/resend', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ const data = await response.json();
 import requests
 
 response = requests.post(
-    'https://api.firebanking.com.br/bank-slip/v1/payments/webhooks/resend',
+    'https://api-gateway.firebanking.com.br/bank-slip/v1/payments/webhooks/resend',
     headers={
         'Content-Type': 'application/json',
         'x-api-key': 'YOUR_API_KEY'

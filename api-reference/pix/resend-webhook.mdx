@@ -90,13 +90,13 @@ O webhook reenviado segue a estrutura padrão V1:
 ### Reenviar para URL Padrão
 
 ```bash cURL
-curl -X POST https://api.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011 \
+curl -X POST https://api-gateway.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011 \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_API_KEY"
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011', {
+const response = await fetch('https://api-gateway.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ const data = await response.json();
 import requests
 
 response = requests.post(
-    'https://api.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011',
+    'https://api-gateway.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011',
     headers={
         'Content-Type': 'application/json',
         'x-api-key': 'YOUR_API_KEY'
@@ -124,7 +124,7 @@ data = response.json()
 ### Reenviar para URL Customizada
 
 ```bash cURL
-curl -X POST https://api.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011 \
+curl -X POST https://api-gateway.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011 \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_API_KEY" \
   -d '{
@@ -133,7 +133,7 @@ curl -X POST https://api.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011', {
+const response = await fetch('https://api-gateway.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const data = await response.json();
 import requests
 
 response = requests.post(
-    'https://api.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011',
+    'https://api-gateway.firebanking.com.br/pix/v1/webhooks/resend/507f1f77bcf86cd799439011',
     headers={
         'Content-Type': 'application/json',
         'x-api-key': 'YOUR_API_KEY'

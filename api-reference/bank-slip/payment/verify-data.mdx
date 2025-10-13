@@ -94,7 +94,7 @@ Este endpoint **NÃO** efetua o pagamento do boleto. Ele apenas consulta as info
 ## Exemplo de Requisição
 
 ```bash cURL
-curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data \
+curl -X POST https://api-gateway.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_API_KEY" \
   -d '{
@@ -103,7 +103,7 @@ curl -X POST https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/verif
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data', {
+const response = await fetch('https://api-gateway.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ const data = await response.json();
 import requests
 
 response = requests.post(
-    'https://api.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data',
+    'https://api-gateway.firebanking.com.br/bank-slip/v1/payments/withdraw/verify-data',
     headers={
         'Content-Type': 'application/json',
         'x-api-key': 'YOUR_API_KEY'
