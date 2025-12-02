@@ -12,6 +12,12 @@ Consulte informações detalhadas de uma cobrança PIX utilizando o ID da transa
   A API aceita tanto o `id` interno da transação quanto o `externalId` fornecido na criação da cobrança. A identificação é feita automaticamente.
 </Info>
 
+## Outras formas de consulta
+
+- `GET /pix/v2/payment/pix-key/{pixKey}/{transactionId}`: filtra pela combinação de chave PIX + transactionId (ou externalId).
+- `GET /pix/v2/payment/pix-key/{pixKey}`: lista todas as transações do negócio autenticado vinculadas à chave PIX.
+- `GET /pix/v2/payment/pix-key/{pixKey}/e2e/{providerId}`: consulta pela combinação chave PIX + providerID (endToEndId).
+
 ## Parâmetros da URL
 
 <ParamField path="id" type="string" required>
@@ -84,6 +90,30 @@ response_external = requests.get(
 payment_external = response_external.json()
 ```
 </CodeGroup>
+
+### Consulta por chave PIX + transactionId
+
+```bash cURL
+curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/CHAVE_PIX/TRANSACTION_ID" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
+  -H "Content-Type: application/json"
+```
+
+### Consulta por chave PIX + providerID (endToEndId)
+
+```bash cURL
+curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/pix-key/CHAVE_PIX/e2e/END_TO_END_ID" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
+  -H "Content-Type: application/json"
+```
+
+### Listar transações por chave PIX
+
+```bash cURL
+curl -X GET "https://api-gateway.firebanking.com.br/pix/v2/payment/pix-key/CHAVE_PIX?providerId=END_TO_END_ID" \
+  -H "x-api-key: SUA_CHAVE_DE_API" \
+  -H "Content-Type: application/json"
+```
 
 ## Exemplo de Resposta
 

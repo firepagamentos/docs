@@ -996,6 +996,150 @@
         }
       }
     },
+    "/pix/v2/payment/pix-key/{pixKey}/{transactionId}": {
+      "get": {
+        "tags": ["PIX"],
+        "summary": "Consultar Transação PIX por chave e ID",
+        "description": "Consulta o status e detalhes de uma transação PIX filtrando pela chave PIX e pelo transactionId (ou externalId)",
+        "security": [{ "apiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "pixKey",
+            "in": "path",
+            "required": true,
+            "description": "Chave PIX vinculada à transação",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "description": "ID da transação ou externalId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes da transação PIX",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixTransactionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transação não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pix/v2/payment/pix-key/{pixKey}/e2e/{providerId}": {
+      "get": {
+        "tags": ["PIX"],
+        "summary": "Consultar Transação PIX por chave e endToEndId",
+        "description": "Consulta o status e detalhes de uma transação PIX filtrando pela chave PIX e pelo providerID (endToEndId)",
+        "security": [{ "apiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "pixKey",
+            "in": "path",
+            "required": true,
+            "description": "Chave PIX vinculada à transação",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "providerId",
+            "in": "path",
+            "required": true,
+            "description": "Identificador endToEndId (operation.providerID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes da transação PIX",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixTransactionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transação não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pix/v2/payment/pix-key/{pixKey}": {
+      "get": {
+        "tags": ["PIX"],
+        "summary": "Listar transações por chave PIX",
+        "description": "Retorna as transações do negócio autenticado filtradas pela chave PIX. Pode ser refinado por providerID (endToEndId) via query string.",
+        "security": [{ "apiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "pixKey",
+            "in": "path",
+            "required": true,
+            "description": "Chave PIX utilizada nas transações",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de transações filtradas pela chave PIX",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PixTransactionResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nenhuma transação encontrada para a chave PIX",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/pix/v2/payment/withdraw": {
       "post": {
         "tags": ["PIX"],
